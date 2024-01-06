@@ -1,5 +1,5 @@
 <template>
-  <ModelSelectDrawer :show="showModelSelect" @toggle="showModelSelect = !showModelSelect" />
+  <!-- <ModelSelectDrawer :show="showModelSelect" @toggle="showModelSelect = !showModelSelect" /> -->
   <TheLeafletMap></TheLeafletMap>
 </template>
 
