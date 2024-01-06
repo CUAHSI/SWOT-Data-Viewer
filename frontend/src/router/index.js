@@ -1,5 +1,4 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import HelpView from '../views/HelpView.vue'
 import MapView from '../views/MapView.vue'
 import ApiView from '../views/ApiView.vue'
 
@@ -23,11 +22,6 @@ const router = createRouter({
       path: '/api',
       name: 'api',
       component: ApiView
-    },
-    {
-      path: '/help',
-      name: 'help',
-      component: HelpView
     },
     {
       path: '/auth-redirect',

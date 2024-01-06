@@ -38,10 +38,6 @@ const paths = [
     attrs: { to: "/about" },
     label: "About",
   },
-  {
-    attrs: { to: "/help" },
-    label: "Help",
-  },
 ];
 
 function toggleMobileNav() {
