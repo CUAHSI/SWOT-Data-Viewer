@@ -55,12 +55,10 @@
 <script setup>
 import { mdiAccount, mdiAccountKey } from '@mdi/js'
 import { useAuthStore } from '../stores/auth';
-import { useSubmissionsStore } from '../stores/submissions';
 import { logIn, logOut } from '@/auth.js'
 defineProps(['mobile'])
 const emit = defineEmits(['loggedIn', 'loggedOut'])
 
-const submissionStore = useSubmissionsStore();
 const auth = useAuthStore();
 
 async function openLogInDialog() {
@@ -73,12 +71,9 @@ async function logOutUser() {
 
 function onLoggedIn() {
     emit("loggedIn");
-    // submissionStore.refreshWorkflows()
-    submissionStore.getSubmissions()
 }
 function onLogOut() {
     emit("loggedOut");
-    submissionStore.submissions = []
 }
 </script>
   

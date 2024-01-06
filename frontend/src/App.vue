@@ -31,10 +31,6 @@ const paths = [
     label: "Map",
   },
   {
-    attrs: { to: "/submissions" },
-    label: "Submissions",
-  },
-  {
     attrs: { to: "/api" },
     label: "API",
   },

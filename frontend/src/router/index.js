@@ -30,11 +30,6 @@ const router = createRouter({
       component: HelpView
     },
     {
-      path: '/submissions',
-      name: 'submissions',
-      component: () => import('../views/SubmissionsView.vue')
-    },
-    {
       path: '/auth-redirect',
       name: 'auth-redirect',
       component: () => import('../views/AuthRedirectView.vue'),
