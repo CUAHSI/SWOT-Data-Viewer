@@ -88,8 +88,38 @@ onMounted(() => {
         maxZoom: 19
     }).addTo(map);
 
+    // add lakes layer to map
+    let url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
+    let lakes = L.tileLayer.wms(url, {
+        layers: 0,
+        transparent: 'true',
+        format: 'image/png',
+        minZoom: 0,
+        maxZoom: 18,
+    }).addTo(map);
+
+    // add reaches layer to map
+    url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
+    let reaches = L.tileLayer.wms(url, {
+        layers: 0,
+        transparent: 'true',
+        format: 'image/png',
+        minZoom: 0,
+        maxZoom: 18,
+    }).addTo(map);
+
+    // add nodes layer to map
+    url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
+    let sword_nodes = L.tileLayer.wms(url, {
+        layers: 0,
+        transparent: 'true',
+        format: 'image/png',
+        minZoom: 0,
+        maxZoom: 18,
+    }).addTo(map);
+
     // WMS LAYER
-    let url = 'http://arcgis.cuahsi.org/arcgis/services/US_WBD/HUC_WBD/MapServer/WmsServer?'
+    url = 'http://arcgis.cuahsi.org/arcgis/services/US_WBD/HUC_WBD/MapServer/WmsServer?'
 
     // HUC WMS Naming
     // --------------
@@ -136,8 +166,8 @@ onMounted(() => {
         maxZoom: Map.huc10_max
     }).addTo(map);
 
-    // add USGS gage layer to map
-    url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
+        // add USGS gage layer to map
+        url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
     let gages = L.tileLayer.wms(url, {
         layers: 0,
         transparent: 'true',
@@ -152,13 +182,15 @@ onMounted(() => {
         "HUC 4": huc4,
         "HUC 10": huc10,
         "HUC 12": huc12,
-        "USGS Gages": gages
+        "USGS Gages": gages,
+        "Lakes": lakes,
+        "SWORD Reaches": reaches,
+        "SWORD Nodes": sword_nodes,
     };
 
     // hide the Getting Started dialog
     // $('dialog')[0].open = false;
     //    $('dialog')[0].style['visibility'] = 'hidden';
-
 
 
     // /*
