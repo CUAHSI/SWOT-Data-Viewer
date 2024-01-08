@@ -102,7 +102,7 @@ onMounted(() => {
 
     // add lakes features layer to map
     let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
-    const lakesFeature = esriLeaflet.featureLayer({
+    const lakesFeatures = esriLeaflet.featureLayer({
         url: url,
         simplifyFactor: 0.35,
         precision: 5,
@@ -111,10 +111,10 @@ onMounted(() => {
         // fields: ["FID", "ZIP", "PO_NAME"],
   }).addTo(map);
 
-  lakesFeature.on("click", function (e) {
+  lakesFeatures.on("click", function (e) {
     console.log(e.layer.feature.properties)
     alert(JSON.stringify(e.layer.feature.properties))
-    lakesFeature.setFeatureStyle(e.layer.feature.id, {
+    lakesFeatures.setFeatureStyle(e.layer.feature.id, {
           color: "#9D78D2",
           weight: 3,
           opacity: 1
@@ -137,8 +137,27 @@ onMounted(() => {
         transparent: 'true',
         format: 'image/png',
         minZoom: 0,
-        maxZoom: 18,
+        maxZoom: 9,
     }).addTo(map);
+    url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
+    const reachesFeatures = esriLeaflet.featureLayer({
+        url: url,
+        simplifyFactor: 0.35,
+        precision: 5,
+        minZoom: 9,
+        maxZoom: 18,
+        // fields: ["FID", "ZIP", "PO_NAME"],
+  }).addTo(map);
+
+  reachesFeatures.on("click", function (e) {
+    console.log(e.layer.feature.properties)
+    alert(JSON.stringify(e.layer.feature.properties))
+    reachesFeatures.setFeatureStyle(e.layer.feature.id, {
+          color: "#9D78D2",
+          weight: 3,
+          opacity: 1
+        });
+      });
 
     // add nodes layer to map
     url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
@@ -147,8 +166,28 @@ onMounted(() => {
         transparent: 'true',
         format: 'image/png',
         minZoom: 11,
-        maxZoom: 18,
+        maxZoom: 14,
     }).addTo(map);
+
+    url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
+    const nodesFeatures = esriLeaflet.featureLayer({
+        url: url,
+        simplifyFactor: 0.35,
+        precision: 5,
+        minZoom: 14,
+        maxZoom: 18,
+        fields: ["OBJECTID"],
+  }).addTo(map);
+
+  nodesFeatures.on("click", function (e) {
+    console.log(e.layer.feature.properties)
+    alert(JSON.stringify(e.layer.feature.properties))
+    nodesFeatures.setFeatureStyle(e.layer.feature.id, {
+          color: "#9D78D2",
+          weight: 3,
+          opacity: 1
+        });
+      });
 
     // // WMS LAYER
     // url = 'http://arcgis.cuahsi.org/arcgis/services/US_WBD/HUC_WBD/MapServer/WmsServer?'
@@ -216,9 +255,11 @@ onMounted(() => {
         // "HUC 12": huc12,
         // "USGS Gages": gages,
         "Lakes": lakes,
-        // "Lakes Features": lakesFeature,
+        "Lakes Features": lakesFeatures,
         "SWORD Reaches": reaches,
+        "Reaches Features": reachesFeatures,
         "SWORD Nodes": sword_nodes,
+        "Nodes Features": nodesFeatures,
     };
 
     // hide the Getting Started dialog
