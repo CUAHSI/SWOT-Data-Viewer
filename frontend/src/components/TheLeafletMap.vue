@@ -6,6 +6,8 @@
 import "leaflet/dist/leaflet.css";
 import "leaflet-easybutton/src/easy-button.css";
 import L from 'leaflet'
+import * as esriLeaflet from "esri-leaflet";
+// import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
 import { onMounted } from 'vue'
 import { useMapStore } from '@/stores/map'
@@ -88,14 +90,44 @@ onMounted(() => {
         maxZoom: 19
     }).addTo(map);
 
-    // add lakes layer to map
-    let url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
+//     const trailheads = esriLeaflet.featureLayer({
+//     url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads_Styled/FeatureServer/0"
+//   }).addTo(map);
+  
+//   const stanta = esriLeafletVector.vectorTileLayer(
+//   "https://vectortileservices3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Santa_Monica_Mountains_Parcels_VTL/VectorTileServer"
+// ).addTo(map);
+
+    
+
+    // add lakes features layer to map
+    let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
+    const lakesFeature = esriLeaflet.featureLayer({
+        url: url,
+        simplifyFactor: 0.35,
+        precision: 5,
+        minZoom: 9,
+        maxZoom: 18,
+        // fields: ["FID", "ZIP", "PO_NAME"],
+  }).addTo(map);
+
+  lakesFeature.on("click", function (e) {
+    console.log(e.layer.feature.properties)
+    alert(JSON.stringify(e.layer.feature.properties))
+    lakesFeature.setFeatureStyle(e.layer.feature.id, {
+          color: "#9D78D2",
+          weight: 3,
+          opacity: 1
+        });
+      });
+    
+    url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
     let lakes = L.tileLayer.wms(url, {
         layers: 0,
         transparent: 'true',
         format: 'image/png',
         minZoom: 0,
-        maxZoom: 18,
+        maxZoom: 9,
     }).addTo(map);
 
     // add reaches layer to map
@@ -184,6 +216,7 @@ onMounted(() => {
         // "HUC 12": huc12,
         // "USGS Gages": gages,
         "Lakes": lakes,
+        // "Lakes Features": lakesFeature,
         "SWORD Reaches": reaches,
         "SWORD Nodes": sword_nodes,
     };
@@ -480,6 +513,7 @@ async function getGageInfo(e) {
 }
 
 async function mapClick(e) {
+    return
 
     /*
     * The event handler for map click events
