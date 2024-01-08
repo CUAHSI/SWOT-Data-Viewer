@@ -114,75 +114,75 @@ onMounted(() => {
         layers: 0,
         transparent: 'true',
         format: 'image/png',
-        minZoom: 0,
+        minZoom: 11,
         maxZoom: 18,
     }).addTo(map);
 
-    // WMS LAYER
-    url = 'http://arcgis.cuahsi.org/arcgis/services/US_WBD/HUC_WBD/MapServer/WmsServer?'
+    // // WMS LAYER
+    // url = 'http://arcgis.cuahsi.org/arcgis/services/US_WBD/HUC_WBD/MapServer/WmsServer?'
 
-    // HUC WMS Naming
-    // --------------
-    // HUC12_US: 0
-    // HUC10_US: 1
-    // HUC_4_US: 2
-    // HUC2_US: 3
-    // --------------
+    // // HUC WMS Naming
+    // // --------------
+    // // HUC12_US: 0
+    // // HUC10_US: 1
+    // // HUC_4_US: 2
+    // // HUC2_US: 3
+    // // --------------
 
-    // HUC 2 Layer
-    let huc2 = L.tileLayer.wms(url, {
-        layers: 4,
-        transparent: 'true',
-        format: 'image/png',
-        minZoom: Map.huc2_min,
-        maxZoom: Map.huc2_max
-    }).addTo(map);
+    // // HUC 2 Layer
+    // let huc2 = L.tileLayer.wms(url, {
+    //     layers: 4,
+    //     transparent: 'true',
+    //     format: 'image/png',
+    //     minZoom: Map.huc2_min,
+    //     maxZoom: Map.huc2_max
+    // }).addTo(map);
 
-    // HUC 4 Layer
-    let huc4 = L.tileLayer.wms(url, {
-        layers: 3,
-        transparent: 'true',
-        format: 'image/png',
-        minZoom: Map.huc4_min,
-        maxZoom: Map.huc4_max
-    }).addTo(map);
+    // // HUC 4 Layer
+    // let huc4 = L.tileLayer.wms(url, {
+    //     layers: 3,
+    //     transparent: 'true',
+    //     format: 'image/png',
+    //     minZoom: Map.huc4_min,
+    //     maxZoom: Map.huc4_max
+    // }).addTo(map);
 
 
-    // HUC 12 Layer
-    let huc12 = L.tileLayer.wms(url, {
-        layers: 2,
-        transparent: 'true',
-        format: 'image/png',
-        minZoom: Map.huc12_min,
-        maxZoom: Map.huc12_max
-    }).addTo(map);
+    // // HUC 12 Layer
+    // let huc12 = L.tileLayer.wms(url, {
+    //     layers: 2,
+    //     transparent: 'true',
+    //     format: 'image/png',
+    //     minZoom: Map.huc12_min,
+    //     maxZoom: Map.huc12_max
+    // }).addTo(map);
 
-    // HUC 10 Layer
-    let huc10 = L.tileLayer.wms(url, {
-        layers: 1,
-        transparent: 'true',
-        format: 'image/png',
-        minZoom: Map.huc10_min,
-        maxZoom: Map.huc10_max
-    }).addTo(map);
+    // // HUC 10 Layer
+    // let huc10 = L.tileLayer.wms(url, {
+    //     layers: 1,
+    //     transparent: 'true',
+    //     format: 'image/png',
+    //     minZoom: Map.huc10_min,
+    //     maxZoom: Map.huc10_max
+    // }).addTo(map);
 
-        // add USGS gage layer to map
-        url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
-    let gages = L.tileLayer.wms(url, {
-        layers: 0,
-        transparent: 'true',
-        format: 'image/png',
-        minZoom: 9,
-        maxZoom: 18,
-    }).addTo(map);
+    //     // add USGS gage layer to map
+    //     url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
+    // let gages = L.tileLayer.wms(url, {
+    //     layers: 0,
+    //     transparent: 'true',
+    //     format: 'image/png',
+    //     minZoom: 9,
+    //     maxZoom: 18,
+    // }).addTo(map);
 
     // layer toggling
     let mixed = {
-        "HUC 2": huc2,
-        "HUC 4": huc4,
-        "HUC 10": huc10,
-        "HUC 12": huc12,
-        "USGS Gages": gages,
+        // "HUC 2": huc2,
+        // "HUC 4": huc4,
+        // "HUC 10": huc10,
+        // "HUC 12": huc12,
+        // "USGS Gages": gages,
         "Lakes": lakes,
         "SWORD Reaches": reaches,
         "SWORD Nodes": sword_nodes,
