@@ -21,10 +21,10 @@ FROM caddy:2.7.6-alpine as prod
 # RUN set -x \
 #   && apk add gettext libintl
 
-COPY frontend/docker-entrypoint.sh /usr/local/bin/
+COPY docker-entrypoint.sh /usr/local/bin/
 
 # Copy config
-COPY frontend/caddy.docker.json /etc/caddy/caddy.json
+COPY caddy.docker.json /etc/caddy/caddy.json
 
 # Copy source dist
 COPY --from=build-stage /app/dist /srv
