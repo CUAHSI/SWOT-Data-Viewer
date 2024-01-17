@@ -10,4 +10,4 @@ RUN mkdir /app
 COPY --from=build-stage /app/dist /app
 # COPY --from=build-stage /.env .env
 COPY --from=build-stage /app/nginx.conf /etc/nginx/nginx.conf
-EXPOSE 5003
+EXPOSE 8080

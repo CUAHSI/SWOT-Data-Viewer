@@ -3,4 +3,4 @@
 npm i @vue/cli-service
 npm install
 npm run build
-npm run serve -- --port 5003
+npm run serve -- --port 8080
