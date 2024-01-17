@@ -1,7 +1,7 @@
 FROM node:20.9.0 as build-stage
 WORKDIR /app
 # COPY .env ../.env
-COPY ./frontend .
+COPY ./ .
 RUN npm update
 RUN npm run build
 
