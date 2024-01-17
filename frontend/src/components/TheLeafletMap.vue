@@ -176,7 +176,8 @@ onMounted(() => {
         precision: 5,
         minZoom: 14,
         maxZoom: 18,
-        fields: ["OBJECTID"],
+        // fields: ["OBJECTID"],
+        // TODO: need node_id
   }).addTo(map);
 
   nodesFeatures.on("click", function (e) {
