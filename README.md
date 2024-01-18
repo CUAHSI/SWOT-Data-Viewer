@@ -7,20 +7,21 @@ Data viewing, discovery, and access interface for the Surface Water Open Topogra
 ```console
 git clone https://github.com/CUAHSI/SWOT-Data-Viewer.git
 cd SWOT-Data-Viewer
-git checkout main
+git checkout develop
 ```
 
-### API for local development
+### Full stack running locally
 ```console
 cp .env.template .env
 make build
 make up
 ```
-The API will be available at http://0.0.0.0:8000
+The API will be available at http://0.0.0.0:8000 
+The Frontend will be available at https://localhost (you will have to add an exception for the self-signed cert)
 
 ### Frontend for local development
 ```console
-cp .env.template .env  #if you haven't already. Replace `https://localhost` with `https://localhost:5173`
+cp .env.template .env  #if you haven't already. Replace `https://localhost` with `http://localhost:5173` (or whatever port is used by Vite)
 cd frontend
 npm install
 npm run dev
