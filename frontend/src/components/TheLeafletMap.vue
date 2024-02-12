@@ -90,15 +90,15 @@ onMounted(() => {
         maxZoom: 19
     }).addTo(map);
 
-//     const trailheads = esriLeaflet.featureLayer({
-//     url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads_Styled/FeatureServer/0"
-//   }).addTo(map);
-  
-//   const stanta = esriLeafletVector.vectorTileLayer(
-//   "https://vectortileservices3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Santa_Monica_Mountains_Parcels_VTL/VectorTileServer"
-// ).addTo(map);
+    //     const trailheads = esriLeaflet.featureLayer({
+    //     url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads_Styled/FeatureServer/0"
+    //   }).addTo(map);
 
-    
+    //   const stanta = esriLeafletVector.vectorTileLayer(
+    //   "https://vectortileservices3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Santa_Monica_Mountains_Parcels_VTL/VectorTileServer"
+    // ).addTo(map);
+
+
 
     // add lakes features layer to map
     let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
@@ -109,18 +109,18 @@ onMounted(() => {
         minZoom: 9,
         maxZoom: 18,
         // fields: ["FID", "ZIP", "PO_NAME"],
-  }).addTo(map);
+    }).addTo(map);
 
-  lakesFeatures.on("click", function (e) {
-    console.log(e.layer.feature.properties)
-    alert(JSON.stringify(e.layer.feature.properties))
-    lakesFeatures.setFeatureStyle(e.layer.feature.id, {
-          color: "#9D78D2",
-          weight: 3,
-          opacity: 1
+    lakesFeatures.on("click", function (e) {
+        console.log(e.layer.feature.properties)
+        alert(JSON.stringify(e.layer.feature.properties))
+        lakesFeatures.setFeatureStyle(e.layer.feature.id, {
+            color: "#9D78D2",
+            weight: 3,
+            opacity: 1
         });
-      });
-    
+    });
+
     url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
     let lakes = L.tileLayer.wms(url, {
         layers: 0,
@@ -147,7 +147,7 @@ onMounted(() => {
         minZoom: 9,
         maxZoom: 18,
         // fields: ["FID", "ZIP", "PO_NAME"],
-  }).addTo(map);
+    }).addTo(map);
 
     reachesFeatures.on("click", async function (e) {
         console.log(e.layer.feature.properties)
@@ -207,17 +207,17 @@ onMounted(() => {
         maxZoom: 18,
         // fields: ["OBJECTID"],
         // TODO: need node_id
-  }).addTo(map);
+    }).addTo(map);
 
-  nodesFeatures.on("click", function (e) {
-    console.log(e.layer.feature.properties)
-    alert(JSON.stringify(e.layer.feature.properties))
-    nodesFeatures.setFeatureStyle(e.layer.feature.id, {
-          color: "#9D78D2",
-          weight: 3,
-          opacity: 1
+    nodesFeatures.on("click", function (e) {
+        console.log(e.layer.feature.properties)
+        alert(JSON.stringify(e.layer.feature.properties))
+        nodesFeatures.setFeatureStyle(e.layer.feature.id, {
+            color: "#9D78D2",
+            weight: 3,
+            opacity: 1
         });
-      });
+    });
 
     // // WMS LAYER
     // url = 'http://arcgis.cuahsi.org/arcgis/services/US_WBD/HUC_WBD/MapServer/WmsServer?'
