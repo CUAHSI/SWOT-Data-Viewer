@@ -149,15 +149,44 @@ onMounted(() => {
         // fields: ["FID", "ZIP", "PO_NAME"],
   }).addTo(map);
 
-  reachesFeatures.on("click", function (e) {
-    console.log(e.layer.feature.properties)
-    alert(JSON.stringify(e.layer.feature.properties))
-    reachesFeatures.setFeatureStyle(e.layer.feature.id, {
-          color: "#9D78D2",
-          weight: 3,
-          opacity: 1
+    reachesFeatures.on("click", async function (e) {
+        console.log(e.layer.feature.properties)
+        // alert(JSON.stringify(e.layer.feature.properties))
+        reachesFeatures.setFeatureStyle(e.layer.feature.id, {
+            color: "#9D78D2",
+            weight: 3,
+            opacity: 1
         });
-      });
+        const url = 'http://localhost:8000/hydrocron/v1/timeseries'
+        // const url = 'https://soto.podaac.uat.earthdatacloud.nasa.gov/hydrocron/v1/timeseries'
+
+        // TODO: need to get the reach_id from the feature properties
+        // for now, just hardcoding it with a reach that has known data in the beta prevalidated data
+        // '?feature=Reach&feature_id=72390300011&start_time=2023-06-01T00:00:00Z&end_time=2023-10-30T00:00:00Z&output=geojson&fields=reach_id,time_str,wse,geometry'
+        // 'http://localhost:9000/2015-03-31/functions/function/invocations'
+        const params = {
+            "feature": "Reach",
+            "feature_id": "72390300011",
+            "start_time": "2023-06-01T00:00:00Z",
+            "end_time": "2023-10-30T00:00:00Z",
+            "output": "geojson",
+            "fields": "feature_id,time_str,wse,geometry"
+        }
+        const searchParams = new URLSearchParams(params)
+        let query = url + '?' + searchParams.toString()
+        let result = await fetch(query, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        console.log(result)
+        let json = await result.json()
+        console.log("json", json)
+        console.log("features", json.results.geojson.features)
+        alert(JSON.stringify(json))
+    });
 
     // add nodes layer to map
     url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
