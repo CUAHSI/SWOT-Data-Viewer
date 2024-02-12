@@ -13,6 +13,7 @@ import { onMounted } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useModelsStore } from '@/stores/models'
 import { useAlertStore } from '@/stores/alerts'
+import { API_BASE } from '@/constants'
 
 const mapStore = useMapStore()
 const modelsStore = useModelsStore();
@@ -157,7 +158,7 @@ onMounted(() => {
             weight: 3,
             opacity: 1
         });
-        const url = 'http://localhost:8000/hydrocron/v1/timeseries'
+        const url = `${API_BASE}/hydrocron/v1/timeseries`
         // const url = 'https://soto.podaac.uat.earthdatacloud.nasa.gov/hydrocron/v1/timeseries'
 
         // TODO: need to get the reach_id from the feature properties
