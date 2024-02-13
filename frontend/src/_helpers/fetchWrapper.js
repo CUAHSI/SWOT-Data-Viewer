@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/stores/auth'
-import { API_BASE } from '@/constants'
+import { APP_API_URL } from '@/constants'
 import { useAlertStore } from '@/stores/alerts'
 
 export const fetchWrapper = {
@@ -44,7 +44,7 @@ function authHeader(url) {
   const authStore = useAuthStore()
   const jwt = authStore.getToken()
   const isLoggedIn = !!jwt
-  const isApiUrl = url.startsWith(API_BASE)
+  const isApiUrl = url.startsWith(APP_API_URL)
   if (isLoggedIn && isApiUrl) {
     return { Authorization: `Bearer ${jwt}` }
   } else {
