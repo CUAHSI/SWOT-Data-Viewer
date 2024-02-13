@@ -171,7 +171,7 @@ onMounted(() => {
             "start_time": "2023-06-01T00:00:00Z",
             "end_time": "2023-10-30T00:00:00Z",
             "output": "geojson",
-            "fields": "feature_id,time_str,wse,geometry"
+            "fields": "feature_id,time_str,wse"
         }
         const searchParams = new URLSearchParams(params)
         let query = url + '?' + searchParams.toString()
