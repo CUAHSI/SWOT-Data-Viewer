@@ -1,6 +1,6 @@
 <template>
     <div id="mapContainer"></div>
-    <TheBottomSheet :sheetObject="swotData" />
+    <TheBottomSheet :sheetObject="swotData" :show="showSheet" />
 </template>
   
 <script setup>
@@ -22,6 +22,7 @@ const modelsStore = useModelsStore();
 const alertStore = useAlertStore();
 
 let swotData = ref(null)
+let showSheet = ref(false)
 
 const modelAction = modelsStore.$onAction(
     ({
@@ -191,19 +192,26 @@ onMounted(() => {
         }
         const searchParams = new URLSearchParams(params)
         let query = url + '?' + searchParams.toString()
-        let result = await fetch(query, {
-            method: 'GET',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-        console.log(result)
-        let json = await result.json()
-        swotData.value = json
-        console.log("json", json)
-        console.log("features", json.results.geojson.features)
-        alert(JSON.stringify(json))
+        showSheet.value = true
+        swotData.value = `Loading data for reach ${e.layer.feature.properties.reach_id} from ${url}`
+        try {
+            let result = await fetch(query, {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            })
+            let json = await result.json()
+            swotData.value = json
+            console.log(result)
+            console.log("json", json)
+            console.log("features", json.results.geojson.features)
+        } catch (e) {
+            console.error("Error fetching data", e)
+            alert(`Error fetching swot data: ${e}`)
+            showSheet.value = false
+        }
     });
 
     // add nodes layer to map

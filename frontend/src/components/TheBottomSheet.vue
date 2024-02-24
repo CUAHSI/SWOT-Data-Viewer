@@ -1,8 +1,8 @@
 <template>
-  <v-bottom-sheet v-model="show" inset>
+  <v-bottom-sheet v-model="props.show" inset>
     <v-card class="text-center" height="100%">
       <v-card-text>
-        <v-btn @click="show = null">
+        <v-btn @click="props.show = null">
           close
         </v-btn>
 
@@ -18,11 +18,8 @@
   </v-bottom-sheet>
 </template>
 <script setup>
-import { ref } from 'vue'
 import ChartVis from "@/components/ChartVis.vue";
-defineProps(['sheetObject'])
-
-let show = ref(true)
+let props = defineProps(['sheetObject', 'show'])
 
 const data = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
