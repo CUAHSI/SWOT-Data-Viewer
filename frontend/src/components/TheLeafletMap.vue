@@ -1,5 +1,6 @@
 <template>
     <div id="mapContainer"></div>
+    <TheBottomSheet :sheetObject="swotData" />
 </template>
   
 <script setup>
@@ -9,15 +10,18 @@ import L from 'leaflet'
 import * as esriLeaflet from "esri-leaflet";
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useModelsStore } from '@/stores/models'
 import { useAlertStore } from '@/stores/alerts'
 import { APP_API_URL } from '@/constants'
+import TheBottomSheet from "./TheBottomSheet.vue";
 
 const mapStore = useMapStore()
 const modelsStore = useModelsStore();
 const alertStore = useAlertStore();
+
+let swotData = ref(null)
 
 const modelAction = modelsStore.$onAction(
     ({
@@ -151,8 +155,20 @@ onMounted(() => {
     }).addTo(map);
 
     reachesFeatures.on("click", async function (e) {
-        console.log(e.layer.feature.properties)
-        // alert(JSON.stringify(e.layer.feature.properties))
+        const popup = L.popup();
+        const content = `
+        <h3>${e.layer.feature.properties.river_name}</h3>
+        <h4>Reach ID: ${e.layer.feature.properties.reach_id}</h4>
+        <p>
+            <ul>
+                <li>SWORD Width: ${e.layer.feature.properties.width}</li>
+                <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
+                <li>SWORD Slope: ${e.layer.feature.properties.slope}</li>
+                <li>SWOT Orbit: ${e.layer.feature.properties.swot_orbit}</li>
+            </ul>
+        </p>
+        `;
+        popup.setLatLng(e.latlng).setContent(content).openOn(map);
         reachesFeatures.setFeatureStyle(e.layer.feature.id, {
             color: "#9D78D2",
             weight: 3,
@@ -184,6 +200,7 @@ onMounted(() => {
         })
         console.log(result)
         let json = await result.json()
+        swotData.value = json
         console.log("json", json)
         console.log("features", json.results.geojson.features)
         alert(JSON.stringify(json))
