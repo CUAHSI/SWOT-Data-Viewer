@@ -193,7 +193,7 @@ onMounted(() => {
         const searchParams = new URLSearchParams(params)
         let query = url + '?' + searchParams.toString()
         showSheet.value = true
-        swotData.value = `Loading data for reach ${e.layer.feature.properties.reach_id} from ${url}`
+        swotData.value = `Swot data for reach ${e.layer.feature.properties.reach_id} from ${url} with params ${searchParams.toString()}`
         try {
             let result = await fetch(query, {
                 method: 'GET',
@@ -209,7 +209,13 @@ onMounted(() => {
             console.log("features", json.results.geojson.features)
         } catch (e) {
             console.error("Error fetching data", e)
-            alert(`Error fetching swot data: ${e}`)
+            alertStore.displayAlert({
+                title: 'Error fetching SWOT data',
+                text: `Error while fetching SWOT data from ${url}: ${e}`,
+                type: 'error',
+                closable: true,
+                duration: 3
+            })
             showSheet.value = false
         }
     });
