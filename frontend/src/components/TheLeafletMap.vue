@@ -1,6 +1,5 @@
 <template>
     <div id="mapContainer"></div>
-    <TheBottomSheet :sheetObject="swotData" :show="showSheet" />
 </template>
   
 <script setup>
@@ -12,45 +11,15 @@ import * as esriLeaflet from "esri-leaflet";
 import "leaflet-easybutton/src/easy-button";
 import { onMounted, ref } from 'vue'
 import { useMapStore } from '@/stores/map'
-import { useModelsStore } from '@/stores/models'
+import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { APP_API_URL } from '@/constants'
-import TheBottomSheet from "./TheBottomSheet.vue";
 
 const mapStore = useMapStore()
-const modelsStore = useModelsStore();
+const featuresStore = useFeaturesStore();
 const alertStore = useAlertStore();
 
-let swotData = ref(null)
-let showSheet = ref(false)
 
-const modelAction = modelsStore.$onAction(
-    ({
-        name, // name of the action
-        store, // store instance, same as `someStore`
-        args, // array of parameters passed to the action
-        after, // hook after the action returns or resolves
-        onError, // hook if the action throws or rejects
-    }) => {
-        // this will trigger if the action succeeds and after it has fully run.
-        // it waits for any returned promised
-        after((result) => {
-            console.log(store.selectedModel.input)
-            if (store.selectedModel.input != "bbox") {
-                removeBbox()
-            } else {
-                updateMapBBox()
-            }
-        })
-
-        // this will trigger if the action throws or returns a promise that rejects
-        onError((error) => {
-            console.warn(
-                `Failed "${name}" after ${Date.now() - startTime}ms.\nError: ${error}.`
-            )
-        })
-    }
-)
 
 // manually remove the listener
 // modelAction()
@@ -96,13 +65,6 @@ onMounted(() => {
         maxZoom: 19
     }).addTo(map);
 
-    //     const trailheads = esriLeaflet.featureLayer({
-    //     url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads_Styled/FeatureServer/0"
-    //   }).addTo(map);
-
-    //   const stanta = esriLeafletVector.vectorTileLayer(
-    //   "https://vectortileservices3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Santa_Monica_Mountains_Parcels_VTL/VectorTileServer"
-    // ).addTo(map);
 
 
 
@@ -192,8 +154,6 @@ onMounted(() => {
         }
         const searchParams = new URLSearchParams(params)
         let query = url + '?' + searchParams.toString()
-        showSheet.value = true
-        swotData.value = `Swot data for reach ${e.layer.feature.properties.reach_id} from ${url} with params ${searchParams.toString()}`
         try {
             let result = await fetch(query, {
                 method: 'GET',
@@ -203,10 +163,10 @@ onMounted(() => {
                 },
             })
             let json = await result.json()
-            swotData.value = json
             console.log(result)
             console.log("json", json)
             console.log("features", json.results.geojson.features)
+            featuresStore.selectFeature(json)
         } catch (e) {
             console.error("Error fetching data", e)
             alertStore.displayAlert({
@@ -216,7 +176,6 @@ onMounted(() => {
                 closable: true,
                 duration: 3
             })
-            showSheet.value = false
         }
     });
 
@@ -1137,9 +1096,6 @@ function updateMapBBox() {
     // save the layer
     Map.huclayers['BBOX'] = json_polygon;
 
-    if (modelsStore.selectedModel.input == "bbox") {
-        json_polygon.addTo(Map.map);
-    }
 
     return bbox.is_valid
 }
