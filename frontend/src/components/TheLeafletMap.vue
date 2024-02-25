@@ -81,7 +81,19 @@ onMounted(() => {
 
     lakesFeatures.on("click", function (e) {
         console.log(e.layer.feature.properties)
-        alert(JSON.stringify(e.layer.feature.properties))
+        const popup = L.popup();
+        const content = `
+        <h3>${e.layer.feature.properties.names}</h3>
+        <h4>Lake ID: ${e.layer.feature.properties.lake_id}</h4>
+        <p>
+            <ul>
+                <li>SWORD Max Area: ${e.layer.feature.properties.max_area}</li>
+                <li>SWORD Basin: ${e.layer.feature.properties.basin_id}</li>
+            </ul>
+        </p>
+        `;
+        popup.setLatLng(e.latlng).setContent(content).openOn(map);
+        
         lakesFeatures.setFeatureStyle(e.layer.feature.id, {
             color: "#9D78D2",
             weight: 3,
@@ -118,20 +130,7 @@ onMounted(() => {
     }).addTo(map);
 
     reachesFeatures.on("click", async function (e) {
-        const popup = L.popup();
-        const content = `
-        <h3>${e.layer.feature.properties.river_name}</h3>
-        <h4>Reach ID: ${e.layer.feature.properties.reach_id}</h4>
-        <p>
-            <ul>
-                <li>SWORD Width: ${e.layer.feature.properties.width}</li>
-                <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
-                <li>SWORD Slope: ${e.layer.feature.properties.slope}</li>
-                <li>SWOT Orbit: ${e.layer.feature.properties.swot_orbit}</li>
-            </ul>
-        </p>
-        `;
-        popup.setLatLng(e.latlng).setContent(content).openOn(map);
+        // TODO: set featurestyle base on the selected feature store
         reachesFeatures.setFeatureStyle(e.layer.feature.id, {
             color: "#9D78D2",
             weight: 3,
@@ -203,13 +202,20 @@ onMounted(() => {
     }).addTo(map);
 
     nodesFeatures.on("click", function (e) {
-        console.log(e.layer.feature.properties)
-        alert(JSON.stringify(e.layer.feature.properties))
-        nodesFeatures.setFeatureStyle(e.layer.feature.id, {
-            color: "#9D78D2",
-            weight: 3,
-            opacity: 1
-        });
+        const popup = L.popup();
+        const content = `
+        <h3>${e.layer.feature.properties.river_name}</h3>
+        <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
+        <p>
+            <ul>
+                <li>SWORD Width: ${e.layer.feature.properties.width}</li>
+                <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
+                <li>SWORD Sinuosity: ${e.layer.feature.properties.sinuosity}</li>
+                <li>SWOT Dist_out: ${e.layer.feature.properties.dist_out}</li>
+            </ul>
+        </p>
+        `;
+        popup.setLatLng(e.latlng).setContent(content).openOn(map);
     });
 
     // // WMS LAYER
