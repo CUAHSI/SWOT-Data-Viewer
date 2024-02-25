@@ -1,6 +1,6 @@
 <template>
   <v-theme-provider theme="light" with-background>
-    <Line :data="props.data" :options="props.options" />
+    <Line :data="props.data" :options="options" />
 </v-theme-provider>
 </template>
   
@@ -18,5 +18,10 @@ import {
 import { Line } from 'vue-chartjs'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
-const props = defineProps(['data', 'options'])
+const props = defineProps(['data'])
+
+const options = {
+  responsive: true,
+  maintainAspectRatio: false
+}
 </script>

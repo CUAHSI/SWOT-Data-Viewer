@@ -163,6 +163,8 @@ onMounted(() => {
                 },
             })
             let json = await result.json()
+            json.params = params
+            json.sword = e.layer.feature.properties
             console.log(result)
             console.log("json", json)
             console.log("features", json.results.geojson.features)
