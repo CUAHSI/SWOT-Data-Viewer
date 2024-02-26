@@ -37,6 +37,9 @@ const queryHydroCron = async (swordFeature = null) => {
     console.log('fake params', params)
   }
   let json = await fetchHydroCronData(url, params, swordFeature)
+  if (json == null) {
+    return
+  }
   if (featuresStore.shouldFakeData) {
     let fakeData = buildFakeData([...featuresStore.selectedFeatures, json])
     // update the visData before selecting the feature otherwise it will show blank
@@ -65,7 +68,6 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
     console.log(result)
     console.log('json', json)
     let features = json.results.geojson.features
-    console.log('features', features)
     if (features.length > 0) {
       return json
     }else{
