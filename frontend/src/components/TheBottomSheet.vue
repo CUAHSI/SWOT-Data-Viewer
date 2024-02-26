@@ -16,9 +16,6 @@
         <v-col v-for="(result, i) in featureStore.selectedFeatures" :key="i" cols="auto">
           <v-card class="mx-auto" variant="elevated" outlined>
             <v-card-item>
-              <div class="text-overline mb-1">
-                {{ variant }}
-              </div>
               <v-card-title>{{ result.sword.river_name }}</v-card-title>
               <v-card-subtitle>
                 {{ result.sword.reach_id }}
