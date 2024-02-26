@@ -9,16 +9,14 @@ import L from 'leaflet'
 import * as esriLeaflet from "esri-leaflet";
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import { useMapStore } from '@/stores/map'
-import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
-import { APP_API_URL } from '@/constants'
 
 const mapStore = useMapStore()
-const featuresStore = useFeaturesStore();
 const alertStore = useAlertStore();
 
+import { queryHydroCron } from "../_helpers/hydroCron";
 
 
 // manually remove the listener
@@ -136,48 +134,7 @@ onMounted(() => {
             weight: 3,
             opacity: 1
         });
-        const url = `${APP_API_URL}/hydrocron/v1/timeseries`
-        // const url = 'https://soto.podaac.uat.earthdatacloud.nasa.gov/hydrocron/v1/timeseries'
-
-        // TODO: need to get the reach_id from the feature properties
-        // for now, just hardcoding it with a reach that has known data in the beta prevalidated data
-        // '?feature=Reach&feature_id=72390300011&start_time=2023-06-01T00:00:00Z&end_time=2023-10-30T00:00:00Z&output=geojson&fields=reach_id,time_str,wse,geometry'
-        // 'http://localhost:9000/2015-03-31/functions/function/invocations'
-        const params = {
-            "feature": "Reach",
-            "feature_id": "72390300011",
-            "start_time": "2023-06-01T00:00:00Z",
-            "end_time": "2023-10-30T00:00:00Z",
-            "output": "geojson",
-            "fields": "feature_id,time_str,wse"
-        }
-        const searchParams = new URLSearchParams(params)
-        let query = url + '?' + searchParams.toString()
-        try {
-            let result = await fetch(query, {
-                method: 'GET',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            })
-            let json = await result.json()
-            json.params = params
-            json.sword = e.layer.feature.properties
-            console.log(result)
-            console.log("json", json)
-            console.log("features", json.results.geojson.features)
-            featuresStore.selectFeature(json)
-        } catch (e) {
-            console.error("Error fetching data", e)
-            alertStore.displayAlert({
-                title: 'Error fetching SWOT data',
-                text: `Error while fetching SWOT data from ${url}: ${e}`,
-                type: 'error',
-                closable: true,
-                duration: 3
-            })
-        }
+        queryHydroCron(e.layer.feature)
     });
 
     // add nodes layer to map

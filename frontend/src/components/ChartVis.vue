@@ -1,6 +1,6 @@
 <template>
   <v-theme-provider theme="light" with-background>
-    <Line :data="data" :options="options" />
+    <Line :data="featureStore.visData" :options="options" />
   </v-theme-provider>
 </template>
   
@@ -16,21 +16,9 @@ import {
   Legend
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
-import { buildFakeData } from '@/_helpers/fakeData'
 
 const featureStore = useFeaturesStore()
-let shouldFakeData = featureStore.shouldFakeData
-
-let data = ref({})
-
-if (shouldFakeData) {
-  data.value = buildFakeData(featureStore.selectedFeatures)
-}else{
-  // TODO what if not faking data?
-  data.value = {}
-}
 
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
