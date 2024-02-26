@@ -8,7 +8,7 @@
         <h3>Selected Reaches</h3>
       </v-card-title>
       <v-card-text>
-          <ChartVis :data="data" />
+          <ChartVis />
       </v-card-text>
     </v-card>
     <v-card>
@@ -80,39 +80,13 @@ const featureStore = useFeaturesStore()
 let selectedFeatures = featureStore.selectedFeatures
 
 let showSheet = ref(false)
-let data = ref({})
 
 // if the sheetObject changes, show the sheet
 watch(selectedFeatures, async (newFeatures) => {
   // show the sheet if the new features is not empty
   if (newFeatures !== null && newFeatures.length > 0) {
-
-    data.value = {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-      datasets: getFakeDatasets()
-    }
     showSheet.value = true
   }
 })
 
-const getSingleFakeDataset = () => {
-  return Array.from({ length: 7 }, () => Math.floor(Math.random() * 100))
-}
-
-const dynamicColors = function () {
-  var r = Math.floor(Math.random() * 255);
-  var g = Math.floor(Math.random() * 255);
-  var b = Math.floor(Math.random() * 255);
-  return "rgb(" + r + "," + g + "," + b + ")";
-};
-
-const getFakeDatasets = () => {
-  return selectedFeatures.map((feature) => {
-    return {
-      label: feature.sword.river_name,
-      data: getSingleFakeDataset(),
-      borderColor: dynamicColors(),
-    }
-  })
-}
 </script>
