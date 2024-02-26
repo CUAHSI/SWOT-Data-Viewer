@@ -8,7 +8,7 @@ export const useFeaturesStore = defineStore('features', () => {
   function selectFeature(feature) {
     console.log('Feature selected: ' + feature)
     this.selectedFeatures.push(feature)
-}
+  }
 
   return { selectedFeatures, selectFeature, shouldFakeData }
 })

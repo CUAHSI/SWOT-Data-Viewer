@@ -25,9 +25,11 @@ let shouldFakeData = featureStore.shouldFakeData
 
 let data = ref({})
 
-// TODO what if not faking data?
 if (shouldFakeData) {
   data.value = buildFakeData(featureStore.selectedFeatures)
+}else{
+  // TODO what if not faking data?
+  data.value = {}
 }
 
 
