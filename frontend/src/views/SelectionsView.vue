@@ -1,10 +1,8 @@
 <template>
   <h2 class="ma-2 text-center">Selected Features</h2>
+  <v-container>
   <LineChart :data="featureStore.visData" />
-  <v-row>
-    <v-col v-for="(feature, i) in featureStore.selectedFeatures" :key="i" cols="auto">
-    </v-col>
-  </v-row>
+  </v-container>
 
 
   <v-container v-if="featureStore.selectedFeatures.length > 0">
