@@ -5,20 +5,21 @@
     </v-btn>
     <v-card class="text-center" height="100%">
       <v-card-title>
-        <h3>Selected Reaches</h3>
+        <h3>Feature</h3>
       </v-card-title>
       <v-card-text>
+        <!-- TODO: single feature plot -->
           <ChartVis />
       </v-card-text>
     </v-card>
     <v-card>
       <v-row>
-        <v-col v-for="(result, i) in featureStore.selectedFeatures" :key="i" cols="auto">
+        <v-col cols="auto">
           <v-card class="mx-auto" variant="elevated" outlined>
             <v-card-item>
-              <v-card-title>{{ result.sword.river_name }}</v-card-title>
+              <v-card-title>{{ featureStore.activeFeature.sword.river_name }}</v-card-title>
               <v-card-subtitle>
-                {{ result.sword.reach_id }}
+                {{ featureStore.activeFeature.sword.reach_id }}
               </v-card-subtitle>
             </v-card-item>
 
@@ -29,8 +30,8 @@
                     <div>SWORD Info</div>
                   </v-expansion-panel-title>
                   <v-expansion-panel-text>
-                    <div v-for="(value, key, i) in result.sword" :key="i">
-                      <v-divider v-if="i < Object.keys(result.sword).length - 1" />
+                    <div v-for="(value, key, i) in featureStore.activeFeature.sword" :key="i">
+                      <v-divider v-if="i < Object.keys(featureStore.activeFeature.sword).length - 1" />
                       <div>{{ key }}: {{ value }}</div>
                     </div>
                   </v-expansion-panel-text>
@@ -40,20 +41,20 @@
                     <div>HydroCron Query</div>
                   </v-expansion-panel-title>
                   <v-expansion-panel-text>
-                    <div v-for="(value, key, i) in result.params" :key="i">
-                      <v-divider v-if="i < Object.keys(result.params).length - 1" />
+                    <div v-for="(value, key, i) in featureStore.activeFeature.params" :key="i">
+                      <v-divider v-if="i < Object.keys(featureStore.activeFeature.params).length - 1" />
                       <div>{{ key }}: {{ value }}</div>
                     </div>
                   </v-expansion-panel-text>
                 </v-expansion-panel>
                 <v-expansion-panel>
                   <v-expansion-panel-title>
-                    <div>Response ({{ result.hits }} hits)</div>
+                    <div>SWOT Data ({{ featureStore.activeFeature.hits }} points)</div>
                   </v-expansion-panel-title>
                   <v-expansion-panel-text>
-                    <div v-for="feature in result.results.geojson.features" :key="feature.index">
-                      <div v-for="(value, key, i) in feature.properties" :key="i">
-                        <v-divider v-if="i < Object.keys(feature.properties).length - 1" />
+                    <div v-for="swotFeature in featureStore.activeFeature.results.geojson.features" :key="swotFeature.index">
+                      <div v-for="(value, key, i) in swotFeature.properties" :key="i">
+                        <v-divider v-if="i < Object.keys(swotFeature.properties).length - 1" />
                         <div>{{ key }}: {{ value }}</div>
                       </div>
                     </div>
@@ -69,19 +70,16 @@
 </template>
 <script setup>
 import ChartVis from "@/components/ChartVis.vue";
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 
 const featureStore = useFeaturesStore()
 
-let selectedFeatures = featureStore.selectedFeatures
-
 let showSheet = ref(false)
 
-// if the sheetObject changes, show the sheet
-watch(selectedFeatures, async (newFeatures) => {
-  // show the sheet if the new features is not empty
-  if (newFeatures !== null && newFeatures.length > 0) {
+// subscribe to the active feature
+featureStore.$subscribe((mutation, state) => {
+  if (state.activeFeatureFeature !== null) {
     showSheet.value = true
   }
 })
