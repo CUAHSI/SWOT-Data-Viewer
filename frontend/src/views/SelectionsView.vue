@@ -1,11 +1,20 @@
 <template>
   <h2 class="ma-2 text-center">Selected Features</h2>
-  <v-container>
-  <LineChart :data="featureStore.visData" />
+  <v-container v-if="hasFeatures">
+    <LineChart :data="featureStore.visData" />
+  </v-container>
+
+  <v-container v-if="!hasFeatures">
+    <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
+      <span>
+        You don't have any selections yet.
+        Use the <router-link :to="{ path: `/` }">Map</router-link> to make selections.
+      </span>
+    </v-sheet>
   </v-container>
 
 
-  <v-container v-if="featureStore.selectedFeatures.length > 0">
+  <v-container v-if="hasFeatures">
     <v-tabs v-model="tab" align-tabs="center">
       <v-tab :value="1">Table View</v-tab>
       <v-tab :value="2">Card View</v-tab>
@@ -114,15 +123,6 @@
     </v-window>
   </v-container>
 
-  <v-container v-if="featureStore.selectedFeatures.length == 0">
-    <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
-      <span>
-        You don't have any selections yet.
-        Use the <router-link :to="{ path: `/` }">Map</router-link> to make selections.
-      </span>
-    </v-sheet>
-  </v-container>
-
   <v-bottom-sheet v-model="sheetText" inset>
     <v-card class="text-center" height="100%">
       <v-card-text>
@@ -148,6 +148,7 @@ import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { mdiDownload, mdiSatelliteVariant, mdiSword } from '@mdi/js'
 import { useAlertStore } from '@/stores/alerts'
+import { computed } from 'vue';
 
 const featureStore = useFeaturesStore();
 const alertStore = useAlertStore();
@@ -155,6 +156,8 @@ const alertStore = useAlertStore();
 let sheetText = ref(null)
 
 let tab = ref(1)
+
+let hasFeatures = computed(() => featureStore.selectedFeatures.length > 0)
 
 const headers = [
   { title: 'Feature type', key: 'feature_type', value: item => item.params.feature },
