@@ -149,8 +149,10 @@ import { useFeaturesStore } from '../stores/features';
 import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { mdiDownload, mdiSatelliteVariant, mdiSword } from '@mdi/js'
+import { useAlertStore } from '@/stores/alerts'
 
 const featureStore = useFeaturesStore();
+const alertStore = useAlertStore();
 
 let sheetText = ref(null)
 
@@ -183,6 +185,13 @@ async function downloadArtifact(feature) {
   // document.body.removeChild(link);
   // TODO: implement download
   console.warn('Download not implemented')
+  alertStore.displayAlert({
+    title: 'Download',
+    text: 'Download not implemented yet.',
+    type: 'error',
+    closable: true,
+    duration: 3
+  })
 }
 
 async function viewHydroCronResult(feature) {
