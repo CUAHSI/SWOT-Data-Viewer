@@ -1,22 +1,8 @@
 <template>
   <v-bottom-sheet v-model="showSheet" inset>
-    <v-btn @click="showSheet = false">
-      close
-    </v-btn>
-    <v-card class="text-center" height="100%">
-      <v-card-title>
-        <h3>Feature</h3>
-      </v-card-title>
-      <v-card-text>
-        <!-- TODO: single feature plot -->
-          <ChartVis />
-      </v-card-text>
-    </v-card>
-    <v-card>
-      <v-row>
-        <v-col cols="auto">
-          <v-card class="mx-auto" variant="elevated" outlined>
-            <v-card-item>
+
+          <v-card height="100%">
+            <v-card-item class="text-center">
               <v-card-title>{{ featureStore.activeFeature.sword.river_name }}</v-card-title>
               <v-card-subtitle>
                 {{ featureStore.activeFeature.sword.reach_id }}
@@ -24,6 +10,8 @@
             </v-card-item>
 
             <v-card-text>
+              <!-- TODO this linechart should only show single plot -->
+              <LineChart :data="featureStore.visData" />
               <v-expansion-panels>
                 <v-expansion-panel>
                   <v-expansion-panel-title>
@@ -63,13 +51,10 @@
               </v-expansion-panels>
             </v-card-text>
           </v-card>
-        </v-col>
-      </v-row>
-    </v-card>
   </v-bottom-sheet>
 </template>
 <script setup>
-import ChartVis from "@/components/ChartVis.vue";
+import LineChart from "@/components/LineChart.vue";
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 

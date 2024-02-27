@@ -1,6 +1,6 @@
 <template>
   <h2 class="ma-2 text-center">Selected Features</h2>
-  <ChartVis />
+  <LineChart :data="featureStore.visData" />
   <v-row>
     <v-col v-for="(feature, i) in featureStore.selectedFeatures" :key="i" cols="auto">
     </v-col>
@@ -144,7 +144,7 @@
 </template>
 
 <script setup>
-import ChartVis from '@/components/ChartVis.vue'
+import LineChart from '@/components/LineChart.vue'
 import { useFeaturesStore } from '../stores/features';
 import { RouterLink } from 'vue-router';
 import { ref } from 'vue'

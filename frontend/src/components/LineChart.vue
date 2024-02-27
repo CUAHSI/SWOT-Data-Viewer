@@ -1,6 +1,6 @@
 <template>
   <v-theme-provider theme="light" with-background>
-    <Line :data="featureStore.visData" :options="options" />
+    <Line :data="props.data" :options="options" />
   </v-theme-provider>
 </template>
   
@@ -16,9 +16,8 @@ import {
   Legend
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import { useFeaturesStore } from '@/stores/features'
 
-const featureStore = useFeaturesStore()
+const props = defineProps({data: Object})
 
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
