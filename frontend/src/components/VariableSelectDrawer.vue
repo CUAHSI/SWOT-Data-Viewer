@@ -1,6 +1,6 @@
 <template>
-  <v-navigation-drawer location="left" width="auto" :model-value="show" temporary>
-    <v-btn v-if="!show" size="large" color="primary" class="ma-0 pa-2 drawer-handle" @click="hydrologicStore.toggleVariableSelectDrawer">
+  <v-navigation-drawer location="left" width="auto" v-model="show" temporary>
+    <v-btn v-if="!show" size="large" color="primary" class="ma-0 pa-2 drawer-handle" @click="show=!show">
       <v-icon :icon="mdiGlobeModel"></v-icon>
       <span>Select Variables</span>
     </v-btn>
@@ -21,13 +21,9 @@ import { ref } from 'vue'
 
 const hydrologicStore = useHydrologicStore();
 const variables = hydrologicStore.hydroVariables
-let show = ref(hydrologicStore.showVariableDrawer)
+let show = ref(false)
 
 const { mdAndDown } = useDisplay()
-
-hydrologicStore.$subscribe((mutation, state) => {
-    show.value = state.showVariableDrawer
-})
 </script>
 
 <style scoped>

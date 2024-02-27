@@ -34,7 +34,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     },
     {
       abbreviation: 'd_x_area',
-      name: 'Change in cross-sectional area from a reference value',
+      name: 'Change in area',
       unit: 'm^3/s*m^2',
       definition:
         'Change in the channel cross-sectional area from the value reported in the PRD. This parameter is used in the computation of discharge'
@@ -49,15 +49,9 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
 
   const selectedVariables = ref([])
 
-  const showVariableDrawer = ref(false)
-
   const addVariable = (variable) => {
     this.selectedVariables.push(variable)
   }
 
-  const toggleVariableSelectDrawer = () => {  
-    showVariableDrawer.value = !showVariableDrawer.value
-  }
-
-  return { hydroVariables, addVariable, toggleVariableSelectDrawer, selectedVariables, showVariableDrawer }
+  return { hydroVariables, addVariable, selectedVariables }
 })

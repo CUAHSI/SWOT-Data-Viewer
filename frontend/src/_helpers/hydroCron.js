@@ -1,10 +1,12 @@
 import { APP_API_URL } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
+import { useHydrologicStore } from '@/stores/hydrologic'
 import { buildFakeData, knownQueriesWithData } from '@/_helpers/fakeData'
 
 const queryHydroCron = async (swordFeature = null) => {
   const featuresStore = useFeaturesStore()
+  const hydrologicStore = useHydrologicStore()
   const url = `${APP_API_URL}/hydrocron/v1/timeseries`
   // const url = 'https://soto.podaac.uat.earthdatacloud.nasa.gov/hydrocron/v1/timeseries'
 
@@ -21,14 +23,16 @@ const queryHydroCron = async (swordFeature = null) => {
   if (!featuresStore.shouldFakeData) {
     // TODO: get the feature type dynamically
     // get the start and end time from the date range
-    // get the fields from the selected fields
+
+    let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation).join(',')
+
     params = {
       feature: 'Reach',
       feature_id: swordFeature.properties.reach_id,
       start_time: '2023-06-01T00:00:00Z',
       end_time: '2023-10-30T00:00:00Z',
       output: 'geojson',
-      fields: 'feature_id,time_str,wse'
+      fields: `feature_id,${fields}`
     }
   } else {
     // Build fake data
