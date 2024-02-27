@@ -27,6 +27,11 @@ const router = createRouter({
       component: ApiView
     },
     {
+      path: '/selections',
+      name: 'selections',
+      component: () => import('../views/SelectionsView.vue')
+    },
+    {
       path: '/auth-redirect',
       name: 'auth-redirect',
       component: () => import('../views/AuthRedirectView.vue'),
