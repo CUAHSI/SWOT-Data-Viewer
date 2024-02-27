@@ -156,15 +156,10 @@ let sheetText = ref(null)
 
 let tab = ref(1)
 
-function getColor(phase) {
-  if (phase === 'Succeeded') return 'green'
-  else if (phase === 'Failed') return 'red'
-  else return 'orange'
-}
-
 const headers = [
   { title: 'Feature type', key: 'feature_type', value: item => item.params.feature },
-  { title: 'Feature ID', key: 'feature_id', value: item => item.params.feature_id },
+  { title: 'Reach ID', key: 'reach_id', value: item => item.sword.reach_id },
+  { title: 'River name', key: 'river_name', value: item => item.sword.river_name },
   { title: 'Start time', key: 'start_time', value: item => item.params.start_time },
   { title: 'End time', key: 'end_time', value: item => item.params.end_time },
   { title: 'Actions', key: 'actions', sortable: false },
