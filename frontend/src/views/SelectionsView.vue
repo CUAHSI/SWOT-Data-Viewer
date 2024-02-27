@@ -1,56 +1,8 @@
 <template>
-  <h2 class="ma-2 text-center">Selections</h2>
+  <h2 class="ma-2 text-center">Selected Features</h2>
   <ChartVis />
   <v-row>
     <v-col v-for="(feature, i) in featureStore.selectedFeatures" :key="i" cols="auto">
-      <v-card class="mx-auto" variant="elevated" outlined>
-        <v-card-item>
-          <v-card-title>{{ feature.sword.river_name }}</v-card-title>
-          <v-card-subtitle>
-            {{ feature.sword.reach_id }}
-          </v-card-subtitle>
-        </v-card-item>
-
-        <v-card-text>
-          <v-expansion-panels>
-            <v-expansion-panel>
-              <v-expansion-panel-title>
-                <div>SWORD Info</div>
-              </v-expansion-panel-title>
-              <v-expansion-panel-text>
-                <div v-for="(value, key, i) in feature.sword" :key="i">
-                  <v-divider v-if="i < Object.keys(feature.sword).length - 1" />
-                  <div>{{ key }}: {{ value }}</div>
-                </div>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-            <v-expansion-panel>
-              <v-expansion-panel-title>
-                <div>HydroCron Query</div>
-              </v-expansion-panel-title>
-              <v-expansion-panel-text>
-                <div v-for="(value, key, i) in feature.params" :key="i">
-                  <v-divider v-if="i < Object.keys(feature.params).length - 1" />
-                  <div>{{ key }}: {{ value }}</div>
-                </div>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-            <v-expansion-panel>
-              <v-expansion-panel-title>
-                <div>SWOT Data ({{ feature.hits }} points)</div>
-              </v-expansion-panel-title>
-              <v-expansion-panel-text>
-                <div v-for="feature in feature.results.geojson.features" :key="feature.index">
-                  <div v-for="(value, key, i) in feature.properties" :key="i">
-                    <v-divider v-if="i < Object.keys(feature.properties).length - 1" />
-                    <div>{{ key }}: {{ value }}</div>
-                  </div>
-                </div>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels>
-        </v-card-text>
-      </v-card>
     </v-col>
   </v-row>
 
@@ -58,7 +10,7 @@
   <v-container v-if="featureStore.selectedFeatures.length > 0">
     <v-tabs v-model="tab" align-tabs="center">
       <v-tab :value="1">Table View</v-tab>
-      <v-tab :value="2">Cluster View</v-tab>
+      <v-tab :value="2">Card View</v-tab>
     </v-tabs>
     <v-window v-model="tab">
       <v-window-item :value="1" :key="1">
@@ -93,23 +45,69 @@
                   <div class="text-overline mb-1">
                     {{ variant }}
                   </div>
-                  <v-card-title> {{ feature.workflow_name }}</v-card-title>
-                  <v-card-subtitle>{{ feature.workflow_id }}</v-card-subtitle>
+                  <v-card-title>{{ feature.sword.river_name }}</v-card-title>
+                  <v-card-subtitle>
+                    {{ feature.sword.reach_id }}
+                  </v-card-subtitle>
                 </div>
               </v-card-item>
 
               <v-card-text>
-                <div>Submitted: {{ feature.startedAt }}</div>
-                <div>Estimated Duration: {{ feature.estimatedDuration }}</div>
-                <div>Status:
-                  <v-chip :color="getColor(feature.phase)">
-                    {{ feature.phase }}
-                  </v-chip>
-                </div>
+                <v-expansion-panels>
+                  <v-expansion-panel>
+                    <v-expansion-panel-title>
+                      <div>SWORD Info</div>
+                    </v-expansion-panel-title>
+                    <v-expansion-panel-text>
+                      <div v-for="(value, key, i) in feature.sword" :key="i">
+                        <v-divider v-if="i < Object.keys(feature.sword).length - 1" />
+                        <div>{{ key }}: {{ value }}</div>
+                      </div>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                  <v-expansion-panel>
+                    <v-expansion-panel-title>
+                      <div>HydroCron Query</div>
+                    </v-expansion-panel-title>
+                    <v-expansion-panel-text>
+                      <div v-for="(value, key, i) in feature.params" :key="i">
+                        <v-divider v-if="i < Object.keys(feature.params).length - 1" />
+                        <div>{{ key }}: {{ value }}</div>
+                      </div>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                  <v-expansion-panel>
+                    <v-expansion-panel-title>
+                      <div>SWOT Data ({{ feature.hits }} points)</div>
+                    </v-expansion-panel-title>
+                    <v-expansion-panel-text>
+                      <div v-for="feature in feature.results.geojson.features" :key="feature.index">
+                        <div v-for="(value, key, i) in feature.properties" :key="i">
+                          <v-divider v-if="i < Object.keys(feature.properties).length - 1" />
+                          <div>{{ key }}: {{ value }}</div>
+                        </div>
+                      </div>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                </v-expansion-panels>
               </v-card-text>
-
               <v-card-actions>
-                <v-btn v-if="feature.phase == 'Succeeded'"><a @click="downloadArtifact(feature)">Download</a></v-btn>
+                <v-tooltip text="Download SWOT Data">
+                  <template v-slot:activator="{ props }">
+                    <v-btn v-bind="props" :icon="mdiDownload" size="small" @click="downloadArtifact(feature)"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="HydroCron Result">
+                  <template v-slot:activator="{ props }">
+                    <v-btn v-bind="props" :icon="mdiSatelliteVariant" size="small"
+                      @click="viewHydroCronResult(feature)"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="SWORD Info">
+                  <template v-slot:activator="{ props }">
+                    <v-btn v-bind="props" :icon="mdiSword" size="small" @click="viewSwordInfo(feature)"></v-btn>
+                  </template>
+                </v-tooltip>
               </v-card-actions>
             </v-card>
           </v-col>
