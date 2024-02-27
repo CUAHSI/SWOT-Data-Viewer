@@ -29,7 +29,7 @@ onUpdated(() =>{
 })
 
 onMounted(() => {
-    let map = L.map('mapContainer').setView([38.2, -96], 5);
+    let map = L.map('mapContainer').setView([0, 11], 3);
     Map.map = map;
     Map.hucbounds = [];
     Map.popups = [];
@@ -119,14 +119,14 @@ onMounted(() => {
         transparent: 'true',
         format: 'image/png',
         minZoom: 0,
-        maxZoom: 9,
+        maxZoom: 7,
     }).addTo(map);
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
         url: url,
         simplifyFactor: 0.35,
         precision: 5,
-        minZoom: 9,
+        minZoom: 7,
         maxZoom: 18,
         // fields: ["FID", "ZIP", "PO_NAME"],
     }).addTo(map);
@@ -147,8 +147,8 @@ onMounted(() => {
         layers: 0,
         transparent: 'true',
         format: 'image/png',
-        minZoom: 11,
-        maxZoom: 14,
+        minZoom: 12,
+        maxZoom: 13,
     }).addTo(map);
 
     url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
@@ -156,7 +156,7 @@ onMounted(() => {
         url: url,
         simplifyFactor: 0.35,
         precision: 5,
-        minZoom: 14,
+        minZoom: 13,
         maxZoom: 18,
         // fields: ["OBJECTID"],
         // TODO: need node_id
@@ -777,6 +777,7 @@ function getRowByName(huc_value) {
 
 
 function clearSelection() {
+    // TODO: update clear selection function
     // Clears the selected features on the map
 
     for (let key in Map.hucbounds) {
