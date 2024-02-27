@@ -44,9 +44,9 @@ const members = [
     org: 'CUAHSI'
   },
   {
-    name: 'Tony Castronova',
-    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg',
-    position: 'Senior Research Hydrologist',
+    name: 'Irene Garousi-Nejad',
+    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/Irene_headshot03.jpg',
+    position: 'Research Scientist',
     org: 'CUAHSI'
   },
   {
@@ -56,10 +56,10 @@ const members = [
     org: 'CUAHSI'
   },
   {
-    name: 'Irene Garousi-Nejad',
-    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/Irene_headshot03.jpg',
-    position: 'Research Scientist',
+    name: 'Tony Castronova',
+    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg',
+    position: 'Senior Research Hydrologist',
     org: 'CUAHSI'
-  }
+  },
 ]
 </script>
