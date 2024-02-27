@@ -8,7 +8,10 @@ const router = createRouter({
     {
       path: '/',
       name: 'map',
-      component: MapView
+      component: MapView,
+      meta: {
+        showMap: true
+      }
     },
     {
       path: '/about',

@@ -5,6 +5,10 @@
       <AlertPopup v-bind="alertStore.displayed"></AlertPopup>
       <TheMobileNavDrawer @toggle-mobile-nav="toggleMobileNav" :show="showMobileNavigation" :paths="paths" />
       <RouterView />
+      <!-- The leaflet map kept alive outside of the RouterView -->
+      <KeepAlive>
+        <TheLeafletMap />
+      </KeepAlive>
       <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
       <SnackBar />
       <TheBottomSheet :sheetObject="features" />
@@ -24,6 +28,7 @@ import { ref } from 'vue'
 import { useAlertStore } from './stores/alerts'
 import { useFeaturesStore } from './stores/features'
 import TheBottomSheet from "@/components/TheBottomSheet.vue";
+import TheLeafletMap from './components/TheLeafletMap.vue';
 
 const alertStore = useAlertStore()
 const featureStore = useFeaturesStore()

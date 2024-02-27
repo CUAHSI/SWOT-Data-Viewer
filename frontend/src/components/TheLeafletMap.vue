@@ -1,5 +1,5 @@
 <template>
-    <div id="mapContainer"></div>
+    <div v-show="$route.meta.showMap" id="mapContainer"></div>
 </template>
   
 <script setup>
@@ -9,7 +9,7 @@ import L from 'leaflet'
 import * as esriLeaflet from "esri-leaflet";
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
-import { onMounted } from 'vue'
+import { onMounted, onUpdated} from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 
@@ -23,6 +23,10 @@ import { queryHydroCron } from "../_helpers/hydroCron";
 // modelAction()
 
 const Map = mapStore.mapObject
+
+onUpdated(() =>{
+    Map.map.invalidateSize()
+})
 
 onMounted(() => {
     let map = L.map('mapContainer').setView([38.2, -96], 5);
