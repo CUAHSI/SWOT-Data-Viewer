@@ -17,7 +17,8 @@
         <v-expansion-panels>
           <v-expansion-panel>
             <v-expansion-panel-title>
-              <div>SWORD Info</div>
+              <v-icon :icon="mdiSword"></v-icon>
+              <span class="ml-2">SWORD Info</span>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
               <div v-for="(value, key, i) in featureStore.activeFeature.sword" :key="i">
@@ -28,7 +29,8 @@
           </v-expansion-panel>
           <v-expansion-panel>
             <v-expansion-panel-title>
-              <div>HydroCron Query</div>
+              <v-icon :icon="mdiTimelineClockOutline"></v-icon>
+              <span class="ml-2">HydroCron Query</span>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
               <div v-for="(value, key, i) in featureStore.activeFeature.params" :key="i">
@@ -39,7 +41,8 @@
           </v-expansion-panel>
           <v-expansion-panel>
             <v-expansion-panel-title>
-              <div>SWOT Data ({{ featureStore.activeFeature.hits }} points)</div>
+              <v-icon :icon="mdiSatelliteVariant"></v-icon>
+              <span class="ml-2">SWOT Data ({{ featureStore.activeFeature.hits }} points)</span>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
               <div v-for="swotFeature in featureStore.activeFeature.results.geojson.features" :key="swotFeature.index">
@@ -59,6 +62,7 @@
 import LineChart from "@/components/LineChart.vue";
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
+import { mdiSword, mdiTimelineClockOutline, mdiSatelliteVariant } from '@mdi/js'
 
 const featureStore = useFeaturesStore()
 
