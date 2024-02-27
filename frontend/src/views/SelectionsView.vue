@@ -24,9 +24,14 @@
         <v-data-table :headers="headers" :items="featureStore.selectedFeatures" :sort-by="sortBy">
 
           <template v-slot:item.actions="{ item }">
-            <v-tooltip text="Download SWOT Data">
+            <v-tooltip text="Download SWOT JSON">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="mdiDownload" size="small" @click="downloadArtifact(item)"></v-btn>
+                <v-btn v-bind="props" :icon="mdiCodeJson" size="small" @click="downloadJson(item)"></v-btn>
+              </template>
+            </v-tooltip>
+            <v-tooltip text="Download SWOT CSV">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" :icon="mdiFileDelimited" size="small" @click="downloadCsv(item)"></v-btn>
               </template>
             </v-tooltip>
             <v-tooltip text="HydroCron Result">
@@ -146,7 +151,7 @@ import LineChart from '@/components/LineChart.vue'
 import { useFeaturesStore } from '../stores/features';
 import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
-import { mdiDownload, mdiSatelliteVariant, mdiSword } from '@mdi/js'
+import { mdiSatelliteVariant, mdiSword, mdiCodeJson, mdiFileDelimited } from '@mdi/js'
 import { useAlertStore } from '@/stores/alerts'
 import { computed } from 'vue';
 
@@ -170,20 +175,37 @@ const headers = [
 ]
 const sortBy = [{ key: 'startedAt', order: 'desc' }]
 
-async function downloadArtifact(feature) {
-  // const downloadEndpoint = ENDPOINTS.download
-  // const downloadUrl = `${downloadEndpoint}/${feature.workflow_id}`
-  // const response = await fetchWrapper.get(downloadUrl)
-  // const link = document.createElement('a')
-  // link.href = response.url
-  // document.body.appendChild(link)
-  // link.click()
-  // document.body.removeChild(link);
+function getLongFilename(feature) {
+  const featureType = feature.params.feature
+  const riverName = feature.sword.river_name
+  const reachId = feature.sword.reach_id
+  const startTime = feature.params.start_time
+  const endTime = feature.params.end_time
+  let filename = `${featureType}_${riverName}_${reachId}_${startTime}_${endTime}`
+  filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  return filename
+}
+
+async function downloadJson(feature) {
+  const jsonData = JSON.stringify(feature.sword);
+  const blob = new Blob([jsonData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${getLongFilename(feature)}.json`;
+
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+async function downloadCsv(feature) {
   // TODO: implement download
-  console.warn('Download not implemented')
+  console.warn('Download CSV not implemented')
   alertStore.displayAlert({
     title: 'Download',
-    text: 'Download not implemented yet.',
+    text: 'Download CSV not implemented yet.',
     type: 'error',
     closable: true,
     duration: 3
