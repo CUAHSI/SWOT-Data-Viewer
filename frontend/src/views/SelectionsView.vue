@@ -104,9 +104,14 @@
                 </v-expansion-panels>
               </v-card-text>
               <v-card-actions>
-                <v-tooltip text="Download SWOT Data">
+                <v-tooltip text="Download SWOT JSON">
                   <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" :icon="mdiDownload" size="small" @click="downloadArtifact(feature)"></v-btn>
+                    <v-btn v-bind="props" :icon="mdiCodeJson" size="small" @click="downloadJson(feature)"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Download SWOT CSV">
+                  <template v-slot:activator="{ props }">
+                    <v-btn v-bind="props" :icon="mdiFileDelimited" size="small" @click="downloadCsv(feature)"></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="HydroCron Result">
