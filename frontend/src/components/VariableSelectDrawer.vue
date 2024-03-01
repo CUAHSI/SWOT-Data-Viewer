@@ -4,7 +4,7 @@
       <v-icon :icon="mdiGlobeModel"></v-icon>
       <span>Select Variables</span>
     </v-btn>
-    <v-sheet class="mx-auto" elevation="8" :width="mdAndDown ? '100vw' : '30vw'">
+    <v-sheet class="mx-auto" elevation="8">
       <h2 class="ma-2 text-center">Variable Selector</h2>
         <v-container fluid>
           <v-checkbox v-for="variable in variables" v-model="hydrologicStore.selectedVariables" :label="variable.name" :value="variable" :key="variable.abbreviation"></v-checkbox>
@@ -23,7 +23,6 @@ const hydrologicStore = useHydrologicStore();
 const variables = hydrologicStore.hydroVariables
 let show = ref(false)
 
-const { mdAndDown } = useDisplay()
 </script>
 
 <style scoped>
