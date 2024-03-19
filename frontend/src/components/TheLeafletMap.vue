@@ -1,7 +1,7 @@
 <template>
-    <div id="mapContainer"></div>
+    <div v-show="$route.meta.showMap" id="mapContainer"></div>
 </template>
-  
+
 <script setup>
 import "leaflet/dist/leaflet.css";
 import "leaflet-easybutton/src/easy-button.css";
@@ -9,51 +9,29 @@ import L from 'leaflet'
 import * as esriLeaflet from "esri-leaflet";
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
-import { onMounted } from 'vue'
+import { onMounted, onUpdated } from 'vue'
 import { useMapStore } from '@/stores/map'
-import { useModelsStore } from '@/stores/models'
 import { useAlertStore } from '@/stores/alerts'
-import { APP_API_URL } from '@/constants'
 
 const mapStore = useMapStore()
-const modelsStore = useModelsStore();
 const alertStore = useAlertStore();
 
-const modelAction = modelsStore.$onAction(
-    ({
-        name, // name of the action
-        store, // store instance, same as `someStore`
-        args, // array of parameters passed to the action
-        after, // hook after the action returns or resolves
-        onError, // hook if the action throws or rejects
-    }) => {
-        // this will trigger if the action succeeds and after it has fully run.
-        // it waits for any returned promised
-        after((result) => {
-            console.log(store.selectedModel.input)
-            if (store.selectedModel.input != "bbox") {
-                removeBbox()
-            } else {
-                updateMapBBox()
-            }
-        })
+import { queryHydroCron } from "../_helpers/hydroCron";
 
-        // this will trigger if the action throws or returns a promise that rejects
-        onError((error) => {
-            console.warn(
-                `Failed "${name}" after ${Date.now() - startTime}ms.\nError: ${error}.`
-            )
-        })
-    }
-)
 
 // manually remove the listener
 // modelAction()
 
 const Map = mapStore.mapObject
 
+onUpdated(() => {
+    Map.map.invalidateSize()
+})
+
 onMounted(() => {
-    let map = L.map('mapContainer').setView([38.2, -96], 5);
+    // TODO revert to zoom 3
+    // let map = L.map('mapContainer').setView([0, 11], 3);
+    let map = L.map('mapContainer').setView([0, 11], 7);
     Map.map = map;
     Map.hucbounds = [];
     Map.popups = [];
@@ -85,19 +63,48 @@ onMounted(() => {
     //     "-99999999"]);
 
     // Initial OSM tile layer
-    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png', {
+    const CartoDB = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
         subdomains: 'abcd',
         maxZoom: 19
-    }).addTo(map);
+    })
 
-    //     const trailheads = esriLeaflet.featureLayer({
-    //     url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads_Styled/FeatureServer/0"
-    //   }).addTo(map);
+    var CartoDB_PositronNoLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    });
 
-    //   const stanta = esriLeafletVector.vectorTileLayer(
-    //   "https://vectortileservices3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Santa_Monica_Mountains_Parcels_VTL/VectorTileServer"
-    // ).addTo(map);
+    var CartoDB_DarkMatterNoLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    });
+
+    const Stadia_StamenTonerLite = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.{ext}', {
+        minZoom: 0,
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        ext: 'png'
+    });
+
+    const Stadia_StamenTonerBackground = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_background/{z}/{x}/{y}{r}.{ext}', {
+        minZoom: 0,
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        ext: 'png'
+    });
+
+    const baselayers = {
+        CartoDB,
+        CartoDB_PositronNoLabels,
+        CartoDB_DarkMatterNoLabels,
+        Stadia_StamenTonerLite,
+        Stadia_StamenTonerBackground
+    };
+
+    Stadia_StamenTonerLite.addTo(map);
+
 
 
 
@@ -114,7 +121,19 @@ onMounted(() => {
 
     lakesFeatures.on("click", function (e) {
         console.log(e.layer.feature.properties)
-        alert(JSON.stringify(e.layer.feature.properties))
+        const popup = L.popup();
+        const content = `
+        <h3>${e.layer.feature.properties.names}</h3>
+        <h4>Lake ID: ${e.layer.feature.properties.lake_id}</h4>
+        <p>
+            <ul>
+                <li>SWORD Max Area: ${e.layer.feature.properties.max_area}</li>
+                <li>SWORD Basin: ${e.layer.feature.properties.basin_id}</li>
+            </ul>
+        </p>
+        `;
+        popup.setLatLng(e.latlng).setContent(content).openOn(map);
+
         lakesFeatures.setFeatureStyle(e.layer.feature.id, {
             color: "#9D78D2",
             weight: 3,
@@ -138,55 +157,26 @@ onMounted(() => {
         transparent: 'true',
         format: 'image/png',
         minZoom: 0,
-        maxZoom: 9,
+        maxZoom: 7,
     }).addTo(map);
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
         url: url,
         simplifyFactor: 0.35,
         precision: 5,
-        minZoom: 9,
+        minZoom: 7,
         maxZoom: 18,
         // fields: ["FID", "ZIP", "PO_NAME"],
     }).addTo(map);
 
     reachesFeatures.on("click", async function (e) {
-        console.log(e.layer.feature.properties)
-        // alert(JSON.stringify(e.layer.feature.properties))
+        // TODO: set featurestyle base on the selected feature store
         reachesFeatures.setFeatureStyle(e.layer.feature.id, {
             color: "#9D78D2",
             weight: 3,
             opacity: 1
         });
-        const url = `${APP_API_URL}/hydrocron/v1/timeseries`
-        // const url = 'https://soto.podaac.uat.earthdatacloud.nasa.gov/hydrocron/v1/timeseries'
-
-        // TODO: need to get the reach_id from the feature properties
-        // for now, just hardcoding it with a reach that has known data in the beta prevalidated data
-        // '?feature=Reach&feature_id=72390300011&start_time=2023-06-01T00:00:00Z&end_time=2023-10-30T00:00:00Z&output=geojson&fields=reach_id,time_str,wse,geometry'
-        // 'http://localhost:9000/2015-03-31/functions/function/invocations'
-        const params = {
-            "feature": "Reach",
-            "feature_id": "72390300011",
-            "start_time": "2023-06-01T00:00:00Z",
-            "end_time": "2023-10-30T00:00:00Z",
-            "output": "geojson",
-            "fields": "feature_id,time_str,wse"
-        }
-        const searchParams = new URLSearchParams(params)
-        let query = url + '?' + searchParams.toString()
-        let result = await fetch(query, {
-            method: 'GET',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-        console.log(result)
-        let json = await result.json()
-        console.log("json", json)
-        console.log("features", json.results.geojson.features)
-        alert(JSON.stringify(json))
+        queryHydroCron(e.layer.feature)
     });
 
     // add nodes layer to map
@@ -195,8 +185,8 @@ onMounted(() => {
         layers: 0,
         transparent: 'true',
         format: 'image/png',
-        minZoom: 11,
-        maxZoom: 14,
+        minZoom: 12,
+        maxZoom: 13,
     }).addTo(map);
 
     url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
@@ -204,20 +194,27 @@ onMounted(() => {
         url: url,
         simplifyFactor: 0.35,
         precision: 5,
-        minZoom: 14,
+        minZoom: 13,
         maxZoom: 18,
         // fields: ["OBJECTID"],
         // TODO: need node_id
     }).addTo(map);
 
     nodesFeatures.on("click", function (e) {
-        console.log(e.layer.feature.properties)
-        alert(JSON.stringify(e.layer.feature.properties))
-        nodesFeatures.setFeatureStyle(e.layer.feature.id, {
-            color: "#9D78D2",
-            weight: 3,
-            opacity: 1
-        });
+        const popup = L.popup();
+        const content = `
+        <h3>${e.layer.feature.properties.river_name}</h3>
+        <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
+        <p>
+            <ul>
+                <li>SWORD Width: ${e.layer.feature.properties.width}</li>
+                <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
+                <li>SWORD Sinuosity: ${e.layer.feature.properties.sinuosity}</li>
+                <li>SWOT Dist_out: ${e.layer.feature.properties.dist_out}</li>
+            </ul>
+        </p>
+        `;
+        popup.setLatLng(e.latlng).setContent(content).openOn(map);
     });
 
     // // WMS LAYER
@@ -342,7 +339,7 @@ onMounted(() => {
     // Map.submit = submit_group; //btn_submit;
 
     // Layer Control
-    L.control.layers(null, mixed).addTo(map);
+    L.control.layers(baselayers, mixed).addTo(map);
 
     /*
      * LEAFLET EVENT HANDLERS
@@ -818,6 +815,7 @@ function getRowByName(huc_value) {
 
 
 function clearSelection() {
+    // TODO: update clear selection function
     // Clears the selected features on the map
 
     for (let key in Map.hucbounds) {
@@ -1106,9 +1104,6 @@ function updateMapBBox() {
     // save the layer
     Map.huclayers['BBOX'] = json_polygon;
 
-    if (modelsStore.selectedModel.input == "bbox") {
-        json_polygon.addTo(Map.map);
-    }
 
     return bbox.is_valid
 }

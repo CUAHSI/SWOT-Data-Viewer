@@ -8,7 +8,10 @@ const router = createRouter({
     {
       path: '/',
       name: 'map',
-      component: MapView
+      component: MapView,
+      meta: {
+        showMap: true
+      }
     },
     {
       path: '/about',
@@ -22,6 +25,11 @@ const router = createRouter({
       path: '/api',
       name: 'api',
       component: ApiView
+    },
+    {
+      path: '/selections',
+      name: 'selections',
+      component: () => import('../views/SelectionsView.vue')
     },
     {
       path: '/auth-redirect',

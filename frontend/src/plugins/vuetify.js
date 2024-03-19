@@ -1,35 +1,50 @@
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
+import colors from 'vuetify/lib/util/colors'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
-// import colors from 'vuetify/lib/util/colors'
 
 // https://vuetifyjs.com/en/features/theme/#javascript
+// https://vuetifyjs.com/en/styles/colors/#javascript-color-pack
 
 const dark = {
   dark: true,
-  colors:{
-    primary: "#009688",
-    secondary: "#607D8B",
-    accent: "#2196F3",
-    error: "#FF1744",
-    success: "#00BFA5",
-    info: "#607D8B",
-    navbar: "#37474F",
+  colors: {
+    primary: colors.teal.base,
+    secondary: colors.blueGrey.base,
+    accent: colors.blue.base,
+    error: colors.red.accent3,
+    success: colors.teal.accent4,
+    info: colors.blueGrey.lighten1,
+    navbar: colors.blueGrey.darken4
+  }
+}
+
+const light = {
+  dark: false,
+  colors: {
+    primary: colors.blue.darken2,
+    secondary: colors.blueGrey.lighten4,
+    accent: colors.blue.base,
+    error: colors.red.accent3,
+    success: colors.teal.accent4,
+    info: colors.blueGrey.base,
+    navbar: colors.blueGrey.lighten1
   }
 }
 
 export default createVuetify({
   theme: {
-    defaultTheme: 'dark',
+    defaultTheme: 'light',
     themes: {
-      dark,
+      light,
+      dark
     }
   },
   icons: {
     defaultSet: 'mdi',
     aliases,
     sets: {
-      mdi,
-    },
-  },
+      mdi
+    }
+  }
 })

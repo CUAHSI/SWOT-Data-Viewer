@@ -5,8 +5,13 @@
       <AlertPopup v-bind="alertStore.displayed"></AlertPopup>
       <TheMobileNavDrawer @toggle-mobile-nav="toggleMobileNav" :show="showMobileNavigation" :paths="paths" />
       <RouterView />
+      <!-- The leaflet map kept alive outside of the RouterView -->
+      <KeepAlive>
+        <TheLeafletMap />
+      </KeepAlive>
       <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
       <SnackBar />
+      <TheBottomSheet :sheetObject="features" />
       <TheFooter />
     </v-main>
   </v-app>
@@ -21,14 +26,24 @@ import SnackBar from './components/SnackBar.vue'
 import TheFooter from './components/TheFooter.vue'
 import { ref } from 'vue'
 import { useAlertStore } from './stores/alerts'
+import { useFeaturesStore } from './stores/features'
+import TheBottomSheet from "@/components/TheBottomSheet.vue";
+import TheLeafletMap from './components/TheLeafletMap.vue';
 
 const alertStore = useAlertStore()
+const featureStore = useFeaturesStore()
+let features = featureStore.selectedFeatures
+// TODO use the featureStore to get the swot data
 
 let showMobileNavigation = ref(false)
 const paths = [
   {
     attrs: { to: "/" },
     label: "Map",
+  },
+  {
+    attrs: { to: "/selections" },
+    label: "Selections",
   },
   {
     attrs: { to: "/api" },
