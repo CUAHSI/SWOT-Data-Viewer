@@ -23,7 +23,7 @@ let switchValue = ref(featureStore.shouldFakeData)
 
 const toggleSwitch = () => {
   featureStore.shouldFakeData = !featureStore.shouldFakeData
-  switchValue.value = featureStore.shouldFakeData
+  switchValue.value = !switchValue.value
 }
 
 </script>
