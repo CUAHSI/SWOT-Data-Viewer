@@ -6,6 +6,13 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20231026_RevB_w-sigs.pdf
   const hydroVariables = ref([
     {
+      abbreviation: 'time_str',
+      name: 'Time',
+      unit: '',
+      definition: 'Time of the measurement',
+      default: true
+    },
+    {
       abbreviation: 'wse',
       name: 'Water Surface Elevation',
       unit: 'm',
@@ -50,6 +57,13 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       unit: 'm^3/s',
       definition: 'Discharge from the consensus algorithm',
       default: false
+    },
+    {
+      abbreviation: 'geometry',
+      name: 'Geometry',
+      unit: '',
+      definition: 'The geometry of the reach',
+      default: true
     }
   ])
 
