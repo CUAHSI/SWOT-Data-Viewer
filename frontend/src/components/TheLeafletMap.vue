@@ -1,7 +1,7 @@
 <template>
     <div v-show="$route.meta.showMap" id="mapContainer"></div>
 </template>
-  
+
 <script setup>
 import "leaflet/dist/leaflet.css";
 import "leaflet-easybutton/src/easy-button.css";
@@ -9,7 +9,7 @@ import L from 'leaflet'
 import * as esriLeaflet from "esri-leaflet";
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
-import { onMounted, onUpdated} from 'vue'
+import { onMounted, onUpdated } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 
@@ -24,7 +24,7 @@ import { queryHydroCron } from "../_helpers/hydroCron";
 
 const Map = mapStore.mapObject
 
-onUpdated(() =>{
+onUpdated(() => {
     Map.map.invalidateSize()
 })
 
@@ -63,11 +63,47 @@ onMounted(() => {
     //     "-99999999"]);
 
     // Initial OSM tile layer
-    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png', {
+    const CartoDB = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
         subdomains: 'abcd',
         maxZoom: 19
-    }).addTo(map);
+    })
+
+    var CartoDB_PositronNoLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    });
+
+    var CartoDB_DarkMatterNoLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    });
+
+    const Stadia_StamenTonerLite = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.{ext}', {
+        minZoom: 0,
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        ext: 'png'
+    });
+
+    const Stadia_StamenTonerBackground = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_background/{z}/{x}/{y}{r}.{ext}', {
+        minZoom: 0,
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        ext: 'png'
+    });
+
+    const baselayers = {
+        CartoDB,
+        CartoDB_PositronNoLabels,
+        CartoDB_DarkMatterNoLabels,
+        Stadia_StamenTonerLite,
+        Stadia_StamenTonerBackground
+    };
+
+    Stadia_StamenTonerLite.addTo(map);
 
 
 
@@ -97,7 +133,7 @@ onMounted(() => {
         </p>
         `;
         popup.setLatLng(e.latlng).setContent(content).openOn(map);
-        
+
         lakesFeatures.setFeatureStyle(e.layer.feature.id, {
             color: "#9D78D2",
             weight: 3,
@@ -303,7 +339,7 @@ onMounted(() => {
     // Map.submit = submit_group; //btn_submit;
 
     // Layer Control
-    L.control.layers(null, mixed).addTo(map);
+    L.control.layers(baselayers, mixed).addTo(map);
 
     /*
      * LEAFLET EVENT HANDLERS
