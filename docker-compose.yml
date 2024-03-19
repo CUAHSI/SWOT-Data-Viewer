@@ -32,7 +32,7 @@ services:
   api:
     image: api
     ports:
-      - 8000:8000
+      - 8001:8000
       #- 5678:5678
     restart: unless-stopped
     volumes:

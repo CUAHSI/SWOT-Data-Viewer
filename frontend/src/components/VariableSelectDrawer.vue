@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-import { useDisplay } from 'vuetify'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { mdiGlobeModel } from '@mdi/js'
 import { ref } from 'vue'
