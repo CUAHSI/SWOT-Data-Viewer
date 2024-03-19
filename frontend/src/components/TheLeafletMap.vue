@@ -29,7 +29,9 @@ onUpdated(() =>{
 })
 
 onMounted(() => {
-    let map = L.map('mapContainer').setView([0, 11], 3);
+    // TODO revert to zoom 3
+    // let map = L.map('mapContainer').setView([0, 11], 3);
+    let map = L.map('mapContainer').setView([0, 11], 7);
     Map.map = map;
     Map.hucbounds = [];
     Map.popups = [];
