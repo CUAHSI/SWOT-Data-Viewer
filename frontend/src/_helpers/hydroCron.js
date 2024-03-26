@@ -119,6 +119,7 @@ const processHydroCronResult = async (response, params, swordFeature) => {
     }
     data.params = params
     data.sword = swordFeature.properties
+    data.id = swordFeature.properties.OBJECTID
     return data
   } else {
     alertStore.displayAlert({

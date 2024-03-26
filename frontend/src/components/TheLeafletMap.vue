@@ -12,9 +12,11 @@ import "leaflet-easybutton/src/easy-button";
 import { onMounted, onUpdated } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
+import { useFeaturesStore } from '@/stores/features'
 
 const mapStore = useMapStore()
 const alertStore = useAlertStore();
+const featureStore = useFeaturesStore();
 
 import { queryHydroCron } from "../_helpers/hydroCron";
 
@@ -146,17 +148,29 @@ onMounted(() => {
         precision: 5,
         minZoom: 7,
         maxZoom: 18,
+        color: "blue",
         // fields: ["FID", "ZIP", "PO_NAME"],
     }).addTo(map);
 
     reachesFeatures.on("click", async function (e) {
-        // TODO: set featurestyle base on the selected feature store
-        reachesFeatures.setFeatureStyle(e.layer.feature.id, {
-            color: "#9D78D2",
-            weight: 3,
-            opacity: 1
-        });
-        queryHydroCron(e.layer.feature)
+        const feature = e.layer.feature
+        if ( featureStore.checkFeatureSelected(feature) ) {
+            console.log('deselecting feature', feature)
+            featureStore.deselectFeature(feature)
+            reachesFeatures.setFeatureStyle(feature.id, {
+                color: "blue",
+                weight: 3,
+                opacity: 1
+            });
+        } else {
+            // TODO: set featurestyle base on the selected feature store
+            reachesFeatures.setFeatureStyle(feature.id, {
+                color: "red",
+                weight: 3,
+                opacity: 1
+            });
+            queryHydroCron(feature)
+        }
     });
 
     // add nodes layer to map
@@ -419,8 +433,9 @@ function clearSelection() {
         // clear the hucs in the html template
 
     }
-    Map.selected_hucs = []
-    mapStore.hucsAreSelected = false
+
+    featureStore.clearSelectedFeatures()
+    featureStore.clearVisData()
 
     // update the map
     updateMapBBox();
