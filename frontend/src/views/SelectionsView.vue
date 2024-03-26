@@ -157,11 +157,10 @@ import { useFeaturesStore } from '../stores/features';
 import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { mdiSatelliteVariant, mdiSword, mdiCodeJson, mdiFileDelimited } from '@mdi/js'
-import { useAlertStore } from '@/stores/alerts'
 import { computed } from 'vue';
+import { queryHydroCron } from "../_helpers/hydroCron";
 
 const featureStore = useFeaturesStore();
-const alertStore = useAlertStore();
 
 let sheetText = ref(null)
 
@@ -206,15 +205,17 @@ async function downloadJson(feature) {
 }
 
 async function downloadCsv(feature) {
-  // TODO: implement download
-  console.warn('Download CSV not implemented')
-  alertStore.displayAlert({
-    title: 'Download',
-    text: 'Download CSV not implemented yet.',
-    type: 'error',
-    closable: true,
-    duration: 3
-  })
+  const csvData = await queryHydroCron(feature, 'csv')
+  const blob = new Blob([csvData], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${getLongFilename(feature)}.csv`;
+
+  link.click();
+
+  URL.revokeObjectURL(url);
 }
 
 async function viewHydroCronResult(feature) {

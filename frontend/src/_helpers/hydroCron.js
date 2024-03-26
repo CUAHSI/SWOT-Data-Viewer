@@ -29,7 +29,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     console.error('No variables selected')
     alertStore.displayAlert({
       title: 'Error fetching SWOT data',
-      text: "No variables selected",
+      text: 'No variables selected',
       type: 'error',
       closable: true,
       duration: 3
@@ -54,11 +54,16 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     // get a random known query from the knownQueriesWithData array
     params = knownQueriesWithData[Math.floor(Math.random() * knownQueriesWithData.length)]
     params.fields = fields
+    params.output = output
     console.log('fake params', params)
   }
   let response = await fetchHydroCronData(url, params, swordFeature)
   if (response == null) {
     return
+  }
+  // TODO handle if the feature is already selected (in case of csv download)
+  if (output === 'csv') {
+    return response.results.csv
   }
   if (featuresStore.shouldFakeData) {
     let fakeData = buildFakeData([...featuresStore.selectedFeatures, response])
@@ -102,8 +107,7 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   if (response.ok) {
     let data = await response.json()
     console.log('data', data)
-    let features = data.results.geojson.features
-    if (features == undefined || features.length === 0) {
+    if (data.hits == undefined || data.hits < 1) {
       alertStore.displayAlert({
         title: 'No data found',
         text: `No data found for ${JSON.stringify(params)}`,
