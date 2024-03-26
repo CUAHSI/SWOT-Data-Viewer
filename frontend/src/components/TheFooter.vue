@@ -6,8 +6,7 @@
         {{ new Date().getFullYear() }} — <strong>Swot-Data-Viewer</strong>
       </div>
       <v-spacer></v-spacer>
-      <v-switch v-model="switchValue" @click="toggleSwitch">
-        <template v-slot:label>Fake Data</template></v-switch>
+      <v-switch v-model="switchValue" @click.stop="toggleSwitch" :label="`${switchValue ? 'Faking Data' : 'Using Real Data'}`"></v-switch>
     </div>
   </v-footer>
 </template>

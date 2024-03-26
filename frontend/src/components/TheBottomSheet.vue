@@ -3,7 +3,7 @@
     <!-- <v-btn @click="showSheet = false">
       close
     </v-btn> -->
-    <v-card height="100%">
+    <v-card v-if="featureStore.activeFeature" height="100%">
       <v-card-item class="text-center">
         <v-card-title>{{ featureStore.activeFeature.sword.river_name }}</v-card-title>
         <v-card-subtitle>
@@ -70,7 +70,7 @@ let showSheet = ref(false)
 
 // subscribe to the active feature
 featureStore.$subscribe((mutation, state) => {
-  if (state.activeFeatureFeature !== null) {
+  if (state.activeFeature !== null && typeof mutation.events.newValue === 'object') {
     showSheet.value = true
   }
 })
