@@ -9,7 +9,7 @@ import L from 'leaflet'
 import * as esriLeaflet from "esri-leaflet";
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
-import { onMounted, onUpdated } from 'vue'
+import { onMounted, onUpdated, ref } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
@@ -33,6 +33,7 @@ onUpdated(() => {
 onMounted(() => {
     // TODO revert to zoom 3
     // let map = L.map('mapContainer').setView([0, 11], 3);
+    // TODO: instead of map.map use map.leaflet
     let map = L.map('mapContainer').setView([0, 11], 7);
     Map.map = map;
     Map.hucbounds = [];
@@ -40,6 +41,7 @@ onMounted(() => {
     Map.buffer = 20;
     Map.huclayers = [];
     Map.reaches = {};
+    Map.reachesFeatures = ref({})
 
     Map.bbox = [99999999,
         99999999,
@@ -152,23 +154,14 @@ onMounted(() => {
         // fields: ["FID", "ZIP", "PO_NAME"],
     }).addTo(map);
 
+    Map.reachesFeatures = reachesFeatures
+
     reachesFeatures.on("click", async function (e) {
         const feature = e.layer.feature
-        if ( featureStore.checkFeatureSelected(feature) ) {
-            console.log('deselecting feature', feature)
+        if (featureStore.checkFeatureSelected(feature)) {
             featureStore.deselectFeature(feature)
-            reachesFeatures.setFeatureStyle(feature.id, {
-                color: "blue",
-                weight: 3,
-                opacity: 1
-            });
         } else {
             // TODO: set featurestyle base on the selected feature store
-            reachesFeatures.setFeatureStyle(feature.id, {
-                color: "red",
-                weight: 3,
-                opacity: 1
-            });
             queryHydroCron(feature)
         }
     });
