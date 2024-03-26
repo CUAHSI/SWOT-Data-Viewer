@@ -9,25 +9,16 @@ export const useFeaturesStore = defineStore('features', () => {
   const visData = ref({})
 
   const mapStore = useMapStore()
-  const Map = mapStore.mapObject
 
   function selectFeature(feature) {
-    Map.reachesFeatures.setFeatureStyle(feature.id, {
-      color: 'red',
-      weight: 3,
-      opacity: 1
-    })
+    mapStore.selectFeature(feature)
     this.selectedFeatures.push(feature)
     this.activeFeature = feature
     console.log('Feature selected: ', feature)
   }
 
   function deselectFeature(feature) {
-    Map.reachesFeatures.setFeatureStyle(feature.id, {
-      color: 'blue',
-      weight: 3,
-      opacity: 1
-    })
+    mapStore.deselectFeature(feature)
     this.selectedFeatures = this.selectedFeatures.filter((f) => f.id !== feature.id)
     if (this.activeFeature.id === feature.id) {
       this.activeFeature = null
@@ -46,6 +37,7 @@ export const useFeaturesStore = defineStore('features', () => {
   const clearSelectedFeatures = () => {
     selectedFeatures.value = []
     activeFeature.value = null
+    mapStore.clearAllFeatures()
   }
 
   const checkFeatureSelected = (feature) => {
