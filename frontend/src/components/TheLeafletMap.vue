@@ -20,22 +20,17 @@ const featureStore = useFeaturesStore();
 
 import { queryHydroCron } from "../_helpers/hydroCron";
 
-
-// manually remove the listener
-// modelAction()
-
 const Map = mapStore.mapObject
 
 onUpdated(() => {
-    Map.map.invalidateSize()
+    Map.leaflet.invalidateSize()
 })
 
 onMounted(() => {
     // TODO revert to zoom 3
-    // let map = L.map('mapContainer').setView([0, 11], 3);
-    // TODO: instead of map.map use map.leaflet
-    let map = L.map('mapContainer').setView([0, 11], 7);
-    Map.map = map;
+    // let leaflet = L.map('mapContainer').setView([0, 11], 3);
+    let leaflet = L.map('mapContainer').setView([0, 11], 7);
+    Map.leaflet = leaflet;
     Map.hucbounds = [];
     Map.popups = [];
     Map.buffer = 20;
@@ -89,7 +84,7 @@ onMounted(() => {
         Stadia_StamenTonerBackground
     };
 
-    CartoDB_PositronNoLabels.addTo(map);
+    CartoDB_PositronNoLabels.addTo(leaflet);
 
 
     // add lakes features layer to map
@@ -101,7 +96,7 @@ onMounted(() => {
         minZoom: 9,
         maxZoom: 18,
         // fields: ["FID", "ZIP", "PO_NAME"],
-    }).addTo(map);
+    }).addTo(leaflet);
 
     lakesFeatures.on("click", function (e) {
         console.log(e.layer.feature.properties)
@@ -116,7 +111,7 @@ onMounted(() => {
             </ul>
         </p>
         `;
-        popup.setLatLng(e.latlng).setContent(content).openOn(map);
+        popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
 
         lakesFeatures.setFeatureStyle(e.layer.feature.id, {
             color: "#9D78D2",
@@ -132,7 +127,7 @@ onMounted(() => {
         format: 'image/png',
         minZoom: 0,
         maxZoom: 9,
-    }).addTo(map);
+    }).addTo(leaflet);
 
     // add reaches layer to map
     url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
@@ -142,7 +137,7 @@ onMounted(() => {
         format: 'image/png',
         minZoom: 0,
         maxZoom: 7,
-    }).addTo(map);
+    }).addTo(leaflet);
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
         url: url,
@@ -152,7 +147,7 @@ onMounted(() => {
         maxZoom: 18,
         color: "blue",
         // fields: ["FID", "ZIP", "PO_NAME"],
-    }).addTo(map);
+    }).addTo(leaflet);
 
     Map.reachesFeatures = reachesFeatures
 
@@ -174,7 +169,7 @@ onMounted(() => {
         format: 'image/png',
         minZoom: 12,
         maxZoom: 13,
-    }).addTo(map);
+    }).addTo(leaflet);
 
     url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
     const nodesFeatures = esriLeaflet.featureLayer({
@@ -183,7 +178,7 @@ onMounted(() => {
         precision: 5,
         minZoom: 13,
         maxZoom: 18,
-    }).addTo(map);
+    }).addTo(leaflet);
 
     nodesFeatures.on("click", function (e) {
         const popup = L.popup();
@@ -199,7 +194,7 @@ onMounted(() => {
             </ul>
         </p>
         `;
-        popup.setLatLng(e.latlng).setContent(content).openOn(map);
+        popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
     });
 
     // // add USGS gage layer to map
@@ -231,15 +226,15 @@ onMounted(() => {
     // Erase
     L.easyButton('fa-eraser',
         function () { clearSelection(); },
-        'clear selected features').addTo(map);
+        'clear selected features').addTo(leaflet);
 
     // Layer Control
-    L.control.layers(baselayers, mixed).addTo(map);
+    L.control.layers(baselayers, mixed).addTo(leaflet);
 
     /*
      * LEAFLET EVENT HANDLERS
      */
-    map.on("click", function (e) {
+    leaflet.on("click", function (e) {
         mapClick(e);
     });
 
@@ -321,7 +316,7 @@ async function mapClick(e) {
 
         // close all popups
         if (Map.popups.length > 0) {
-            Map.map.closePopup();
+            Map.leaflet.closePopup();
         }
 
         // create new popup containing gage info
@@ -329,7 +324,7 @@ async function mapClick(e) {
             .setContent('<b>ID:</b> ' + gage.num + '<br>'
                 + '<b>Name</b>: ' + gage.name + '<br>')
             //		             + '<b>Select</b>: <a onClick=traceUpstream("'+gage.num+'")>upstream</a>')
-            .openOn(Map.map);
+            .openOn(Map.leaflet);
 
         // exit function without toggling HUC
         return;
@@ -364,7 +359,7 @@ function traceUpstream(usgs_gage) {
             Map.reaches.start_id = reaches._leaflet_id;
             Map.reaches.count = response.features.length;
             Map.reaches.obj = reaches;
-            reaches.addTo(Map.map);
+            reaches.addTo(Map.leaflet);
 
 
             // a list to store a single coordinate for each reach
