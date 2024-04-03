@@ -31,11 +31,20 @@ export const useVisStore = defineStore('vis', () => {
   const getVisDatasets = (selectedFeatures) => {
     // for each feature in selectedFeatures[0].results.geojson.features, add a point
     return selectedFeatures.map((feature) => {
+      const variables = feature.results.geojson.features.map((feature) => {
+        return feature.properties
+      })
+      console.log('SWOT Variables', variables)
       return {
         label: `${feature.sword.river_name} | ${feature.sword.reach_id}`,
-        data: feature.results.geojson.features.map((feature) => {
-          return feature.properties
+        data: variables.map((variable) => {
+          // TODO don't just use wse
+          return {
+            x: variable.time_str,
+            y: variable.wse
+          }
         }),
+        // data: [{x: '2016-12-25', y: 20}, {x: '2016-12-26', y: 10}],
         borderColor: dynamicColors()
       }
     })
