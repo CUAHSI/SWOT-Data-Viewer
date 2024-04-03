@@ -82,15 +82,6 @@ app.include_router(
 )
 
 
-# TODO move this to a separate router
-@app.get("/hydrocron/{path:path}")
-async def proxy(request: Request, path: str, scheme: str = "https"):
-    url = f"{scheme}://soto.podaac.uat.earthdatacloud.nasa.gov/hydrocron/{path}"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, params=request.query_params)
-    return JSONResponse(content=response.json(), status_code=response.status_code)
-
-
 @app.on_event("startup")
 async def on_startup():
     await init_beanie(
