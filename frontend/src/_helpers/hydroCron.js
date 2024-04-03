@@ -21,11 +21,11 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     console.error('No hydroCron query params, and shouldFakeData is false')
     return
   }
-  console.log('swordFeature', swordFeature)
+  console.log('Querying HydroCron for swordFeature', swordFeature)
   let params = {}
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation).join(',')
-  console.log('fields', fields)
+  console.log('Fetching for selected fields', fields)
 
   if (fields === '') {
     console.error('No variables selected')
@@ -57,7 +57,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     params = knownQueriesWithData[Math.floor(Math.random() * knownQueriesWithData.length)]
     params.fields = fields
     params.output = output
-    console.log('fake params', params)
+    console.log('Faked params', params)
   }
   let response = await fetchHydroCronData(url, params, swordFeature)
   if (response == null) {
@@ -71,11 +71,10 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     let fakeData = buildFakeData([...featuresStore.selectedFeatures, response])
     // update the visData before selecting the feature otherwise it will show blank
     visStore.visData = fakeData
-    console.log('fakeData', fakeData)
+    console.log('Fake data', fakeData)
   }else{
-    // TODO: build the vis for the real data
-    // let fakeData = buildVis([...featuresStore.selectedFeatures, response])
-    // visStore.visData = fakeData
+
+    visStore.buildVis([...featuresStore.selectedFeatures, response])
   }
   featuresStore.selectFeature(response)
 }
@@ -108,11 +107,11 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
 const processHydroCronResult = async (response, params, swordFeature) => {
   // TODO check the content type and handle it
   // application/json
-  console.log(response.headers.get('Content-Type'))
+  // console.log(response.headers.get('Content-Type'))
   const alertStore = useAlertStore()
   if (response.ok) {
     let data = await response.json()
-    console.log('data', data)
+    console.log('Swot data response', data)
     if (data.hits == undefined || data.hits < 1) {
       alertStore.displayAlert({
         title: 'No data found',
