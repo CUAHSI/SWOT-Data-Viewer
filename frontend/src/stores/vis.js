@@ -29,7 +29,7 @@ export const useVisStore = defineStore('vis', () => {
   }
 
   const getVisDatasets = (selectedFeatures) => {
-    // for each feature in selectedFeatures[0].results.geojson.features, add a point
+    // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     return selectedFeatures.map((feature) => {
       const variables = feature.results.geojson.features.map((feature) => {
         return feature.properties
@@ -39,12 +39,16 @@ export const useVisStore = defineStore('vis', () => {
         label: `${feature.sword.river_name} | ${feature.sword.reach_id}`,
         data: variables.map((variable) => {
           // TODO don't just use wse
+          const wse = variable.wse > 0 ? variable.wse : 0
+          let date = Date.parse(variable.time_str)
+          if (isNaN(date)) {
+            return {}
+          }
           return {
-            x: variable.time_str,
-            y: variable.wse
+            x: date,
+            y: wse
           }
         }),
-        // data: [{x: '2016-12-25', y: 20}, {x: '2016-12-26', y: 10}],
         borderColor: dynamicColors()
       }
     })
