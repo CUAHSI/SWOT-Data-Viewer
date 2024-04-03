@@ -2,10 +2,12 @@ import { APP_API_URL } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
+import { useVisStore } from '@/stores/vis'
 import { buildFakeData, knownQueriesWithData } from '@/_helpers/fakeData'
 
 const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const featuresStore = useFeaturesStore()
+  const visStore = useVisStore()
   const hydrologicStore = useHydrologicStore()
   const alertStore = useAlertStore()
   const url = `${APP_API_URL}/hydrocron/v1/timeseries`
@@ -68,8 +70,12 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   if (featuresStore.shouldFakeData) {
     let fakeData = buildFakeData([...featuresStore.selectedFeatures, response])
     // update the visData before selecting the feature otherwise it will show blank
-    featuresStore.visData = fakeData
+    visStore.visData = fakeData
     console.log('fakeData', fakeData)
+  }else{
+    // TODO: build the vis for the real data
+    // let fakeData = buildVis([...featuresStore.selectedFeatures, response])
+    // visStore.visData = fakeData
   }
   featuresStore.selectFeature(response)
 }

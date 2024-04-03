@@ -6,7 +6,6 @@ export const useFeaturesStore = defineStore('features', () => {
   const selectedFeatures = ref([])
   const activeFeature = ref(null)
   const shouldFakeData = ref(true)
-  const visData = ref({})
 
   const mapStore = useMapStore()
 
@@ -26,14 +25,6 @@ export const useFeaturesStore = defineStore('features', () => {
     console.log('Feature deselected: ', feature)
   }
 
-  const updateVisData = (data) => {
-    visData.value = data
-  }
-
-  const clearVisData = () => {
-    visData.value = {}
-  }
-
   const clearSelectedFeatures = () => {
     selectedFeatures.value = []
     activeFeature.value = null
@@ -49,10 +40,7 @@ export const useFeaturesStore = defineStore('features', () => {
     selectFeature,
     activeFeature,
     shouldFakeData,
-    updateVisData,
-    visData,
     clearSelectedFeatures,
-    clearVisData,
     deselectFeature,
     checkFeatureSelected
   }

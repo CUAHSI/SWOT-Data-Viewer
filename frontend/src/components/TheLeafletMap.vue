@@ -13,10 +13,12 @@ import { onMounted, onUpdated, ref } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
+import { useVisStore } from '@/stores/vis'
 
 const mapStore = useMapStore()
 const alertStore = useAlertStore();
 const featureStore = useFeaturesStore();
+const visStore = useVisStore();
 
 import { queryHydroCron } from "../_helpers/hydroCron";
 
@@ -423,7 +425,7 @@ function clearSelection() {
     }
 
     featureStore.clearSelectedFeatures()
-    featureStore.clearVisData()
+    visStore.clearVisData()
 
     // update the map
     updateMapBBox();
