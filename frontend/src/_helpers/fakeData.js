@@ -26,12 +26,13 @@ function buildFakeData(selectedFeatures) {
   }
 }
 
+// https://soto.podaac.uat.earthdatacloud.nasa.gov/hydrocron/v1/timeseries?feature=Reach&feature_id=72390300011&start_time=2024-01-01T00:00:00Z&end_time=2024-10-30T00:00:00Z&output=geojson&fields=reach_id,time_str,wse,geometry
 const knownQueriesWithData = [
   {
     feature: 'Reach',
     feature_id: '72390300011',
-    start_time: '2023-06-01T00:00:00Z',
-    end_time: '2023-10-30T00:00:00Z',
+    start_time: '2024-01-01T00:00:00Z',
+    end_time: '2024-10-30T00:00:00Z',
     output: 'geojson',
     fields: 'time_str,wse'
   }

@@ -44,8 +44,8 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     params = {
       feature: 'Reach',
       feature_id: swordFeature.properties.reach_id,
-      start_time: '2023-06-01T00:00:00Z',
-      end_time: '2023-10-30T00:00:00Z',
+      start_time: '2024-01-01T00:00:00Z',
+      end_time: '2024-10-30T00:00:00Z',
       output: output,
       fields: fields
     }
