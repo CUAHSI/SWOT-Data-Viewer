@@ -13,6 +13,7 @@ export const useVisStore = defineStore('vis', () => {
   }
   
   const buildVis = (selectedFeatures) => {
+    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
     console.log('Building vis for selected features', selectedFeatures)
     const datasets = getVisDatasets(selectedFeatures)
     const labels = selectedFeatures[0].results.geojson.features.map((feature) => {
@@ -31,24 +32,30 @@ export const useVisStore = defineStore('vis', () => {
   const getVisDatasets = (selectedFeatures) => {
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     return selectedFeatures.map((feature) => {
-      const variables = feature.results.geojson.features.map((feature) => {
+      let measurements = feature.results.geojson.features.map((feature) => {
         return feature.properties
       })
-      console.log('SWOT Variables', variables)
+      // TODO: this is a hack to remove the invalid measurements
+      measurements = measurements.map((m) => {
+        const date = new Date(m.time_str)
+        m.time_str = date
+        if (isNaN(date)){
+          return {}
+        }
+        if (m.wse == "-999999999999.0") {
+          return {}
+        }
+        return m
+      })
+      console.log('SWOT measurements', measurements)
       return {
         label: `${feature.sword.river_name} | ${feature.sword.reach_id}`,
-        data: variables.map((variable) => {
-          // TODO don't just use wse
-          const wse = variable.wse > 0 ? variable.wse : 0
-          let date = Date.parse(variable.time_str)
-          if (isNaN(date)) {
-            return {}
-          }
-          return {
-            x: date,
-            y: wse
-          }
-        }),
+        data: measurements,
+        parsing: {
+          xAxisKey: 'time_str',
+          // TODO: this should be dynamic based on the selected variable
+          yAxisKey: 'wse'
+        },
         borderColor: dynamicColors()
       }
     })
