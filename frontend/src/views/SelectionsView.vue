@@ -1,7 +1,7 @@
 <template>
   <h2 class="ma-2 text-center">Selected Features</h2>
   <v-container v-if="hasFeatures">
-    <LineChart :data="chartStore.chartData" />
+    <LineChart id="chart" :data="chartStore.chartData" />
   </v-container>
 
   <v-container v-if="!hasFeatures">
@@ -36,7 +36,8 @@
             </v-tooltip>
             <v-tooltip text="HydroCron Result">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="mdiSatelliteVariant" size="small" @click="viewHydroCronResult(item)"></v-btn>
+                <v-btn v-bind="props" :icon="mdiSatelliteVariant" size="small"
+                  @click="viewHydroCronResult(item)"></v-btn>
               </template>
             </v-tooltip>
             <v-tooltip text="SWORD Info">
@@ -233,3 +234,9 @@ async function viewSwordInfo(feature) {
 }
 
 </script>
+
+<style scoped>
+#chart {
+  height: 40vh;
+}
+</style>

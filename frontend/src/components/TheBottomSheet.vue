@@ -13,7 +13,7 @@
 
       <v-card-text>
         <!-- TODO this linechart should only show single plot -->
-        <LineChart :data="chartStore.chartData" />
+        <LineChart id="chart" :data="chartStore.chartData" />
         <v-expansion-panels>
           <v-expansion-panel>
             <v-expansion-panel-title>
@@ -83,3 +83,9 @@ featureStore.$subscribe((mutation, state) => {
 })
 
 </script>
+
+<style scoped>
+#chart {
+  height: 40vh;
+}
+</style>
