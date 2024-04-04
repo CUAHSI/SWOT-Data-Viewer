@@ -42,10 +42,13 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   if (!featuresStore.shouldFakeData) {
     // TODO: get the feature type dynamically
     // get the start and end time from the date range
-
+    let feature_id = swordFeature?.properties?.reach_id
+    if (feature_id == undefined){
+      feature_id = swordFeature.params.feature_id
+    }
     params = {
       feature: 'Reach',
-      feature_id: swordFeature.properties.reach_id,
+      feature_id: feature_id,
       start_time: '2024-01-01T00:00:00Z',
       end_time: '2024-10-30T00:00:00Z',
       output: output,
