@@ -109,10 +109,11 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   // application/json
   // console.log(response.headers.get('Content-Type'))
   const alertStore = useAlertStore()
-  if (response.ok) {
+  // https://podaac.github.io/hydrocron/timeseries.html#response-codes
+  if (response.status < 500) {
     let data = await response.json()
     console.log('Swot data response', data)
-    if (data.hits == undefined || data.hits < 1) {
+    if (response.status == 400 || data.hits == undefined || data.hits < 1) {
       alertStore.displayAlert({
         title: 'No data found',
         text: `No data found for ${JSON.stringify(params)}`,
