@@ -1,7 +1,7 @@
 <template>
   <h2 class="ma-2 text-center">Selected Features</h2>
   <v-container v-if="hasFeatures">
-    <LineChart :data="visStore.visData" />
+    <LineChart :data="visStore.chartData" />
   </v-container>
 
   <v-container v-if="!hasFeatures">

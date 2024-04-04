@@ -2,14 +2,19 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useVisStore = defineStore('vis', () => {
-  const visData = ref({})
+  const chartData = ref({})
+  const chart = ref(null)
+
+  const setChart = (chartInstance) => {
+    chart.value = chartInstance
+  }
 
   const updateVisData = (data) => {
-    visData.value = data
+    chartData.value = data
   }
 
   const clearVisData = () => {
-    visData.value = {}
+    chartData.value = {}
   }
   
   const buildVis = (selectedFeatures) => {
@@ -70,8 +75,9 @@ export const useVisStore = defineStore('vis', () => {
 
   return {
     updateVisData,
-    visData,
+    chartData,
     clearVisData,
-    buildVis
+    buildVis,
+    setChart
   }
 })

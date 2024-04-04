@@ -1,6 +1,6 @@
 <template>
   <v-theme-provider theme="light" with-background>
-    <Line :data="props.data" :options="options" />
+    <Line :data="props.data" :options="options" ref="line" />
   </v-theme-provider>
 </template>
 
@@ -19,9 +19,12 @@ import {
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
+import { useVisStore } from '@/stores/vis'
+import { defineProps, ref, onMounted } from 'vue'
 
+const visStore = useVisStore()
 const props = defineProps({ data: Object })
-
+const line = ref(null)
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale)
 
@@ -51,7 +54,19 @@ const options = {
         display: true,
         text: 'Date'
       }
+    },
+    y: {
+      title: {
+        display: true,
+        text: 'Value'
+      }
     }
   }
 }
+
+onMounted(() => {
+  const chartInstance = line.value.chart
+  visStore.setChart(chartInstance)
+});
+
 </script>

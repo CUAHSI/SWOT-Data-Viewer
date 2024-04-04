@@ -13,7 +13,7 @@
 
       <v-card-text>
         <!-- TODO this linechart should only show single plot -->
-        <LineChart :data="visStore.visData" />
+        <LineChart :data="visStore.chartData" />
         <v-expansion-panels>
           <v-expansion-panel>
             <v-expansion-panel-title>

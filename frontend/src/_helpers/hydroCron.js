@@ -69,8 +69,8 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   }
   if (featuresStore.shouldFakeData) {
     let fakeData = buildFakeData([...featuresStore.selectedFeatures, response])
-    // update the visData before selecting the feature otherwise it will show blank
-    visStore.visData = fakeData
+    // update the chartData before selecting the feature otherwise it will show blank
+    visStore.chartData = fakeData
     console.log('Fake data', fakeData)
   }else{
 
