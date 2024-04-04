@@ -1,7 +1,7 @@
 <template>
   <h2 class="ma-2 text-center">Selected Features</h2>
   <v-container v-if="hasFeatures">
-    <LineChart :data="visStore.chartData" />
+    <LineChart :data="chartStore.chartData" />
   </v-container>
 
   <v-container v-if="!hasFeatures">
@@ -154,7 +154,7 @@
 <script setup>
 import LineChart from '@/components/LineChart.vue'
 import { useFeaturesStore } from '../stores/features';
-import { useVisStore } from '../stores/vis';
+import { useChartsStore } from '../stores/charts';
 import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { mdiSatelliteVariant, mdiSword, mdiCodeJson, mdiFileDelimited } from '@mdi/js'
@@ -162,7 +162,7 @@ import { computed } from 'vue';
 import { queryHydroCron } from "../_helpers/hydroCron";
 
 const featureStore = useFeaturesStore();
-const visStore = useVisStore();
+const chartStore = useChartsStore();
 
 let sheetText = ref(null)
 

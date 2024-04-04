@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export const useVisStore = defineStore('vis', () => {
+export const useChartsStore = defineStore('charts', () => {
   const chartData = ref({})
   const chart = ref(null)
 
@@ -9,18 +9,18 @@ export const useVisStore = defineStore('vis', () => {
     chart.value = chartInstance
   }
 
-  const updateVisData = (data) => {
+  const updateChartData = (data) => {
     chartData.value = data
   }
 
-  const clearVisData = () => {
+  const clearChartData = () => {
     chartData.value = {}
   }
   
-  const buildVis = (selectedFeatures) => {
+  const buildChart = (selectedFeatures) => {
     // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
     console.log('Building vis for selected features', selectedFeatures)
-    const datasets = getVisDatasets(selectedFeatures)
+    const datasets = getChartDatasets(selectedFeatures)
     const labels = selectedFeatures[0].results.geojson.features.map((feature) => {
       return feature.properties.time_str
     })
@@ -30,11 +30,11 @@ export const useVisStore = defineStore('vis', () => {
       labels: labels,
       datasets: datasets
     }
-    updateVisData(data)
+    updateChartData(data)
     return data
   }
 
-  const getVisDatasets = (selectedFeatures) => {
+  const getChartDatasets = (selectedFeatures) => {
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     return selectedFeatures.map((feature) => {
       let measurements = feature.results.geojson.features.map((feature) => {
@@ -74,10 +74,10 @@ export const useVisStore = defineStore('vis', () => {
   }
 
   return {
-    updateVisData,
+    updateChartData,
     chartData,
-    clearVisData,
-    buildVis,
+    clearChartData,
+    buildChart,
     setChart
   }
 })

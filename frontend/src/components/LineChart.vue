@@ -19,10 +19,10 @@ import {
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
-import { useVisStore } from '@/stores/vis'
+import { useChartsStore } from '@/stores/charts'
 import { defineProps, ref, onMounted } from 'vue'
 
-const visStore = useVisStore()
+const chartStore = useChartsStore()
 const props = defineProps({ data: Object })
 const line = ref(null)
 
@@ -66,7 +66,7 @@ const options = {
 
 onMounted(() => {
   const chartInstance = line.value.chart
-  visStore.setChart(chartInstance)
+  chartStore.setChart(chartInstance)
 });
 
 </script>
