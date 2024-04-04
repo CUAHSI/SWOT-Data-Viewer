@@ -3,7 +3,7 @@
     <Line :data="props.data" :options="options" />
   </v-theme-provider>
 </template>
-  
+
 <script setup>
 import {
   Chart as ChartJS,
@@ -13,14 +13,17 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TimeScale
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
+import 'chartjs-adapter-date-fns';
+import { enUS } from 'date-fns/locale';
 
-const props = defineProps({data: Object})
+const props = defineProps({ data: Object })
 
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale)
 
 const options = {
   responsive: true,
@@ -32,6 +35,22 @@ const options = {
     title: {
       display: false,
       text: 'Chart Title'
+    }
+  },
+  scales: {
+    x: {
+      type: 'time',
+      time: {
+        // unit: 'day',
+        // displayFormats: {
+        //   day: 'MM.dd'
+        // },
+        locale: enUS
+      },
+      title: {
+        display: true,
+        text: 'Date'
+      }
     }
   }
 }
