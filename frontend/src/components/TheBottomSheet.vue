@@ -71,8 +71,13 @@ const chartStore = useChartsStore()
 let showSheet = ref(false)
 
 // subscribe to the active feature
+// TODO: turning the "data faker toggle" will pop the bottom sheet because it is a mutation in the feature store
+// mutation.events is only available in development, not prod
+// https://pinia.vuejs.org/core-concepts/state.html#Subscribing-to-the-state
+// https://github.com/vuejs/pinia/discussions/1117
 featureStore.$subscribe((mutation, state) => {
-  if (state.activeFeature !== null && typeof mutation.events.newValue === 'object') {
+  if (state.activeFeature !== null) {
+    // && typeof mutation.events.newValue === 'object'
     showSheet.value = true
   }
 })
