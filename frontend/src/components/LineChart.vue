@@ -57,7 +57,8 @@ const options = {
     y: {
       title: {
         display: true,
-        text: 'Value'
+        // TODO: make this dynamic
+        text: 'swe'
       }
     }
   }
