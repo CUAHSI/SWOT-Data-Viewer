@@ -42,9 +42,8 @@ export const useChartsStore = defineStore('charts', () => {
       })
       // TODO: this is a hack to remove the invalid measurements
       measurements = measurements.map((m) => {
-        const date = new Date(m.time_str)
-        m.time_str = date
-        if (isNaN(date)){
+        m.datetime = new Date(m.time_str)
+        if (isNaN(m.datetime)){
           return {}
         }
         if (m.wse == "-999999999999.0") {
@@ -57,7 +56,7 @@ export const useChartsStore = defineStore('charts', () => {
         label: `${feature.sword.river_name} | ${feature.sword.reach_id}`,
         data: measurements,
         parsing: {
-          xAxisKey: 'time_str',
+          xAxisKey: 'datetime',
           // TODO: this should be dynamic based on the selected variable
           yAxisKey: 'wse'
         },
