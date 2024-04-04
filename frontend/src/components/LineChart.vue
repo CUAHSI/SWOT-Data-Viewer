@@ -7,7 +7,6 @@
 <script setup>
 import {
   Chart as ChartJS,
-  CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
@@ -26,7 +25,7 @@ const chartStore = useChartsStore()
 const props = defineProps({ data: Object })
 const line = ref(null)
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale)
+ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const options = {
   responsive: true,
