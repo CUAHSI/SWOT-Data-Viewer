@@ -23,18 +23,22 @@ import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
 
 const chartStore = useChartsStore()
-const props = defineProps({ data: Object, selectedVariable: String })
+const props = defineProps({ data: Object, chosenVariable: String })
 const line = ref(null)
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
-console.log("chartData", chartData.value)
-chartData.value.datasets = chartData.value.datasets.map((dataset) => {
-  dataset.parsing.yAxisKey = props.selectedVariable
-  return dataset
-})
+
+if (props.chosenVariable !== undefined) {
+  chartData.value.datasets = chartData.value.datasets.map((dataset) => {
+    dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
+    return dataset
+  })
+}
+
+const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
 
 
 const options = {
@@ -67,7 +71,7 @@ const options = {
     y: {
       title: {
         display: true,
-        text: props.selectedVariable
+        text: yLabel
       }
     }
   }

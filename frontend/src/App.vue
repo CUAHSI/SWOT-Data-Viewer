@@ -38,6 +38,10 @@ const paths = [
     label: "Map",
   },
   {
+    attrs: { to: "/charts" },
+    label: "Charts",
+  },
+  {
     attrs: { to: "/selections" },
     label: "Selections",
   },
