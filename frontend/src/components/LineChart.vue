@@ -1,7 +1,7 @@
 <template>
   <v-theme-provider theme="light" with-background>
-    <!-- <Line :data="chartData" :options="options" ref="line" /> -->
-    <Line :data="props.data" :options="options" ref="line" />
+    <Line :data="chartData" :options="options" ref="line" />
+    <!-- <Line :data="props.data" :options="options" ref="line" /> -->
   </v-theme-provider>
 </template>
 
@@ -27,12 +27,14 @@ const props = defineProps({ data: Object, selectedVariable: String })
 const line = ref(null)
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend)
-// TODO: generate the chart data based on the selected variable
-// let chartData = ref(props.data)
-// console.log(chartData.value)
-// chartData.value.datasets = chartData.value.datasets.map((dataset) => {
-//   dataset.parsing.yAxisKey = props.selectedVariable
-// })
+// TODO: might need a more efficient way of doing this instead of re-mapping the data
+// Ideally use the store directly instead of passing it as a prop
+let chartData = ref(props.data)
+console.log("chartData", chartData.value)
+chartData.value.datasets = chartData.value.datasets.map((dataset) => {
+  dataset.parsing.yAxisKey = props.selectedVariable
+  return dataset
+})
 
 
 const options = {
