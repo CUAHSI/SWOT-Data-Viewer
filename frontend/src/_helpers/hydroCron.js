@@ -1,4 +1,4 @@
-import { APP_API_URL } from '@/constants'
+import { HYDROCRON_URL } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
@@ -10,8 +10,8 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const chartStore = useChartsStore()
   const hydrologicStore = useHydrologicStore()
   const alertStore = useAlertStore()
-  const url = `${APP_API_URL}/hydrocron/v1/timeseries`
-  // const url = 'https://soto.podaac.uat.earthdatacloud.nasa.gov/hydrocron/v1/timeseries'
+  const url = `${HYDROCRON_URL}/v1/timeseries`
+
 
   // TODO: need to get the reach_id from the feature properties
   // for now, just hardcoding it with a reach that has known data in the beta prevalidated data
