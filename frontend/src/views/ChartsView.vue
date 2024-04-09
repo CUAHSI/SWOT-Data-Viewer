@@ -2,13 +2,13 @@
   <h2 class="ma-2 text-center">Charts</h2>
   <v-container v-if="hasFeatures">
     <v-tabs v-model="varTab" align-tabs="center">
-      <v-tab v-for="variable in variables" :value="variable" :key="variable.abbreviation">
+      <v-tab v-for="variable in selectedVariables" :value="variable" :key="variable.abbreviation">
         {{ variable.name }}
       </v-tab>
     </v-tabs>
     <v-window v-model="varTab">
-      <v-window-item v-for="variable in variables" :key="variable.abbreviation" :value="variable">
-        <LineChart v-if="variable" id="chart" :data="chartStore.chartData" :selectedVariable="variable" />
+      <v-window-item v-for="variable in selectedVariables" :key="variable.abbreviation" :value="variable">
+        <LineChart v-if="variable" id="chart" :data="chartStore.chartData" :chosenVariable="variable" />
       </v-window-item>
     </v-window>
   </v-container>
@@ -57,8 +57,8 @@ let sheetText = ref(null)
 
 let hasFeatures = computed(() => featureStore.selectedFeatures.length > 0)
 
-let variables = hydrologicStore.selectedVariables
-let varTab = ref(variables[0].abbreviation)
+let selectedVariables = hydrologicStore.selectedVariables
+let varTab = ref(selectedVariables[0])
 
 </script>
 
