@@ -16,12 +16,15 @@ export const useChartsStore = defineStore('charts', () => {
   const clearChartData = () => {
     chartData.value = {}
   }
-  
+
   const buildChart = (selectedFeatures) => {
     // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
     console.log('Building vis for selected features', selectedFeatures)
     const datasets = getChartDatasets(selectedFeatures)
     const labels = selectedFeatures[0].results.geojson.features.map((feature) => {
+      if (feature.properties.time_str == 'no_data') {
+        return
+      }
       return feature.properties.time_str
     })
     console.log('Labels', labels)
@@ -41,13 +44,17 @@ export const useChartsStore = defineStore('charts', () => {
         return feature.properties
       })
       // TODO: this is a hack to remove the invalid measurements
+      // need to handle this with a formal validator
       measurements = measurements.map((m) => {
         m.datetime = new Date(m.time_str)
-        if (isNaN(m.datetime)){
-          return {}
+        if (m.time_str == 'no_data') {
+          return
         }
-        if (m.wse == "-999999999999.0") {
-          return {}
+        if (isNaN(m.datetime)) {
+          return
+        }
+        if (m.wse == '-999999999999.0') {
+          return
         }
         return m
       })
