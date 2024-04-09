@@ -1,5 +1,6 @@
 <template>
   <v-theme-provider theme="light" with-background>
+    <!-- <Line :data="chartData" :options="options" ref="line" /> -->
     <Line :data="props.data" :options="options" ref="line" />
   </v-theme-provider>
 </template>
@@ -22,10 +23,17 @@ import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
 
 const chartStore = useChartsStore()
-const props = defineProps({ data: Object })
+const props = defineProps({ data: Object, selectedVariable: String })
 const line = ref(null)
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend)
+// TODO: generate the chart data based on the selected variable
+// let chartData = ref(props.data)
+// console.log(chartData.value)
+// chartData.value.datasets = chartData.value.datasets.map((dataset) => {
+//   dataset.parsing.yAxisKey = props.selectedVariable
+// })
+
 
 const options = {
   responsive: true,
@@ -57,8 +65,7 @@ const options = {
     y: {
       title: {
         display: true,
-        // TODO: make this dynamic
-        text: 'swe'
+        text: props.selectedVariable
       }
     }
   }

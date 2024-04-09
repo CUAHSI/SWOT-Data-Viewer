@@ -12,11 +12,6 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const alertStore = useAlertStore()
   const url = `${HYDROCRON_URL}/v1/timeseries`
 
-
-  // TODO: need to get the reach_id from the feature properties
-  // for now, just hardcoding it with a reach that has known data in the beta prevalidated data
-  // '?feature=Reach&feature_id=72390300011&start_time=2023-06-01T00:00:00Z&end_time=2023-10-30T00:00:00Z&output=geojson&fields=reach_id,time_str,wse,geometry'
-  // 'http://localhost:9000/2015-03-31/functions/function/invocations'
   if (swordFeature == null && !featuresStore.shouldFakeData) {
     console.error('No hydroCron query params, and shouldFakeData is false')
     return

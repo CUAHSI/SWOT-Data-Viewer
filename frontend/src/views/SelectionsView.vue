@@ -1,7 +1,16 @@
 <template>
   <h2 class="ma-2 text-center">Selected Features</h2>
   <v-container v-if="hasFeatures">
-    <LineChart id="chart" :data="chartStore.chartData" />
+    <v-tabs v-model="varTab" align-tabs="center">
+      <v-tab v-for="variable in variables" :value="variable.abbreviation" :key="variable.abbreviation">
+        {{ variable.name }}
+      </v-tab>
+    </v-tabs>
+    <v-window v-model="varTab">
+      <v-window-item v-for="variable in variables" :key="variable.abbreviation" :value="variable.abbreviation">
+        <LineChart id="chart" :data="chartStore.chartData" :selectedVariable="varTab" />
+      </v-window-item>
+    </v-window>
   </v-container>
 
   <v-container v-if="!hasFeatures">
@@ -156,6 +165,7 @@
 import LineChart from '@/components/LineChart.vue'
 import { useFeaturesStore } from '../stores/features';
 import { useChartsStore } from '../stores/charts';
+import { useHydrologicStore } from '@/stores/hydrologic'
 import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { mdiSatelliteVariant, mdiSword, mdiCodeJson, mdiFileDelimited } from '@mdi/js'
@@ -164,12 +174,16 @@ import { queryHydroCron } from "../_helpers/hydroCron";
 
 const featureStore = useFeaturesStore();
 const chartStore = useChartsStore();
+const hydrologicStore = useHydrologicStore();
 
 let sheetText = ref(null)
 
 let tab = ref(1)
 
 let hasFeatures = computed(() => featureStore.selectedFeatures.length > 0)
+
+let variables = hydrologicStore.selectedVariables
+let varTab = ref(variables[0].abbreviation)
 
 const headers = [
   { title: 'Feature type', key: 'feature_type', value: item => item.params.feature },
