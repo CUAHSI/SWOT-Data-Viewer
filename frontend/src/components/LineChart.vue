@@ -30,11 +30,15 @@ ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Toolt
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
-console.log("chartData", chartData.value)
-chartData.value.datasets = chartData.value.datasets.map((dataset) => {
-  dataset.parsing.yAxisKey = props.selectedVariable
-  return dataset
-})
+
+if (props.selectedVariable !== undefined) {
+  chartData.value.datasets = chartData.value.datasets.map((dataset) => {
+    dataset.parsing.yAxisKey = props.selectedVariable.abbreviation
+    return dataset
+  })
+}
+
+const yLabel = `${props.selectedVariable?.name} (${props.selectedVariable?.unit})`
 
 
 const options = {
@@ -67,7 +71,7 @@ const options = {
     y: {
       title: {
         display: true,
-        text: props.selectedVariable
+        text: yLabel
       }
     }
   }
