@@ -19,7 +19,7 @@ import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
-import { defineProps, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const chartStore = useChartsStore()
 const props = defineProps({ data: Object })
