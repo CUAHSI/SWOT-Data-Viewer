@@ -11,7 +11,7 @@
       </KeepAlive>
       <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
       <SnackBar />
-      <TheBottomSheet />
+      <!-- <TheBottomSheet /> -->
       <TheFooter />
     </v-main>
   </v-app>
@@ -26,7 +26,7 @@ import SnackBar from './components/SnackBar.vue'
 import TheFooter from './components/TheFooter.vue'
 import { ref } from 'vue'
 import { useAlertStore } from './stores/alerts'
-import TheBottomSheet from "@/components/TheBottomSheet.vue";
+// import TheBottomSheet from "@/components/TheBottomSheet.vue";
 import TheLeafletMap from './components/TheLeafletMap.vue';
 
 const alertStore = useAlertStore()
