@@ -20,8 +20,6 @@ const alertStore = useAlertStore();
 const featureStore = useFeaturesStore();
 const chartStore = useChartsStore();
 
-import { queryHydroCron } from "../_helpers/hydroCron";
-
 const Map = mapStore.mapObject
 
 onUpdated(() => {
@@ -158,8 +156,11 @@ onMounted(() => {
         if (featureStore.checkFeatureSelected(feature)) {
             featureStore.deselectFeature(feature)
         } else {
-            // TODO: set featurestyle base on the selected feature store
-            queryHydroCron(feature)
+            if (feature?.properties) {
+                feature.sword = feature.properties
+                feature.id = feature.properties.OBJECTID
+            }
+            featureStore.selectFeature(feature)
         }
     });
 

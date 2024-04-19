@@ -1,8 +1,9 @@
 <template>
   <v-navigation-drawer location="right" width="auto" v-model="show" temporary>
-    <v-btn v-if="!show && featureStore.activeFeature" size="large" color="primary" class="ma-0 pa-2 drawer-handle" @click="show = !show"
-      :style="{ bottom: '30%', transform: 'translate(-135%, 0)', position: 'absolute' }">
-      <span style="white-space: normal;">Show Data</span>
+    <v-btn v-if="!show && featureStore.activeFeature" size="large" color="primary" class="ma-0 pa-2 drawer-handle"
+      @click="show = !show" :style="{ bottom: '30%', transform: 'translate(-135%, 0)', position: 'absolute' }">
+      <v-icon :icon="mdiTableEye"></v-icon>
+      <span style="white-space: normal;">Explore Data</span>
     </v-btn>
     <v-container v-if="featureStore.activeFeature">
       <v-tabs v-model="tab" align-tabs="center">
@@ -10,7 +11,7 @@
           Static SWORD Metadata
         </v-tab>
         <v-tab :value="2">
-          HydroCron Data
+          Query dynamic variables
         </v-tab>
       </v-tabs>
 
@@ -43,13 +44,11 @@
                   {{ featureStore.activeFeature.sword.reach_id }}
                 </v-card-subtitle>
               </v-card-item>
-              <v-container>
-                <!-- TODO this linechart should only show single plot -->
-                <LineChart id="chart" :data="chartStore.chartData" />
-              </v-container>
 
               <v-card-text>
-                <v-expansion-panels>
+                <VariableSelect v-if="!hasResults()" />
+                <v-btn v-if="!hasResults()" @click="query" color="primary" :loading="querying">Query HydroCron</v-btn>
+                <v-expansion-panels v-if="hasResults()">
                   <v-expansion-panel>
                     <v-expansion-panel-title>
                       <v-icon :icon="mdiTimelineClockOutline"></v-icon>
@@ -78,6 +77,7 @@
                     </v-expansion-panel-text>
                   </v-expansion-panel>
                 </v-expansion-panels>
+                <v-btn @click="showPlot" v-if="hasResults()">Show Plot</v-btn>
               </v-card-text>
             </v-card>
           </v-sheet>
@@ -89,16 +89,34 @@
 
 <script setup>
 import { ref } from 'vue'
-import LineChart from "@/components/LineChart.vue";
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
-import { mdiTimelineClockOutline, mdiSatelliteVariant } from '@mdi/js'
+import { mdiTableEye, mdiSatelliteVariant, mdiTimelineClockOutline } from '@mdi/js'
+import { queryHydroCron } from "../_helpers/hydroCron";
+import VariableSelect from '@/components/VariableSelect.vue'
 
 const featureStore = useFeaturesStore()
-const chartStore = useChartsStore()
+const chartsStore = useChartsStore()
 
 let show = ref(false)
 let tab = ref(1)
+
+let querying = ref(false)
+
+const query = async () => {
+  querying.value = true
+  await queryHydroCron(featureStore.activeFeature)
+  querying.value = false
+}
+
+const hasResults = () => {
+  return featureStore?.activeFeature?.results !== undefined
+}
+
+const showPlot = () => {
+  show.value = false
+  chartsStore.showVis()
+}
 
 featureStore.$subscribe((mutation, state) => {
   if (state.activeFeature !== null) {
