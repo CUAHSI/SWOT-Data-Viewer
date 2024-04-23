@@ -1,6 +1,9 @@
 <template>
   <v-app-bar v-if="!$route.meta.hideNavigation" color="navbar" ref="appBar" id="app-bar" elevate-on-scroll fixed app>
     <div class="d-flex align-end full-height pa-2 align-center w-100">
+      <router-link :to="{ path: `/` }" class="logo">
+        <v-img :src="imgUrl" cover width="7rem"></v-img>
+      </router-link>
 
       <v-spacer></v-spacer>
 
@@ -21,8 +24,10 @@
   </v-app-bar>
 </template>
 <script setup>
+import { RouterLink } from 'vue-router'
 import { useDisplay } from 'vuetify'
 // import UserLogin from "@/components/UserLogin.vue";
+import imgUrl from '@/assets/swot_vis_transparent_bright.png'
 import { useAuthStore } from '../stores/auth';
 defineProps(['paths'])
 defineEmits(['toggleMobileNav'])
@@ -38,12 +43,7 @@ function login(){
 
 <style lang="scss" scoped>
 .logo {
-  height: 100%;
   cursor: pointer;
-
-  img {
-    height: 100%;
-  }
 }
 
 .v-toolbar.v-app-bar--is-scrolled>.v-toolbar__content>.container {

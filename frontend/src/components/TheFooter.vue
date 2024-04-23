@@ -3,7 +3,7 @@
     <div class="d-flex align-end full-height align-center w-100">
       <v-spacer></v-spacer>
       <router-link :to="{ path: `/` }" class="logo">
-        <img src="@/assets/logo.png" alt="home" />
+        <img src="@/assets/cuahsi-logo.png" alt="home" />
       </router-link>
       <!-- <ThemeButton /> -->
     </div>
@@ -25,5 +25,4 @@ import { RouterLink } from 'vue-router'
     height: 100%;
   }
 }
-
 </style>
