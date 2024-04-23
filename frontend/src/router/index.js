@@ -32,8 +32,8 @@ const router = createRouter({
       component: () => import('../views/SelectionsView.vue')
     },
     {
-      path: '/charts',
-      name: 'charts',
+      path: '/plots',
+      name: 'plots',
       component: () => import('../views/ChartsView.vue')
     },
     {
