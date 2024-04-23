@@ -110,6 +110,12 @@ onMounted(() => {
                 <li>SWORD Basin: ${e.layer.feature.properties.basin_id}</li>
             </ul>
         </p>
+        <p>
+            <a href="https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0/${e.layer.feature.id}" target="_blank">View in ArcGIS</a>
+        </p>
+        <h5>
+            More lake data coming soon...
+        </h5>
         `;
         popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
 
