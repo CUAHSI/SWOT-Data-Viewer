@@ -1,9 +1,6 @@
 <template>
   <v-app-bar v-if="!$route.meta.hideNavigation" color="navbar" ref="appBar" id="app-bar" elevate-on-scroll fixed app>
     <div class="d-flex align-end full-height pa-2 align-center w-100">
-      <router-link :to="{ path: `/` }" class="logo">
-        <img src="@/assets/logo.png" alt="home" />
-      </router-link>
 
       <v-spacer></v-spacer>
 
@@ -24,7 +21,6 @@
   </v-app-bar>
 </template>
 <script setup>
-import { RouterLink } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import UserLogin from "@/components/UserLogin.vue";
 import { useAuthStore } from '../stores/auth';
