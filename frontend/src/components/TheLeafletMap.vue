@@ -28,8 +28,8 @@ onUpdated(() => {
 
 onMounted(() => {
     // TODO revert to zoom 3
+    let leaflet = L.map('mapContainer').setView([42.85635170598554, -72.56299010443047], 7);
     // let leaflet = L.map('mapContainer').setView([0, 11], 3);
-    let leaflet = L.map('mapContainer').setView([0, 11], 7);
     Map.leaflet = leaflet;
     Map.hucbounds = [];
     Map.popups = [];

@@ -1,8 +1,5 @@
 <template>
-  <v-bottom-sheet v-model="showSheet" inset>
-    <!-- <v-btn @click="showSheet = false">
-      close
-    </v-btn> -->
+  <v-bottom-sheet v-model="chartStore.showChart" inset>
     <v-card v-if="featureStore.activeFeature" height="100%">
       <v-card-item class="text-center">
         <v-card-title>{{ featureStore.activeFeature.sword.river_name }}</v-card-title>
@@ -34,29 +31,14 @@ import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { useHydrologicStore } from '@/stores/hydrologic'
+import { storeToRefs } from "pinia";
 
 const featureStore = useFeaturesStore()
 const chartStore = useChartsStore()
 const hydrologicStore = useHydrologicStore()
 
-let showSheet = ref(chartStore.showChart)
-
-let selectedVariables = hydrologicStore.selectedVariables
+const { selectedVariables } = storeToRefs(hydrologicStore)
 let varTab = ref(selectedVariables[0])
-
-// subscribe to the active feature
-// TODO: turning the "data faker toggle" will pop the bottom sheet because it is a mutation in the feature store
-// mutation.events is only available in development, not prod
-// https://pinia.vuejs.org/core-concepts/state.html#Subscribing-to-the-state
-// https://github.com/vuejs/pinia/discussions/1117
-
-// TODO: this method of showing the bottom sheet will only work once
-chartStore.$subscribe((mutation, state) => {
-  if (state.showChart) {
-    // && typeof mutation.events.newValue === 'object'
-    showSheet.value = true
-  }
-})
 
 </script>
 
