@@ -20,7 +20,12 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   let params = {}
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation).join(',')
-  fields = fields+','+'time_str'
+  const additional = hydrologicStore.alwaysQueryVariables
+    .map((variable) => variable.abbreviation)
+    .join(',')
+  if (additional !== '') {
+    fields += ',' + additional
+  }
   console.log('Fetching for selected fields', fields)
 
   if (fields === '') {

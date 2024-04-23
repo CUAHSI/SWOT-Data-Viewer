@@ -5,20 +5,24 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20200825a.pdf
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20231026_RevB_w-sigs.pdf
   const hydroVariables = ref([
-    // {
-    //   abbreviation: 'time_str',
-    //   name: 'Time',
-    //   unit: '',
-    //   definition: 'Time of the measurement',
-    //   default: true
-    // },
+    {
+      abbreviation: 'time_str',
+      name: 'Time',
+      unit: '',
+      definition: 'Time of the measurement',
+      default: false,
+      always: true,
+      selectable: false
+    },
     {
       abbreviation: 'wse',
       name: 'Water Surface Elevation',
       unit: 'm',
       definition:
         'Fitted reach water surface elevation, relative to the provided model of the geoid (geoid_hght), with corrections for media delays (wet and dry troposphere, and ionosphere), the crossover correction, and tidal effects (solid_tide, load_tidef, and pole_tide) applied.',
-      default: true
+      default: true,
+      always: false,
+      selectable: true
     },
     {
       abbreviation: 'slope',
@@ -26,14 +30,18 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       unit: 'm/m',
       definition:
         'Fitted water surface slope, relative to the provided model of the geoid(geoid_hght), and with the same corrections and tidal effects applied as for wse. The units are m/m. The downstream direction is defined by the PRD. A positive slope means that the downstream WSE is lower.',
-      default: true
+      default: true,
+      always: false,
+      selectable: true
     },
     {
       abbreviation: 'width',
       name: 'Width',
       unit: 'm',
       definition: 'Reach width',
-      default: false
+      default: true,
+      always: false,
+      selectable: true
     },
     {
       abbreviation: 'area_total',
@@ -41,7 +49,9 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       unit: 'm^2',
       definition:
         'Total estimated water surface area, including area_detct and any dark water that was not detected as water in the SWOT observation but identified through the use of a prior water probability map.',
-      default: false
+      default: false,
+      always: false,
+      selectable: false
     },
     {
       abbreviation: 'd_x_area',
@@ -49,30 +59,46 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       unit: 'm^3/s*m^2',
       definition:
         'Change in the channel cross-sectional area from the value reported in the PRD. This parameter is used in the computation of discharge',
-      default: false
+      default: false,
+      always: false,
+      selectable: false
     },
     {
       abbreviation: 'dschg_c',
       name: 'Discharge',
       unit: 'm^3/s',
       definition: 'Discharge from the consensus algorithm',
-      default: false
+      default: false,
+      always: false,
+      selectable: false
     },
-    // {
-    //   abbreviation: 'geometry',
-    //   name: 'Geometry',
-    //   unit: '',
-    //   definition: 'The geometry of the reach',
-    //   default: true
-    // }
+    {
+      abbreviation: 'geometry',
+      name: 'Geometry',
+      unit: '',
+      definition: 'The geometry of the reach',
+      default: false,
+      always: false,
+      selectable: false
+    }
   ])
 
   const defaultVariables = hydroVariables.value.filter((variable) => variable.default)
+  const alwaysQueryVariables = hydroVariables.value.filter((variable) => variable.always)
   const selectedVariables = ref(defaultVariables)
+
+  const selectableVariables = hydroVariables.value.filter((variable) => variable.selectable)
 
   const addVariable = (variable) => {
     this.selectedVariables.push(variable)
   }
 
-  return { hydroVariables, addVariable, selectedVariables }
+  return {
+    hydroVariables,
+    selectableVariables,
+    addVariable,
+    selectedVariables,
+    defaultVariables,
+    alwaysQueryVariables
+  }
 })
