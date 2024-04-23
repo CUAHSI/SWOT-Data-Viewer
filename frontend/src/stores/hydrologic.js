@@ -5,13 +5,13 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20200825a.pdf
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20231026_RevB_w-sigs.pdf
   const hydroVariables = ref([
-    {
-      abbreviation: 'time_str',
-      name: 'Time',
-      unit: '',
-      definition: 'Time of the measurement',
-      default: true
-    },
+    // {
+    //   abbreviation: 'time_str',
+    //   name: 'Time',
+    //   unit: '',
+    //   definition: 'Time of the measurement',
+    //   default: true
+    // },
     {
       abbreviation: 'wse',
       name: 'Water Surface Elevation',
@@ -58,13 +58,13 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Discharge from the consensus algorithm',
       default: false
     },
-    {
-      abbreviation: 'geometry',
-      name: 'Geometry',
-      unit: '',
-      definition: 'The geometry of the reach',
-      default: true
-    }
+    // {
+    //   abbreviation: 'geometry',
+    //   name: 'Geometry',
+    //   unit: '',
+    //   definition: 'The geometry of the reach',
+    //   default: true
+    // }
   ])
 
   const defaultVariables = hydroVariables.value.filter((variable) => variable.default)
