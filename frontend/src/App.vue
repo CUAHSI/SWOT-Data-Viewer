@@ -45,10 +45,11 @@ const paths = [
     attrs: { to: "/selections" },
     label: "Selections",
   },
-  {
-    attrs: { to: "/api" },
-    label: "API",
-  },
+  // TODO: enable API page when it is ready
+  // {
+  //   attrs: { to: "/api" },
+  //   label: "API",
+  // },
   {
     attrs: { to: "/about" },
     label: "About",
