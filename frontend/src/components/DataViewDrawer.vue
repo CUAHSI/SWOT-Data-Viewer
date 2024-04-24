@@ -28,7 +28,7 @@
               <v-card-text>
                 <div v-for="(value, key, i) in featureStore.activeFeature.sword" :key="i">
                   <v-divider v-if="i < Object.keys(featureStore.activeFeature.sword).length - 1" />
-                  <div><strong>{{ key }}:</strong> {{ value }}</div>
+                  <div><strong>{{ hydrologicStore.getSwordDescription(key) }}:</strong> {{ value }}</div>
                 </div>
               </v-card-text>
             </v-card>
@@ -91,12 +91,14 @@
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
+import { useHydrologicStore } from '@/stores/hydrologic'
 import { mdiTableEye, mdiSatelliteVariant, mdiTimelineClockOutline } from '@mdi/js'
 import { queryHydroCron } from "../_helpers/hydroCron";
 import VariableSelect from '@/components/VariableSelect.vue'
 
 const featureStore = useFeaturesStore()
 const chartsStore = useChartsStore()
+const hydrologicStore = useHydrologicStore()
 
 let show = ref(false)
 let tab = ref(1)

@@ -4,7 +4,7 @@ import { ref } from 'vue'
 export const useHydrologicStore = defineStore('hydrologic', () => {
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20200825a.pdf
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20231026_RevB_w-sigs.pdf
-  const hydroVariables = ref([
+  const swotVariables = ref([
     {
       abbreviation: 'time_str',
       name: 'Time',
@@ -83,22 +83,187 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     }
   ])
 
-  const defaultVariables = hydroVariables.value.filter((variable) => variable.default)
-  const alwaysQueryVariables = hydroVariables.value.filter((variable) => variable.always)
+  const defaultVariables = swotVariables.value.filter((variable) => variable.default)
+  const alwaysQueryVariables = swotVariables.value.filter((variable) => variable.always)
   const selectedVariables = ref(defaultVariables)
 
-  const selectableVariables = hydroVariables.value.filter((variable) => variable.selectable)
+  const selectableVariables = swotVariables.value.filter((variable) => variable.selectable)
 
   const addVariable = (variable) => {
     this.selectedVariables.push(variable)
   }
 
+  const swordVariables = ref([
+    {
+      abbreviation: 'x',
+      definition:
+        'Longitude of the node or reach ranging from 180°E to 180°W (units: decimal degrees)',
+      fileType: 'node'
+    },
+    {
+      abbreviation: 'y',
+      definition:
+        'Latitude of the node or reach ranging from 90°S to 90°N (units: decimal degrees)',
+      fileType: 'node'
+    },
+    {
+      abbreviation: 'node_id',
+      definition:
+        'ID of each node. The format of the id is as follows: CBBBBBRRRRNNNT where C = Continent (the first number of the Pfafstetter basin code), B = Remaining Pfafstetter basin code up to level 6, R = Reach number (assigned sequentially within a level 6 basin starting at the downstream end working upstream), N = Node number (assigned sequentially within a reach starting at the downstream end working upstream), T = Type (1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost node)',
+      fileType: 'node'
+    },
+    {
+      abbreviation: 'node_length',
+      definition: 'Node length measured along the GRWL centerline points (units: meters)',
+      fileType: 'node'
+    },
+    {
+      abbreviation: 'reach_id',
+      definition:
+        'ID of each reach. The format of the id is as follows: CBBBBBRRRRT where C = Continent (the first number of the Pfafstetter basin code), B = Remaining Pfafstetter basin codes up to level 6, R = Reach number (assigned sequentially within a level 6 basin starting at the downstream end working upstream, T = Type (1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost reach)',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'reach_length',
+      definition: 'Reach length measured along the GRWL centerline points (units: meters)',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'wse',
+      definition:
+        'Average water surface elevation (WSE) value for a node or reach. WSEs are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019) and referenced to the EGM96 geoid (units: meters)',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'wse_var',
+      definition:
+        'WSE variance along the GRWL centerline points used to calculate the average WSE for each node or reach (units: square meters)',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'width',
+      definition: 'Average width for a node or reach (units: meters)',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'width_var',
+      definition:
+        'Width variance along the GRWL centerline points used to calculate the average width for each node or reach (units: square meters)',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'facc',
+      definition:
+        'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019) (units: square kilometers)',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'n_chan_max',
+      definition: 'Maximum number of channels for each node or reach',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'n_chan_mod',
+      definition: 'Mode of the number of channels for each node or reach',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'obstr_type',
+      definition:
+        'Type of obstruction for each node or reach based on the Globale Obstruction Database (GROD, Whittemore et al., 2020) and HydroFALLS data (http://wp.geog.mcgill.ca/hydrolab/hydrofalls). Obstr_type values: 0 - No Dam, 1 - Dam, 2 - Channel Dam, 3 - Lock, 4 - Low Permeable Dam, 5 - Waterfall',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'grod_id',
+      definition: 'The unique GROD ID for each node or reach with obstr_type values 1-4',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'hfalls_id',
+      definition: 'The unique HydroFALLS ID for each node or reach with obstr_type value 5',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'dist_out',
+      definition: 'Distance from the river outlet for each node or reach (units: meters)',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'type',
+      definition:
+        'Type identifier for a node or reach: 1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost reach/node',
+      fileType: 'all'
+    },
+    {
+      abbreviation: 'lakeflag',
+      definition:
+        'GRWL water body identifier for each reach:  0=river, 1=lake/reservoir, 2=tidally influenced river,  3=canal',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'slope',
+      definition:
+        'Reach average slope calculated along the GRWL centerline points. Slopes are calculated using a linear regression (units: meters/kilometer)',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'n_nodes',
+      definition: 'Number of nodes associated with each reach',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'n_rch_up',
+      definition: 'Number of upstream reaches for each reach',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'n_rch_down',
+      definition: 'Number of downstream reaches for each reach',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'rch_id_up',
+      definition: 'Reach IDs of the upstream neighboring reaches',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'rch_id_dn',
+      definition: 'Reach IDs of the downstream neighboring reaches',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'swot_obs',
+      definition:
+        'The maximum number of SWOT passes to intersect each reach during the 21 day orbit cycle',
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'swot_orbits',
+      definition:
+        'A list of the SWOT orbit tracks that intersect each reach during the 21 day orbit cycle',
+      fileType: 'reach'
+    }
+  ])
+
+  function getSwordDescription(abbreviation) {
+    console.log('Getting description for', abbreviation)
+    const found = swordVariables.value.find((variable) => variable.abbreviation === abbreviation)
+    // if found is not undefined
+    if (found) {
+      return found.definition
+    } else {
+      return abbreviation
+    }
+  }
+
   return {
-    hydroVariables,
+    swotVariables,
     selectableVariables,
     addVariable,
     selectedVariables,
     defaultVariables,
-    alwaysQueryVariables
+    alwaysQueryVariables,
+    swordVariables,
+    getSwordDescription
   }
 })
