@@ -26,9 +26,9 @@
                 </v-card-subtitle>
               </v-card-item>
               <v-card-text>
-                <div v-for="(value, key, i) in featureStore.activeFeature.sword" :key="i">
+                <div v-for="(value, key, i) in defaultSwordMetadata()" :key="i">
                   <v-divider v-if="i < Object.keys(featureStore.activeFeature.sword).length - 1" />
-                  <div><strong>{{ hydrologicStore.getSwordDescription(key) }}:</strong> {{ value }}</div>
+                  <div><strong>{{ key }}:</strong> {{ value }}</div>
                 </div>
               </v-card-text>
             </v-card>
@@ -118,6 +118,10 @@ const hasResults = () => {
 const showPlot = () => {
   show.value = false
   chartsStore.showVis()
+}
+
+const defaultSwordMetadata = () => {
+  return featureStore.activeFeature ? hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, true) : {}
 }
 
 featureStore.$subscribe((mutation, state) => {
