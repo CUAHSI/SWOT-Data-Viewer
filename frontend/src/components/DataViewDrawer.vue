@@ -1,13 +1,13 @@
 <template>
-  <v-navigation-drawer location="right" width="auto" v-model="show" order="1">
-    <v-btn v-if="featureStore.activeFeature" @click="show = !show" location="left" order="0" postition="absolute"
+  <v-navigation-drawer location="right" width="auto" v-model="show" order="1" style="width: 30vw">
+    <v-container v-if="featureStore.activeFeature">
+      <v-btn v-if="featureStore.activeFeature" @click="show = !show" location="left" order="0" postition="absolute"
       :style="{ bottom: '30%', transform: translate(), position: 'absolute' }"
       :icon="show ? mdiChevronRight : mdiChevronLeft">
     </v-btn>
-    <v-container v-if="featureStore.activeFeature">
       <StaticMetadata />
       <!-- <DynamicData /> -->
-      <v-btn v-if="!hasResults()" @click="query" color="primary" :loading="querying">
+      <v-btn v-if="!hasResults()" @click="query" color="primary" class="ma-2" :loading="querying">
         <v-icon :icon="mdiChartScatterPlot"></v-icon>Plot
       </v-btn>
     </v-container>
@@ -32,7 +32,7 @@ const translate = () => {
   if (show.value) {
     return 'translate(-50%, 0)'
   } else {
-    return 'translate(-170%, 0)'
+    return 'translate(-180%, 0)'
   }
 }
 
