@@ -20,6 +20,12 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   let params = {}
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation).join(',')
+  const additional = hydrologicStore.alwaysQueryVariables
+    .map((variable) => variable.abbreviation)
+    .join(',')
+  if (additional !== '') {
+    fields += ',' + additional
+  }
   console.log('Fetching for selected fields', fields)
 
   if (fields === '') {
@@ -38,7 +44,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     // TODO: get the feature type dynamically
     // get the start and end time from the date range
     let feature_id = swordFeature?.properties?.reach_id
-    if (feature_id == undefined){
+    if (feature_id == undefined) {
       feature_id = swordFeature.params.feature_id
     }
     params = {
@@ -65,16 +71,16 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   if (output === 'csv') {
     return response.results.csv
   }
+  featuresStore.mergeFeature(response)
   if (featuresStore.shouldFakeData) {
-    let fakeData = buildFakeData([...featuresStore.selectedFeatures, response])
+    let fakeData = buildFakeData(featuresStore.selectedFeatures)
     // update the chartData before selecting the feature otherwise it will show blank
     chartStore.chartData = fakeData
     console.log('Fake data', fakeData)
-  }else{
-
-    chartStore.buildChart([...featuresStore.selectedFeatures, response])
+  } else {
+    // chartStore.buildChart([...featuresStore.selectedFeatures, response])
+    chartStore.buildChart(featuresStore.selectedFeatures)
   }
-  featuresStore.selectFeature(response)
 }
 
 const fetchHydroCronData = async (url, params, swordFeature) => {
@@ -122,7 +128,7 @@ const processHydroCronResult = async (response, params, swordFeature) => {
       return null
     }
     data.params = params
-    if (swordFeature?.properties){
+    if (swordFeature?.properties) {
       data.sword = swordFeature.properties
       data.id = swordFeature.properties.OBJECTID
     }

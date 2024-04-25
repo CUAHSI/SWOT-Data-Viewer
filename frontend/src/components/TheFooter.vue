@@ -1,30 +1,28 @@
 <template>
-  <v-footer v-if="!$route.meta.hideNavigation" app color="navbar" class="d-flex flex-column">
-    <div class="d-flex w-100 align-center">
-      <ThemeButton />
-      <div class="text-center w-100">
-        {{ new Date().getFullYear() }} — <strong>Swot-Data-Viewer</strong>
-      </div>
+  <v-footer height="50" v-if="!$route.meta.hideNavigation" fixed app color="navbar" class="d-flex flex-column">
+    <div class="d-flex align-end full-height align-center w-100">
       <v-spacer></v-spacer>
-      <v-switch v-model="switchValue" @click.stop="toggleSwitch" :label="`${switchValue ? 'Faking Data' : 'Using Real Data'}`"></v-switch>
+      <router-link :to="{ path: `/` }" class="logo">
+        <img src="@/assets/cuahsi-logo.png" alt="home" />
+      </router-link>
+      <!-- <ThemeButton /> -->
     </div>
   </v-footer>
 </template>
 
 <script setup>
-import ThemeButton from './ThemeButton.vue';
-import { useFeaturesStore } from '@/stores/features'
-import { ref } from 'vue'
-
-const featureStore = useFeaturesStore()
-
-let switchValue = ref(featureStore.shouldFakeData)
-
-const toggleSwitch = () => {
-  featureStore.shouldFakeData = !featureStore.shouldFakeData
-  switchValue.value = !switchValue.value
-}
+// import ThemeButton from './ThemeButton.vue';
+import { RouterLink } from 'vue-router'
 
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.logo {
+  height: 100%;
+  cursor: pointer;
+
+  img {
+    height: 100%;
+  }
+}
+</style>
