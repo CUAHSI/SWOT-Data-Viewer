@@ -42,6 +42,10 @@ const paths = [
     label: "Plots",
   },
   // {
+  //   attrs: { to: "/dashboard" },
+  //   label: "Dashboard",
+  // },
+  // {
   //   attrs: { to: "/selections" },
   //   label: "Selections",
   // },

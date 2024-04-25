@@ -37,6 +37,11 @@ const router = createRouter({
       component: () => import('../views/ChartsView.vue')
     },
     {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import('../views/ChartsDashboardView.vue')
+    },
+    {
       path: '/auth-redirect',
       name: 'auth-redirect',
       component: () => import('../views/AuthRedirectView.vue'),
