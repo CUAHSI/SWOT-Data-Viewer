@@ -124,7 +124,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Node length measured along the GRWL centerline points',
       fileType: 'node',
       default: false,
-      short_definition: '',
+      short_definition: 'Node length measured along the GRWL centerline points',
       units: 'meters'
     },
     {
@@ -162,7 +162,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'WSE variance along the GRWL centerline points used to calculate the average WSE for each node or reach',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition:
+        'WSE variance along the GRWL centerline points used to calculate the average WSE for each node or reach',
       units: 'square meters'
     },
     {
@@ -179,7 +180,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Width variance along the GRWL centerline points used to calculate the average width for each node or reach',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition:
+        'Width variance along the GRWL centerline points used to calculate the average width for each node or reach',
       units: 'square meters'
     },
     {
@@ -188,7 +190,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019)',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition:
+        'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019)',
       units: 'square kilometers'
     },
     {
@@ -196,7 +199,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Maximum number of channels for each node or reach',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition: 'Maximum number of channels for each node or reach',
       units: ''
     },
     {
@@ -204,7 +207,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Mode of the number of channels for each node or reach',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition: 'Mode of the number of channels for each node or reach',
       units: ''
     },
     {
@@ -213,7 +216,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Type of obstruction for each node or reach based on the Globale Obstruction Database (GROD, Whittemore et al., 2020) and HydroFALLS data (http://wp.geog.mcgill.ca/hydrolab/hydrofalls). Obstr_type values: 0 - No Dam, 1 - Dam, 2 - Channel Dam, 3 - Lock, 4 - Low Permeable Dam, 5 - Waterfall',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition:
+        'Type of obstruction for each node or reach based on the Globale Obstruction Database (GROD, Whittemore et al., 2020) and HydroFALLS data (http://wp.geog.mcgill.ca/hydrolab/hydrofalls). Obstr_type values: 0 - No Dam, 1 - Dam, 2 - Channel Dam, 3 - Lock, 4 - Low Permeable Dam, 5 - Waterfall',
       units: ''
     },
     {
@@ -221,7 +225,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'The unique GROD ID for each node or reach with obstr_type values 1-4',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition: 'The unique GROD ID for each node or reach with obstr_type values 1-4',
       units: ''
     },
     {
@@ -229,7 +233,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'The unique HydroFALLS ID for each node or reach with obstr_type value 5',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition: 'The unique HydroFALLS ID for each node or reach with obstr_type value 5',
       units: ''
     },
     {
@@ -237,7 +241,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Distance from the river outlet for each node or reach',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition: 'Distance from the river outlet for each node or reach',
       units: 'meters'
     },
     {
@@ -246,7 +250,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Type identifier for a node or reach: 1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost reach/node',
       fileType: 'all',
       default: false,
-      short_definition: '',
+      short_definition:
+        'Type identifier for a node or reach: 1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost reach/node',
       units: ''
     },
     {
@@ -255,7 +260,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'GRWL water body identifier for each reach:  0=river, 1=lake/reservoir, 2=tidally influenced river,  3=canal',
       fileType: 'reach',
       default: false,
-      short_definition: '',
+      short_definition:
+        'GRWL water body identifier for each reach:  0=river, 1=lake/reservoir, 2=tidally influenced river,  3=canal',
       units: ''
     },
     {
@@ -280,7 +286,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Number of upstream reaches for each reach',
       fileType: 'reach',
       default: false,
-      short_definition: '',
+      short_definition: 'Number of upstream reaches for each reach',
       units: ''
     },
     {
@@ -288,7 +294,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Number of downstream reaches for each reach',
       fileType: 'reach',
       default: false,
-      short_definition: '',
+      short_definition: 'Number of downstream reaches for each reach',
       units: ''
     },
     {
@@ -313,7 +319,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'The maximum number of SWOT passes to intersect each reach during the 21 day orbit cycle',
       fileType: 'reach',
       default: false,
-      short_definition: '',
+      short_definition:
+        'The maximum number of SWOT passes to intersect each reach during the 21 day orbit cycle',
       units: ''
     },
     {
@@ -322,7 +329,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'A list of the SWOT orbit tracks that intersect each reach during the 21 day orbit cycle',
       fileType: 'reach',
       default: false,
-      short_definition: '',
+      short_definition:
+        'A list of the SWOT orbit tracks that intersect each reach during the 21 day orbit cycle',
       units: ''
     }
   ])
@@ -341,7 +349,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       }
       return (
         variable.abbreviation === abbreviation &&
-        (variable.fileType === fileType || variable.fileType === 'all')
+        (variable.fileType === fileType || variable.fileType === 'all') &&
+        variable.default === defaultOnly
       )
     })
   }

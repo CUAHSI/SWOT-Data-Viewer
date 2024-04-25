@@ -5,24 +5,11 @@
       :icon="show ? mdiChevronRight : mdiChevronLeft">
     </v-btn>
     <v-container v-if="featureStore.activeFeature">
-      <v-tabs v-model="tab" align-tabs="center">
-        <v-tab :value="1">
-          Static SWORD Metadata
-        </v-tab>
-        <v-tab :value="2">
-          Query dynamic variables
-        </v-tab>
-      </v-tabs>
-
-      <v-window v-model="tab">
-        <v-window-item :value="1">
-          <StaticMetadata />
-        </v-window-item>
-
-        <v-window-item :value="2">
-          <DynamicData />
-        </v-window-item>
-      </v-window>
+      <StaticMetadata />
+      <!-- <DynamicData /> -->
+      <v-btn v-if="!hasResults()" @click="query" color="primary" :loading="querying">
+        <v-icon :icon="mdiChartScatterPlot"></v-icon>Plot
+      </v-btn>
     </v-container>
   </v-navigation-drawer>
 </template>
@@ -30,14 +17,15 @@
 <script setup>
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
-import { mdiChevronRight, mdiChevronLeft } from '@mdi/js'
-import DynamicData from '@/components/DynamicData.vue'
+import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot } from '@mdi/js'
+// import DynamicData from '@/components/DynamicData.vue'
+import { queryHydroCron } from "../_helpers/hydroCron";
 import StaticMetadata from './StaticMetadata.vue'
+import { useRouter } from 'vue-router'
 
 const featureStore = useFeaturesStore()
 
 let show = ref(false)
-let tab = ref(1)
 
 
 const translate = () => {
@@ -46,6 +34,20 @@ const translate = () => {
   } else {
     return 'translate(-170%, 0)'
   }
+}
+
+let querying = ref(false)
+const router = useRouter()
+
+const query = async () => {
+  querying.value = true
+  await queryHydroCron(featureStore.activeFeature)
+  querying.value = false
+  router.push('/plots')
+}
+
+const hasResults = () => {
+  return featureStore?.activeFeature?.results !== undefined
 }
 
 featureStore.$subscribe((mutation, state) => {

@@ -8,26 +8,41 @@
                 </v-card-subtitle> -->
       </v-card-item>
       <v-card-text>
-        <div v-for="metadataObject in defaultSwordMetadata(true)" :key="metadataObject.id">
+        <div v-for="metadataObject in defaultSwordMetadata()" :key="metadataObject.id">
           <v-divider />
           <div><strong>{{ metadataObject.short_definition }}:</strong> {{ metadataObject.value }}</div>
         </div>
+        <template v-if="extended">
+          <div v-for="extendedMetadataObject in extendedMetadata" :key="extendedMetadataObject.id">
+            <v-divider />
+            <div><strong>{{ extendedMetadataObject.short_definition }}:</strong> {{ extendedMetadataObject.value }}
+            </div>
+          </div>
+        </template>
       </v-card-text>
     </v-card>
   </v-sheet>
+  <v-btn v-if="!extended" @click="extendMetadata" color="primary"><v-icon :icon="mdiSword"></v-icon>Metadata</v-btn>
+  <v-btn v-else @click="extended = false" color="primary"><v-icon :icon="mdiSword"></v-icon>Hide Extended Metadata</v-btn>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useHydrologicStore } from '@/stores/hydrologic'
+import { mdiSword } from '@mdi/js'
 
 const featureStore = useFeaturesStore()
 const hydrologicStore = useHydrologicStore()
 
-let show = ref(false)
+let extendedMetadata = ref([])
+let extended = ref(false)
 
-
+const extendMetadata = () => {
+  if (!featureStore.activeFeature) return
+  extendedMetadata.value = hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, false, 'reach')
+  extended.value = true
+}
 
 const defaultSwordMetadata = () => {
   if (!featureStore.activeFeature) return {}
@@ -39,29 +54,9 @@ const getFeatureName = () => {
   if (!featureStore.activeFeature) return ''
   const river_name = featureStore.activeFeature.sword.river_name
   if (river_name === 'NODATA') {
-    return 'UNNAMED REACH'
+    return 'UNNAMED RIVER'
   }
   return river_name
 }
 
-
-featureStore.$subscribe((mutation, state) => {
-  if (state.activeFeature !== null) {
-    // && typeof mutation.events.newValue === 'object'
-    show.value = true
-  }
-})
-
 </script>
-
-
-<style scoped>
-#chart {
-  height: 40vh;
-}
-
-.v-navigation-drawer--mini-variant,
-.v-navigation-drawer {
-  overflow: visible !important;
-}
-</style>
