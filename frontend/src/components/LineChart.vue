@@ -23,7 +23,7 @@ import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
 
 const chartStore = useChartsStore()
-const props = defineProps({ data: Object, chosenVariable: String })
+const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend)

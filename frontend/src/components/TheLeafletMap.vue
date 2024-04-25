@@ -20,8 +20,6 @@ const alertStore = useAlertStore();
 const featureStore = useFeaturesStore();
 const chartStore = useChartsStore();
 
-import { queryHydroCron } from "../_helpers/hydroCron";
-
 const Map = mapStore.mapObject
 
 onUpdated(() => {
@@ -30,8 +28,8 @@ onUpdated(() => {
 
 onMounted(() => {
     // TODO revert to zoom 3
+    let leaflet = L.map('mapContainer').setView([42.85635170598554, -72.56299010443047], 7);
     // let leaflet = L.map('mapContainer').setView([0, 11], 3);
-    let leaflet = L.map('mapContainer').setView([0, 11], 7);
     Map.leaflet = leaflet;
     Map.hucbounds = [];
     Map.popups = [];
@@ -112,6 +110,12 @@ onMounted(() => {
                 <li>SWORD Basin: ${e.layer.feature.properties.basin_id}</li>
             </ul>
         </p>
+        <p>
+            <a href="https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0/${e.layer.feature.id}" target="_blank">View in ArcGIS</a>
+        </p>
+        <h5>
+            More lake data coming soon...
+        </h5>
         `;
         popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
 
@@ -158,46 +162,51 @@ onMounted(() => {
         if (featureStore.checkFeatureSelected(feature)) {
             featureStore.deselectFeature(feature)
         } else {
-            // TODO: set featurestyle base on the selected feature store
-            queryHydroCron(feature)
+            // Only allow one feature to be selected at a time
+            featureStore.clearSelectedFeatures()
+            if (feature?.properties) {
+                feature.sword = feature.properties
+                feature.id = feature.properties.OBJECTID
+            }
+            featureStore.selectFeature(feature)
         }
     });
 
     // add nodes layer to map
-    url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
-    let sword_nodes = L.tileLayer.wms(url, {
-        layers: 0,
-        transparent: 'true',
-        format: 'image/png',
-        minZoom: 12,
-        maxZoom: 13,
-    }).addTo(leaflet);
+    // url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
+    // let sword_nodes = L.tileLayer.wms(url, {
+    //     layers: 0,
+    //     transparent: 'true',
+    //     format: 'image/png',
+    //     minZoom: 12,
+    //     maxZoom: 13,
+    // }).addTo(leaflet);
 
-    url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
-    const nodesFeatures = esriLeaflet.featureLayer({
-        url: url,
-        simplifyFactor: 0.35,
-        precision: 5,
-        minZoom: 13,
-        maxZoom: 18,
-    }).addTo(leaflet);
+    // url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
+    // const nodesFeatures = esriLeaflet.featureLayer({
+    //     url: url,
+    //     simplifyFactor: 0.35,
+    //     precision: 5,
+    //     minZoom: 13,
+    //     maxZoom: 18,
+    // }).addTo(leaflet);
 
-    nodesFeatures.on("click", function (e) {
-        const popup = L.popup();
-        const content = `
-        <h3>${e.layer.feature.properties.river_name}</h3>
-        <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
-        <p>
-            <ul>
-                <li>SWORD Width: ${e.layer.feature.properties.width}</li>
-                <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
-                <li>SWORD Sinuosity: ${e.layer.feature.properties.sinuosity}</li>
-                <li>SWOT Dist_out: ${e.layer.feature.properties.dist_out}</li>
-            </ul>
-        </p>
-        `;
-        popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
-    });
+    // nodesFeatures.on("click", function (e) {
+    //     const popup = L.popup();
+    //     const content = `
+    //     <h3>${e.layer.feature.properties.river_name}</h3>
+    //     <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
+    //     <p>
+    //         <ul>
+    //             <li>SWORD Width: ${e.layer.feature.properties.width}</li>
+    //             <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
+    //             <li>SWORD Sinuosity: ${e.layer.feature.properties.sinuosity}</li>
+    //             <li>SWOT Dist_out: ${e.layer.feature.properties.dist_out}</li>
+    //         </ul>
+    //     </p>
+    //     `;
+    //     popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
+    // });
 
     // // add USGS gage layer to map
     // url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
@@ -217,8 +226,8 @@ onMounted(() => {
         "Lakes Features": lakesFeatures,
         "SWORD Reaches": reaches,
         "Reaches Features": reachesFeatures,
-        "SWORD Nodes": sword_nodes,
-        "Nodes Features": nodesFeatures,
+        // "SWORD Nodes": sword_nodes,
+        // "Nodes Features": nodesFeatures,
     };
 
     // /*

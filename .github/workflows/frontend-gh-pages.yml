@@ -3,9 +3,10 @@ name: Deploy static content to Pages
 
 on:
   push:
-    branches:
-      - main
-      - swot-front
+    # TODO: restrict branches
+    # branches:
+    #   - main
+    #   - swot-front
   workflow_dispatch:
 
 # Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages

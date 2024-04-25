@@ -4,6 +4,7 @@ import { ref } from 'vue'
 export const useChartsStore = defineStore('charts', () => {
   const chartData = ref({})
   const chart = ref(null)
+  const showChart = ref(false)
 
   const setChart = (chartInstance) => {
     chart.value = chartInstance
@@ -72,6 +73,10 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
+  const showVis = () => {
+    showChart.value = true
+  }
+
   const dynamicColors = function () {
     var r = Math.floor(Math.random() * 255)
     var g = Math.floor(Math.random() * 255)
@@ -84,6 +89,8 @@ export const useChartsStore = defineStore('charts', () => {
     chartData,
     clearChartData,
     buildChart,
-    setChart
+    setChart,
+    showVis,
+    showChart
   }
 })

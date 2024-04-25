@@ -25,6 +25,19 @@ export const useFeaturesStore = defineStore('features', () => {
     console.log('Feature deselected: ', feature)
   }
 
+  function mergeFeature(feature) {
+    console.log('Merging feature', feature)
+    const index = selectedFeatures.value.findIndex((f) => f.id === feature.id)
+    if (index !== -1) {
+      console.log('Feature already exists in selected features')
+      selectedFeatures.value[index] = feature
+    } else {
+      console.log('Feature does not exist in selected features')
+      selectedFeatures.value.push(feature)
+    }
+    this.activeFeature = feature
+  }
+
   const clearSelectedFeatures = () => {
     selectedFeatures.value = []
     activeFeature.value = null
@@ -42,6 +55,7 @@ export const useFeaturesStore = defineStore('features', () => {
     shouldFakeData,
     clearSelectedFeatures,
     deselectFeature,
-    checkFeatureSelected
+    checkFeatureSelected,
+    mergeFeature
   }
 })
