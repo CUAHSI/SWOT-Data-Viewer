@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - develop
       - swot-front
   workflow_dispatch:
 
