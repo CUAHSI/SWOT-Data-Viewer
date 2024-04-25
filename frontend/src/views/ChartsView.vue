@@ -1,5 +1,4 @@
 <template>
-  <h2 class="ma-2 text-center">Charts</h2>
   <v-container v-if="hasFeatures">
     <v-tabs v-model="varTab" align-tabs="center">
       <v-tab v-for="variable in selectedVariables" :value="variable" :key="variable.abbreviation">

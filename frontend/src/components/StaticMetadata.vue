@@ -13,7 +13,7 @@
           <div><strong>{{ metadataObject.short_definition }}:</strong> {{ metadataObject.value }}</div>
         </div>
         <template v-if="extended">
-          <div v-for="extendedMetadataObject in extendedMetadata" :key="extendedMetadataObject.id">
+          <div v-for="extendedMetadataObject in extendedMetadata()" :key="extendedMetadataObject.id">
             <v-divider />
             <div><strong>{{ extendedMetadataObject.short_definition }}:</strong> {{ extendedMetadataObject.value }}
             </div>
@@ -35,13 +35,18 @@ import { mdiSword } from '@mdi/js'
 const featureStore = useFeaturesStore()
 const hydrologicStore = useHydrologicStore()
 
-let extendedMetadata = ref([])
 let extended = ref(false)
 
 const extendMetadata = () => {
   if (!featureStore.activeFeature) return
   extendedMetadata.value = hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, false, 'reach')
   extended.value = true
+}
+
+const extendedMetadata = () => {
+  if (!featureStore.activeFeature) return {}
+  // TODO assumes reach, won't work for nodes
+  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, false, 'reach')
 }
 
 const defaultSwordMetadata = () => {
