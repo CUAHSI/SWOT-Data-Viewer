@@ -21,14 +21,14 @@
             <v-card v-if="featureStore.activeFeature" height="100%">
               <v-card-item class="text-center">
                 <v-card-title>{{ featureStore.activeFeature.sword.river_name }}</v-card-title>
-                <v-card-subtitle>
+                <!-- <v-card-subtitle>
                   {{ featureStore.activeFeature.sword.reach_id }}
-                </v-card-subtitle>
+                </v-card-subtitle> -->
               </v-card-item>
               <v-card-text>
-                <div v-for="(value, key, i) in defaultSwordMetadata()" :key="i">
-                  <v-divider v-if="i < Object.keys(featureStore.activeFeature.sword).length - 1" />
-                  <div><strong>{{ key }}:</strong> {{ value }}</div>
+                <div v-for="metadataObject in defaultSwordMetadata(true)" :key="metadataObject.id">
+                  <v-divider />
+                  <div><strong>{{ metadataObject.short_definition }}:</strong> {{ metadataObject.value }}</div>
                 </div>
               </v-card-text>
             </v-card>
@@ -121,7 +121,9 @@ const showPlot = () => {
 }
 
 const defaultSwordMetadata = () => {
-  return featureStore.activeFeature ? hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, true) : {}
+  if (!featureStore.activeFeature) return {}
+  // TODO assumes reach, won't work for nodes
+  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, true, 'reach')
 }
 
 featureStore.$subscribe((mutation, state) => {

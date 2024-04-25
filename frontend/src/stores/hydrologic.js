@@ -96,18 +96,16 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
   const swordVariables = ref([
     {
       abbreviation: 'x',
-      definition:
-        'Longitude of the node or reach ranging from 180°E to 180°W',
-      fileType: 'node',
+      definition: 'Longitude of the node or reach ranging from 180°E to 180°W',
+      fileType: 'all',
       default: true,
       short_definition: 'Longitude',
       units: 'decimal degrees'
     },
     {
       abbreviation: 'y',
-      definition:
-        'Latitude of the node or reach ranging from 90°S to 90°N',
-      fileType: 'node',
+      definition: 'Latitude of the node or reach ranging from 90°S to 90°N',
+      fileType: 'all',
       default: true,
       short_definition: 'Latitude',
       units: 'decimal degrees'
@@ -139,7 +137,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       units: ''
     },
     {
-      abbreviation: 'reach_length',
+      // Differs from the abbreviation in the SWORD documentation
+      // https://zenodo.org/records/3898570
+      // abbreviation: 'reach_length',
+      abbreviation: 'reach_len',
       definition: 'Reach length measured along the GRWL centerline points',
       fileType: 'reach',
       default: true,
@@ -326,26 +327,39 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     }
   ])
 
-  function descriptionFromAbreviation(abbreviation, fileType = 'reach', defaultOnly = false) {
-    const found = swordVariables.value.find((variable) => {
+  /**
+   * Retrieves a variable object based on its abbreviation and file type.
+   * @param {string} abbreviation - The abbreviation of the variable.
+   * @param {string} [fileType='reach'] - The file type of the variable.
+   * @param {boolean} [defaultOnly=false] - Indicates whether to only consider variables with a default value.
+   * @returns {object|undefined} The variable object if found, otherwise undefined.
+   */
+  function variableFromAbreviation(abbreviation, fileType = 'reach', defaultOnly = false) {
+    return swordVariables.value.find((variable) => {
       if (defaultOnly && !variable.default) {
         return false
       }
-      return variable.abbreviation === abbreviation && variable.fileType === fileType
+      return (
+        variable.abbreviation === abbreviation &&
+        (variable.fileType === fileType || variable.fileType === 'all')
+      )
     })
-    if (found) {
-      return found.short_definition
-    } else {
-      return false
-    }
   }
 
-  function getSwordDescriptions(feature, defaultOnly = false) {
-    const descriptions = {}
-    for (const [key, val] of Object.entries(feature)) {
-      const description = descriptionFromAbreviation(key, 'reach', defaultOnly)
-      if (description) {
-        descriptions[description] = val
+  /**
+   * Retrieves the descriptions of sword features for a given feature object.
+   *
+   * @param {Object} feature - The feature object containing sword features.
+   * @param {boolean} [defaultOnly=false] - Indicates whether to retrieve only default descriptions.
+   * @returns {Array} - An array of descriptions for the sword features.
+   */
+  function getSwordDescriptions(feature, defaultOnly = false, fileType = 'reach') {
+    const descriptions = []
+    for (const [abbreviation, val] of Object.entries(feature)) {
+      const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)
+      if (found) {
+        found.value = `${val} ${found.units}`
+        descriptions.push(found)
       }
     }
     return descriptions
