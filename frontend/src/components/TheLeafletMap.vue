@@ -5,7 +5,7 @@
 <script setup>
 import "leaflet/dist/leaflet.css";
 import "leaflet-easybutton/src/easy-button.css";
-import L from 'leaflet'
+import L, { canvas } from 'leaflet'
 import * as esriLeaflet from "esri-leaflet";
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
@@ -147,11 +147,14 @@ onMounted(() => {
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
         url: url,
+        renderer: canvas({ tolerance: 5 }),
         simplifyFactor: 0.35,
         precision: 5,
         minZoom: 7,
         maxZoom: 18,
-        color: "blue",
+        color: mapStore.featureOptions.defaultColor,
+        weight: mapStore.featureOptions.weight,
+        opacity: mapStore.featureOptions.opacity,
         // fields: ["FID", "ZIP", "PO_NAME"],
     }).addTo(leaflet);
 
