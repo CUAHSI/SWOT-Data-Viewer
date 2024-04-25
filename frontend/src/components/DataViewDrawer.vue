@@ -1,9 +1,11 @@
 <template>
-  <v-navigation-drawer location="right" width="auto" v-model="show" temporary>
-    <v-btn v-if="!show && featureStore.activeFeature" size="large" color="primary" class="ma-0 pa-2 drawer-handle"
-      @click="show = !show" :style="{ bottom: '30%', transform: 'translate(-135%, 0)', position: 'absolute' }">
-      <v-icon :icon="mdiTableEye"></v-icon>
-      <span style="white-space: normal;">Explore Data</span>
+  <v-navigation-drawer location="right" width="auto" v-model="show" order="1">
+    <v-btn v-if="featureStore.activeFeature" @click="show = !show"
+    location="left"
+    order="0"
+    postition="absolute"
+    :style="{ bottom: '30%', transform: translate() , position: 'absolute'}"
+    :icon="show ? mdiChevronRight : mdiChevronLeft">
     </v-btn>
     <v-container v-if="featureStore.activeFeature">
       <v-tabs v-model="tab" align-tabs="center">
@@ -92,7 +94,7 @@ import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { mdiTableEye, mdiSatelliteVariant, mdiTimelineClockOutline } from '@mdi/js'
+import { mdiTableEye, mdiSatelliteVariant, mdiTimelineClockOutline, mdiChevronRight, mdiChevronLeft } from '@mdi/js'
 import { queryHydroCron } from "../_helpers/hydroCron";
 import VariableSelect from '@/components/VariableSelect.vue'
 
@@ -135,6 +137,14 @@ const getFeatureName = () => {
   return river_name
 }
 
+const translate = () => {
+  if (show.value) {
+    return 'translate(-50%, 0)'
+  } else {
+    return 'translate(-170%, 0)'
+  }
+}
+
 featureStore.$subscribe((mutation, state) => {
   if (state.activeFeature !== null) {
     // && typeof mutation.events.newValue === 'object'
@@ -148,5 +158,10 @@ featureStore.$subscribe((mutation, state) => {
 <style scoped>
 #chart {
   height: 40vh;
+}
+
+.v-navigation-drawer--mini-variant,
+.v-navigation-drawer {
+  overflow: visible !important;
 }
 </style>
