@@ -1,14 +1,20 @@
 <template>
-  <v-sheet>
-    <v-theme-provider theme="light" with-background>
-      <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor]" />
-      <!-- <Line :data="props.data" :options="options" ref="line" /> -->
-    </v-theme-provider>
-    <v-btn @click="downloadChart()">
-      <v-icon :icon="mdiDownloadBox"></v-icon>Download</v-btn>
-    <v-btn class="ma-2" :icon="mdiPalette" @click="updateChartColor()" size="small">
-    </v-btn>
-  </v-sheet>
+  <v-container>
+    <v-row>
+      <v-col cols="10">
+        <v-sheet min-height="70vh">
+          <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor]" />
+        </v-sheet>
+      </v-col>
+      <v-divider class="my-2" vertical></v-divider>
+      <v-col>
+        <v-btn @click="downloadChart()">
+          <v-icon :icon="mdiDownloadBox"></v-icon>Download</v-btn>
+        <v-btn class="ma-2" :icon="mdiPalette" @click="updateChartColor()" size="small">
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
