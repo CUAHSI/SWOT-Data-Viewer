@@ -10,8 +10,8 @@
       <v-col>
         <v-btn @click="downloadChart()">
           <v-icon :icon="mdiDownloadBox"></v-icon>Download</v-btn>
-        <v-btn class="ma-2" :icon="mdiPalette" @click="updateChartColor()" size="small">
-        </v-btn>
+        <!-- <v-btn class="ma-2" :icon="mdiPalette" @click="updateChartColor()" size="small">
+        </v-btn> -->
       </v-col>
     </v-row>
   </v-container>
@@ -34,7 +34,7 @@ import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiPalette, mdiDownloadBox } from '@mdi/js'
+// import { mdiPalette, mdiDownloadBox } from '@mdi/js'
 
 const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
@@ -120,6 +120,7 @@ const updateChartColor = (color) => {
     dataset.borderColor = color
     dataset.backgroundColor = color
   })
+  // TODO: for some reasone the chart gets clobbered when updating the color
   line.value.chart.update()
 }
 
