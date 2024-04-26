@@ -1,10 +1,13 @@
 <template>
   <v-sheet>
     <v-theme-provider theme="light" with-background>
-      <Line :data="chartData" :options="options" ref="line" :plugins="plugin" />
+      <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor]" />
       <!-- <Line :data="props.data" :options="options" ref="line" /> -->
     </v-theme-provider>
-    <v-btn @click="downloadChart()">Download Chart</v-btn>
+    <v-btn @click="downloadChart()">
+      <v-icon :icon="mdiDownloadBox"></v-icon>Download</v-btn>
+    <v-btn class="ma-2" :icon="mdiPalette" @click="updateChartColor()" size="small">
+    </v-btn>
   </v-sheet>
 </template>
 
@@ -25,6 +28,7 @@ import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
+import { mdiPalette, mdiDownloadBox } from '@mdi/js'
 
 const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
@@ -101,6 +105,19 @@ const downloadChart = async () => {
   link.download = filename
   link.click()
 }
+
+const updateChartColor = (color) => {
+  if (!color) {
+    color = chartStore.dynamicColors()
+  }
+  line.value.chart.data.datasets.forEach((dataset) => {
+    dataset.borderColor = color
+    dataset.backgroundColor = color
+  })
+  line.value.chart.update()
+}
+
+
 
 onMounted(() => {
   const chartInstance = line.value
