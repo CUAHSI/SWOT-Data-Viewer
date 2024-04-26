@@ -1,7 +1,7 @@
 <template>
   <v-sheet>
     <v-theme-provider theme="light" with-background>
-      <Line :data="chartData" :options="options" ref="line" />
+      <Line :data="chartData" :options="options" ref="line" :plugins="plugin" />
       <!-- <Line :data="props.data" :options="options" ref="line" /> -->
     </v-theme-provider>
     <v-btn @click="downloadChart()">Download Chart</v-btn>
@@ -24,12 +24,13 @@ import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
+import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 
 const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 
-ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend)
+ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
@@ -54,6 +55,9 @@ const options = {
     title: {
       display: false,
       text: 'Chart Title'
+    },
+    customCanvasBackgroundColor: {
+      color: 'white',
     }
   },
   scales: {
