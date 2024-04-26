@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="10">
-        <v-sheet min-height="70vh">
+        <v-sheet min-height="65vh" max-height="100%">
           <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor]" />
         </v-sheet>
       </v-col>
@@ -34,7 +34,7 @@ import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-// import { mdiPalette, mdiDownloadBox } from '@mdi/js'
+import { mdiPalette, mdiDownloadBox } from '@mdi/js'
 
 const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
