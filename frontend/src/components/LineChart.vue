@@ -8,8 +8,18 @@
       </v-col>
       <v-divider class="my-2" vertical></v-divider>
       <v-col>
-        <v-btn @click="downloadChart()">
-          <v-icon :icon="mdiDownloadBox"></v-icon>Download</v-btn>
+        <v-btn :loading="downloading.chart" @click="downloadChart()" class="mb-2">
+          <v-icon :icon="mdiDownloadBox"></v-icon>
+          Download Plot
+        </v-btn>
+        <v-btn :loading="downloading.csv"  @click="downCsv()" class="mb-2">
+          <v-icon :icon="mdiFileDelimited"></v-icon>
+          Download CSV
+        </v-btn>
+        <v-btn :loading="downloading.json" @click="downloadJson()">
+          <v-icon :icon="mdiCodeJson"></v-icon>
+          Download JSON
+        </v-btn>
         <!-- <v-btn class="ma-2" :icon="mdiPalette" @click="updateChartColor()" size="small">
         </v-btn> -->
       </v-col>
@@ -34,11 +44,13 @@ import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiPalette, mdiDownloadBox } from '@mdi/js'
+import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson } from '@mdi/js'
+import { downloadCsv, downloadJson } from '../_helpers/hydroCron';
 
 const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
+const downloading = ref({ csv: false, json: false, chart: false})
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
@@ -101,6 +113,7 @@ const getChartName = () => {
 }
 
 const downloadChart = async () => {
+  downloading.value.chart = true
   const filename = getChartName()
   // change the chart background color to white
   line.value.chart.canvas.style.backgroundColor = 'white'
@@ -110,6 +123,19 @@ const downloadChart = async () => {
   link.href = image
   link.download = filename
   link.click()
+  downloading.value.chart = false
+}
+
+const downCsv = async () => {
+  downloading.value.csv = true
+  await downloadCsv()
+  downloading.value.csv = false
+}
+
+const downJson = async () => {
+  downloading.value.json = true
+  await downloadJson()
+  downloading.value.json = false
 }
 
 const updateChartColor = (color) => {

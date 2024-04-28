@@ -144,4 +144,56 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   }
 }
 
-export { queryHydroCron }
+async function downloadJson(feature = null) {
+  if (feature == null) {
+    const featuresStore = useFeaturesStore()
+    feature = featuresStore.activeFeature
+  }
+  const jsonData = JSON.stringify(feature.sword)
+  const blob = new Blob([jsonData], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${getLongFilename(feature)}.json`
+
+  link.click()
+
+  URL.revokeObjectURL(url)
+}
+
+async function downloadCsv(feature = null) {
+  // if feature not defined, use featuresStore.activeFeature
+  if (feature == null) {
+    const featuresStore = useFeaturesStore()
+    feature = featuresStore.activeFeature
+  }
+  const csvData = await queryHydroCron(feature, 'csv')
+  const blob = new Blob([csvData], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${getLongFilename(feature)}.csv`
+
+  link.click()
+
+  URL.revokeObjectURL(url)
+}
+
+function getLongFilename(feature = null) {
+  if (feature == null) {
+    const featuresStore = useFeaturesStore()
+    feature = featuresStore.activeFeature
+  }
+  const featureType = feature.params.feature
+  const riverName = feature.sword.river_name
+  const reachId = feature.sword.reach_id
+  const startTime = feature.params.start_time
+  const endTime = feature.params.end_time
+  let filename = `${featureType}_${riverName}_${reachId}_${startTime}_${endTime}`
+  filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+  return filename
+}
+
+export { queryHydroCron, downloadJson, downloadCsv }
