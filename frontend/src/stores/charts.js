@@ -68,7 +68,9 @@ export const useChartsStore = defineStore('charts', () => {
           // TODO: this should be dynamic based on the selected variable
           yAxisKey: 'wse'
         },
-        borderColor: dynamicColors()
+        // borderColor: dynamicColors(),
+        borderColor: 'rgb(75, 192, 192)',
+        showLine: false,
       }
     })
   }
@@ -84,6 +86,10 @@ export const useChartsStore = defineStore('charts', () => {
     return 'rgb(' + r + ',' + g + ',' + b + ')'
   }
 
+  const getChart = () => {
+    return chart
+  }
+
   return {
     updateChartData,
     chartData,
@@ -91,6 +97,9 @@ export const useChartsStore = defineStore('charts', () => {
     buildChart,
     setChart,
     showVis,
-    showChart
+    showChart,
+    getChart,
+    chart,
+    dynamicColors,
   }
 })

@@ -2,9 +2,9 @@
   <v-footer height="50" v-if="!$route.meta.hideNavigation" fixed app color="navbar" class="d-flex flex-column">
     <div class="d-flex align-end full-height align-center w-100">
       <v-spacer></v-spacer>
-      <router-link :to="{ path: `/` }" class="logo">
-        <img src="@/assets/cuahsi-logo.png" alt="home" />
-      </router-link>
+      <v-btn color="secondary" href="https://www.cuahsi.org/" target="_blank">
+        <v-img :src="imgUrl" cover width="10rem"></v-img>
+      </v-btn>
       <!-- <ThemeButton /> -->
     </div>
   </v-footer>
@@ -12,7 +12,7 @@
 
 <script setup>
 // import ThemeButton from './ThemeButton.vue';
-import { RouterLink } from 'vue-router'
+import imgUrl from '@/assets/cuahsi-logo.png'
 
 </script>
 
