@@ -80,6 +80,16 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       always: false,
       selectable: false
+    },
+    {
+      abbreviation: 'reach_q',
+      name: 'Reach Quality',
+      unit: '',
+      definition:
+        'Summary quality indicator for the reach measurement. Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively. Measurements that are marked as suspect may have large errors. Measurements that are marked as degraded very likely do have large errors. Measurements that are marked as bad may be nonsensicial and should be ignored.',
+      default: false,
+      always: true,
+      selectable: false
     }
   ])
 
