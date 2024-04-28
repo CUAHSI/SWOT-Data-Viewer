@@ -70,7 +70,7 @@ export const useChartsStore = defineStore('charts', () => {
         },
         // borderColor: dynamicColors(),
         borderColor: 'rgb(75, 192, 192)',
-        // showLine: false,
+        showLine: false,
       }
     })
   }

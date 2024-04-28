@@ -8,20 +8,26 @@
       </v-col>
       <v-divider class="my-2" vertical></v-divider>
       <v-col>
-        <v-btn :loading="downloading.chart" @click="downloadChart()" class="mb-2">
-          <v-icon :icon="mdiDownloadBox"></v-icon>
-          Download Plot
-        </v-btn>
-        <v-btn :loading="downloading.csv"  @click="downCsv()" class="mb-2">
-          <v-icon :icon="mdiFileDelimited"></v-icon>
-          Download CSV
-        </v-btn>
-        <v-btn :loading="downloading.json" @click="downloadJson()">
-          <v-icon :icon="mdiCodeJson"></v-icon>
-          Download JSON
-        </v-btn>
-        <!-- <v-btn class="ma-2" :icon="mdiPalette" @click="updateChartColor()" size="small">
-        </v-btn> -->
+        <v-sheet>
+          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
+            @update:modelValue="updateChartLine()"></v-select>
+          <v-btn :loading="downloading.chart" @click="downloadChart()" class="mb-2">
+            <v-icon :icon="mdiDownloadBox"></v-icon>
+            Download Plot
+          </v-btn>
+          <v-btn :loading="downloading.csv" @click="downCsv()" class="mb-2">
+            <v-icon :icon="mdiFileDelimited"></v-icon>
+            Download CSV
+          </v-btn>
+          <v-btn :loading="downloading.json" @click="downloadJson()" class="mb-2">
+            <v-icon :icon="mdiCodeJson"></v-icon>
+            Download JSON
+          </v-btn>
+          <v-btn @click="updateChartColor()">
+            <v-icon :icon="mdiPalette"></v-icon>
+            Randomize Color
+          </v-btn>
+        </v-sheet>
       </v-col>
     </v-row>
   </v-container>
@@ -44,13 +50,14 @@ import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref, onMounted } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson } from '@mdi/js'
+import { mdiPalette, mdiDownloadBox, mdiFileDelimited, mdiCodeJson } from '@mdi/js'
 import { downloadCsv, downloadJson } from '../_helpers/hydroCron';
 
 const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
-const downloading = ref({ csv: false, json: false, chart: false})
+const plotStyle = ref('Scatter')
+const downloading = ref({ csv: false, json: false, chart: false })
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
@@ -146,10 +153,21 @@ const updateChartColor = (color) => {
     dataset.borderColor = color
     dataset.backgroundColor = color
   })
-  // TODO: for some reasone the chart gets clobbered when updating the color
+  // TODO: for some reasone the chart gets clobbered when updating
   line.value.chart.update()
 }
 
+const updateChartLine = () => {
+  let showLine = false
+  if (plotStyle.value === 'Connected') {
+    showLine = true
+  }
+  line.value.chart.data.datasets.forEach((dataset) => {
+    dataset.showLine = showLine
+  })
+  // TODO: for some reasone the chart gets clobbered when updating
+  line.value.chart.update()
+}
 
 
 onMounted(() => {
