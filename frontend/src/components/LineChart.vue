@@ -176,10 +176,9 @@ const updateChartLine = () => {
 }
 
 const filterAllDatasets = () => {
-  // TODO: this allows for narrowing the dataset but doesn't allow for expanding it
   let dataQualityValues = dataQuality.value
   chartStore.filterDataQuality(dataQualityValues)
-  // TODO: for some reason the chart doesn't get updated even though the data does
+  line.value.chart.data.datasets = chartStore.chartData.datasets
   line.value.chart.update()
 }
 
