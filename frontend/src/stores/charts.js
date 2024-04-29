@@ -1,44 +1,63 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useFeaturesStore } from '@/stores/features'
 
 export const useChartsStore = defineStore('charts', () => {
-  const chartData = ref({})
+  let chartData = ref({})
   const chart = ref(null)
   const showChart = ref(false)
+  const featureStore = useFeaturesStore()
 
   const setChart = (chartInstance) => {
     chart.value = chartInstance
   }
 
   const updateChartData = (data) => {
+    // TODO: bug in reactivity
+    // https://github.com/apertureless/vue-chartjs/issues/1040
     chartData.value = data
+    console.log('Updated chart data', chartData.value)
   }
 
   const clearChartData = () => {
     chartData.value = {}
   }
 
-  const buildChart = (selectedFeatures) => {
-    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
-    console.log('Building vis for selected features', selectedFeatures)
-    const datasets = getChartDatasets(selectedFeatures)
-    const labels = selectedFeatures[0].results.geojson.features.map((feature) => {
+  const getLabels = (selectedFeatures) => {
+    return selectedFeatures[0].results.geojson.features.map((feature) => {
       if (feature.properties.time_str == 'no_data') {
         return
       }
       return feature.properties.time_str
     })
-    console.log('Labels', labels)
+  }
+
+  const buildChart = (selectedFeatures) => {
+    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
+    console.log('Building vis for selected features', selectedFeatures)
+    const datasets = getChartDatasets(selectedFeatures)
     console.log('Datasets', datasets)
     const data = {
-      labels: labels,
+      labels: getLabels(selectedFeatures),
       datasets: datasets
     }
     updateChartData(data)
     return data
   }
 
-  const getChartDatasets = (selectedFeatures) => {
+  const filterDataQuality = (dataQualityFlags) => {
+    console.log('Filtering data quality', dataQualityFlags)
+    const selectedFeatures = featureStore.selectedFeatures
+    const datasets = getChartDatasets(selectedFeatures, dataQualityFlags)
+    const data = {
+      labels: getLabels(selectedFeatures),
+      datasets: datasets
+    }
+    updateChartData(data)
+    return data
+  }
+
+  const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     return selectedFeatures.map((feature) => {
       let measurements = feature.results.geojson.features.map((feature) => {
@@ -46,19 +65,27 @@ export const useChartsStore = defineStore('charts', () => {
       })
       // TODO: this is a hack to remove the invalid measurements
       // need to handle this with a formal validator
-      measurements = measurements.map((m) => {
-        m.datetime = new Date(m.time_str)
+      console.log("Starting number of measurements", measurements.length)
+      measurements = measurements.filter((m) => {
         if (m.time_str == 'no_data') {
-          return
+          return false
         }
+        m.datetime = new Date(m.time_str)
         if (isNaN(m.datetime)) {
-          return
+          return false
         }
         if (m.wse == '-999999999999.0') {
-          return
+          return false
         }
-        return m
+        // check data quality flags
+        if (dataQualityFlags != null) {
+          if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
+            return false
+          }
+        }
+        return true
       })
+      console.log("Ending number of measurements", measurements.length)
       console.log('SWOT measurements', measurements)
       return {
         label: `${feature.sword.river_name} | ${feature.sword.reach_id}`,
@@ -70,7 +97,7 @@ export const useChartsStore = defineStore('charts', () => {
         },
         // borderColor: dynamicColors(),
         borderColor: 'rgb(75, 192, 192)',
-        showLine: false,
+        showLine: false
       }
     })
   }
@@ -101,5 +128,6 @@ export const useChartsStore = defineStore('charts', () => {
     getChart,
     chart,
     dynamicColors,
+    filterDataQuality
   }
 })

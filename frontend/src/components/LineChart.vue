@@ -178,30 +178,9 @@ const updateChartLine = () => {
 const filterAllDatasets = () => {
   // TODO: this allows for narrowing the dataset but doesn't allow for expanding it
   let dataQualityValues = dataQuality.value
-  console.log("Initial datasets", chartData.value.datasets)
-  console.log("Data Quality Filters", dataQualityValues)
-  chartData.value.datasets.forEach((dataset) => {
-    console.log("Filtering dataset", dataset)
-    const filtered = filterDataset(dataset)
-    console.log("Filtered Dataset", filtered)
-  })
-  console.log("Filtered datasets", chartData.value.datasets)
+  chartStore.filterDataQuality(dataQualityValues)
   // TODO: for some reason the chart doesn't get updated even though the data does
   line.value.chart.update()
-}
-
-const filterDataset = (dataset) => {
-  let dataQualityValues = dataQuality.value
-  console.log("Filtering dataset", dataset)
-  console.log("Starting number of points", dataset.data.length)
-  let filteredData = dataset.data.filter((dataPoint) => {
-    const include = dataQualityValues.includes(parseInt(dataPoint.reach_q))
-    console.log("Data Point Quality", parseInt(dataPoint.reach_q))
-    console.log("Include?", include)
-    return include
-  })
-  console.log("Ending number of points", filteredData.length)
-  return dataset.data = filteredData
 }
 
 
