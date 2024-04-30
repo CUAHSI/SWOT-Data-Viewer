@@ -72,7 +72,7 @@ const setParsing = (datasets) => {
     dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
   })
 }
-if (props.chosenVariable !== undefined) {
+if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
   setParsing(chartData.value.datasets)
 }
 
