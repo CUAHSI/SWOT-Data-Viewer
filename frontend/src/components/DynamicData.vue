@@ -10,7 +10,10 @@
 
       <v-card-text>
         <VariableSelect v-if="!hasResults()" />
-        <v-btn v-if="!hasResults()" @click="query" color="primary" :loading="querying">Query HydroCron</v-btn>
+        <v-btn v-if="!hasResults()" @click="query" color="primary" :loading="querying.hydrocron">Query HydroCron</v-btn>
+        <v-btn @click="getNodesInActiveReach" color="primary" class="ma-2" :loading="querying.nodes">
+          <v-icon :icon="mdiResistorNodes"></v-icon>Get Nodes
+        </v-btn>
         <v-expansion-panels v-if="hasResults()">
           <v-expansion-panel>
             <v-expansion-panel-title>
@@ -49,8 +52,8 @@
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
-import { mdiSatelliteVariant, mdiTimelineClockOutline } from '@mdi/js'
-import { queryHydroCron } from "../_helpers/hydroCron";
+import { mdiSatelliteVariant, mdiTimelineClockOutline, mdiResistorNodes } from '@mdi/js'
+import { queryHydroCron, getNodesFromReach } from "../_helpers/hydroCron";
 import VariableSelect from '@/components/VariableSelect.vue'
 
 const featureStore = useFeaturesStore()
@@ -58,12 +61,20 @@ const chartsStore = useChartsStore()
 
 let show = ref(false)
 
-let querying = ref(false)
+let querying = ref({ hydrocron: false, nodes: false })
 
 const query = async () => {
-  querying.value = true
+  querying.value.hydrocron = true
   await queryHydroCron(featureStore.activeFeature)
-  querying.value = false
+  querying.value.hydrocron = false
+}
+
+const getNodesInActiveReach = async () => {
+  querying.value.nodes = true
+  const nodes = await getNodesFromReach(featureStore.activeFeature)
+  console.log("Nodes", nodes)
+  querying.value.nodes = false
+
 }
 
 const hasResults = () => {

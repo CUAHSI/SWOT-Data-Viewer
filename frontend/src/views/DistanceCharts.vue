@@ -1,5 +1,6 @@
 <template>
-  <v-container v-if="hasData">
+  <v-skeleton-loader v-if="loading" height="70vh" type="image, divider, list-item-two-line" />
+  <v-container v-else>
     <v-row>
       <v-col cols="2">
         <v-sheet class="elevation-1">
@@ -23,48 +24,21 @@
       </v-col>
     </v-row>
   </v-container>
-
-  <v-container v-if="!hasData">
-    <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
-      <span>
-        You don't have any data to view yet.
-        Use the <router-link :to="{ path: `/` }">Map</router-link> to make selections.
-      </span>
-    </v-sheet>
-  </v-container>
-
-  <v-bottom-sheet v-model="sheetText" inset>
-    <v-card class="text-center" height="100%">
-      <v-card-text>
-        <v-btn @click="sheetText = null">
-          close
-        </v-btn>
-
-        <br>
-        <br>
-
-        <div>
-          {{ sheetText }}
-        </div>
-      </v-card-text>
-    </v-card>
-  </v-bottom-sheet>
 </template>
 
 <script setup>
 import LineChart from '@/components/LineChart.vue'
 import { useChartsStore } from '../stores/charts';
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { computed } from 'vue';
 
 const chartStore = useChartsStore();
 const hydrologicStore = useHydrologicStore();
 
-let sheetText = ref(null)
 
-let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
+// TODO on tab switch, update distance chart data by query nodes
+let loading = computed(() => true)
 
 let selectedVariables = hydrologicStore.selectedVariables
 let varTab = ref(selectedVariables[0])

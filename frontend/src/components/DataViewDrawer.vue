@@ -8,9 +8,12 @@
       </v-btn>
       <StaticMetadata />
       <!-- <DynamicData /> -->
-      <v-btn v-if="!hasResults()" @click="query" color="primary" class="ma-2" :loading="querying">
+      <v-btn v-if="!hasResults()" @click="query" color="primary" class="ma-2" :loading="querying.hydrocron">
         <v-icon :icon="mdiChartScatterPlot"></v-icon>Plot
       </v-btn>
+      <!-- <v-btn @click="getNodesInActiveReach" color="primary" class="ma-2" :loading="querying.nodes">
+        <v-icon :icon="mdiResistorNodes"></v-icon>Get Nodes
+      </v-btn> -->
     </v-container>
   </v-navigation-drawer>
 </template>
@@ -18,9 +21,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
-import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot } from '@mdi/js'
+import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot, mdiResistorNodes } from '@mdi/js'
 // import DynamicData from '@/components/DynamicData.vue'
-import { queryHydroCron } from "../_helpers/hydroCron";
+import { queryHydroCron, getNodesFromReach } from "../_helpers/hydroCron";
 import StaticMetadata from './StaticMetadata.vue'
 import { useRouter } from 'vue-router'
 
@@ -37,14 +40,22 @@ const translate = () => {
   }
 }
 
-let querying = ref(false)
+let querying = ref({ hydrocron: false, nodes: false })
 const router = useRouter()
 
 const query = async () => {
-  querying.value = true
+  querying.value.hydrocron = true
   await queryHydroCron(featureStore.activeFeature)
-  querying.value = false
+  querying.value.hydrocron = false
   router.push('/plots')
+}
+
+const getNodesInActiveReach = async () => {
+  querying.value.nodes = true
+  const nodes = await getNodesFromReach(featureStore.activeFeature)
+  console.log("Nodes", nodes)
+  querying.value.nodes = false
+
 }
 
 const hasResults = () => {

@@ -24,15 +24,6 @@
     </v-row>
   </v-container>
 
-  <v-container v-if="!hasData">
-    <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
-      <span>
-        You don't have any data to view yet.
-        Use the <router-link :to="{ path: `/` }">Map</router-link> to make selections.
-      </span>
-    </v-sheet>
-  </v-container>
-
   <v-bottom-sheet v-model="sheetText" inset>
     <v-card class="text-center" height="100%">
       <v-card-text>
@@ -55,7 +46,6 @@
 import LineChart from '@/components/LineChart.vue'
 import { useChartsStore } from '../stores/charts';
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { computed } from 'vue';
 

@@ -196,6 +196,7 @@ onMounted(() => {
 
     nodesFeatures.on("click", function (e) {
         const popup = L.popup();
+        console.log("Selected node:", e.layer.feature.properties)
         const content = `
         <h3>${e.layer.feature.properties.river_name}</h3>
         <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
