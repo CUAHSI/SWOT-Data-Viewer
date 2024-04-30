@@ -2,7 +2,7 @@
   <v-app-bar v-if="!$route.meta.hideNavigation" color="navbar" ref="appBar" id="app-bar" elevate-on-scroll fixed app>
     <div class="d-flex align-end full-height pa-2 align-center w-100">
       <router-link :to="{ path: `/` }" class="logo">
-        <v-img :src="imgUrl" cover width="7rem"></v-img>
+        <v-img :src="imgUrl" cover width="4rem"></v-img>
       </router-link>
 
       <v-spacer></v-spacer>
@@ -27,7 +27,7 @@
 import { RouterLink } from 'vue-router'
 import { useDisplay } from 'vuetify'
 // import UserLogin from "@/components/UserLogin.vue";
-import imgUrl from '@/assets/swot_vis_transparent_bright.png'
+import imgUrl from '@/assets/swot-logo-v5.png'
 import { useAuthStore } from '../stores/auth';
 defineProps(['paths'])
 defineEmits(['toggleMobileNav'])

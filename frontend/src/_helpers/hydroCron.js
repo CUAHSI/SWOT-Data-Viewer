@@ -196,4 +196,30 @@ function getLongFilename(feature = null) {
   return filename
 }
 
-export { queryHydroCron, downloadJson, downloadCsv }
+/**
+ * Retrieves nodes from a reach.
+ *
+ * @param {Object} feature - The feature object representing the reach.
+ * @returns {Promise} - A promise that resolves with the nodes from the reach.
+ */
+async function getNodesFromReach(reachFeature) {
+  let url =
+    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0/query'
+  let params = {
+    f: 'json',
+    // where: `reach_id = ${reachFeature.properties.reach_id}`,
+    where: `reach_id = ${reachFeature.params.feature_id}`,
+    outFields: '*'
+    // returnGeometry: true,
+    // spatialRel: 'esriSpatialRelIntersects',
+    // outSR: 4326
+  }
+  let query = Object.keys(params)
+    .map((key) => key + '=' + params[key])
+    .join('&')
+  let response = await fetch(`${url}?${query}`)
+  let data = await response.json()
+  return data.features
+}
+
+export { queryHydroCron, downloadJson, downloadCsv, getNodesFromReach }

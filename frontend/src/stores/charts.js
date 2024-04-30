@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
+  let nodeChartData = ref({})
   const showChart = ref(false)
 
   const updateChartData = (data) => {
@@ -26,6 +27,13 @@ export const useChartsStore = defineStore('charts', () => {
     return labels.filter((l) => l != undefined)
   }
 
+  const getNodeLabels = (nodes) => {
+    const labels = nodes.map((node) => {
+      return node.attributes.dist_out
+    })
+    return labels.filter((l) => l != undefined)
+  }
+
   const buildChart = (selectedFeatures) => {
     // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
     console.log('Building vis for selected features', selectedFeatures)
@@ -36,6 +44,20 @@ export const useChartsStore = defineStore('charts', () => {
       datasets: datasets
     }
     updateChartData(data)
+    return data
+  }
+
+  const buildDistanceChart = (selectedNodes) => {
+    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
+    console.log('Building vis for selected features', selectedNodes)
+    const datasets = getNodeChartDatasets(selectedNodes)
+    console.log('Datasets', datasets)
+    const data = {
+      labels: getNodeLabels(selectedNodes),
+      datasets: datasets
+    }
+    console.log('Node Chart Data', data)
+    nodeChartData.value = data
     return data
   }
 
@@ -113,6 +135,27 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
+  const getNodeChartDatasets = (selectedNodes) => {
+    const data = selectedNodes.map((node) => {
+      return node.attributes
+    })
+    const dataSet = {
+      label: `${selectedNodes[0].attributes.river_name} | ${selectedNodes[0].attributes.reach_id}`,
+      data: data,
+      parsing: {
+        xAxisKey: 'dist_out',
+        yAxisKey: 'wse'
+      },
+      borderColor: 'rgb(75, 192, 192)',
+      showLine: false,
+      pointStyle: 'circle',
+      pointRadius: 5,
+      pointHoverRadius: 10,
+      fill: false
+    }
+    return [dataSet]
+  }
+
   const showVis = () => {
     showChart.value = true
   }
@@ -127,8 +170,10 @@ export const useChartsStore = defineStore('charts', () => {
   return {
     updateChartData,
     chartData,
+    nodeChartData,
     clearChartData,
     buildChart,
+    buildDistanceChart,
     showVis,
     showChart,
     dynamicColors,
