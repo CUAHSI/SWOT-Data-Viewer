@@ -155,10 +155,11 @@ const updateChartColor = (color) => {
   if (!color) {
     color = chartStore.dynamicColors()
   }
-  line.value.chart.data.datasets.forEach((dataset) => {
+  chartStore.chartData.datasets.forEach((dataset) => {
     dataset.borderColor = color
     dataset.backgroundColor = color
   })
+  line.value.chart.data.datasets = chartStore.chartData.datasets
   // TODO: for some reasone the chart gets clobbered when updating
   line.value.chart.update()
 }
@@ -168,9 +169,10 @@ const updateChartLine = () => {
   if (plotStyle.value === 'Connected') {
     showLine = true
   }
-  line.value.chart.data.datasets.forEach((dataset) => {
+  chartStore.chartData.datasets.forEach((dataset) => {
     dataset.showLine = showLine
   })
+  line.value.chart.data.datasets = chartStore.chartData.datasets
   // TODO: for some reasone the chart gets clobbered when updating
   line.value.chart.update()
 }

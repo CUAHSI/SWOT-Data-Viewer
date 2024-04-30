@@ -1,12 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useFeaturesStore } from '@/stores/features'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   const chart = ref(null)
   const showChart = ref(false)
-  const featureStore = useFeaturesStore()
 
   const setChart = (chartInstance) => {
     chart.value = chartInstance
@@ -47,14 +45,22 @@ export const useChartsStore = defineStore('charts', () => {
 
   const filterDataQuality = (dataQualityFlags) => {
     console.log('Filtering data quality', dataQualityFlags)
-    const selectedFeatures = featureStore.selectedFeatures
-    const datasets = getChartDatasets(selectedFeatures, dataQualityFlags)
-    const data = {
-      labels: getLabels(selectedFeatures),
-      datasets: datasets
-    }
-    updateChartData(data)
-    return data
+    const datasets = chartData.value.datasets
+    console.log('Starting Datasets', datasets)
+    datasets.forEach((dataset) => {
+      const pointStyles = dataset.data.map((m) => {
+        let pointStyle = 'circle'
+        if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
+          // TODO: could also set to false to hide the point
+          // need to figure out how to have the connecting line skip the point
+          // https://www.chartjs.org/docs/latest/samples/line/segments.html
+          pointStyle = 'star'
+        }
+        return pointStyle
+      })
+      dataset.pointStyle = pointStyles
+    })
+    console.log('Ending Datasets', datasets)
   }
 
   const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
@@ -65,7 +71,7 @@ export const useChartsStore = defineStore('charts', () => {
       })
       // TODO: this is a hack to remove the invalid measurements
       // need to handle this with a formal validator
-      console.log("Starting number of measurements", measurements.length)
+      console.log('Starting number of measurements', measurements.length)
       measurements = measurements.filter((m) => {
         if (m.time_str == 'no_data') {
           return false
@@ -85,7 +91,7 @@ export const useChartsStore = defineStore('charts', () => {
         }
         return true
       })
-      console.log("Ending number of measurements", measurements.length)
+      console.log('Ending number of measurements', measurements.length)
       console.log('SWOT measurements', measurements)
       return {
         label: `${feature.sword.river_name} | ${feature.sword.reach_id}`,
@@ -97,7 +103,11 @@ export const useChartsStore = defineStore('charts', () => {
         },
         // borderColor: dynamicColors(),
         borderColor: 'rgb(75, 192, 192)',
-        showLine: false
+        showLine: false,
+        pointStyle: 'circle',
+        pointRadius: 5,
+        pointHoverRadius: 10,
+        fill: false
       }
     })
   }
