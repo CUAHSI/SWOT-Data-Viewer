@@ -22,12 +22,13 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getLabels = (selectedFeatures) => {
-    return selectedFeatures[0].results.geojson.features.map((feature) => {
+    const labels = selectedFeatures[0].results.geojson.features.map((feature) => {
       if (feature.properties.time_str == 'no_data') {
         return
       }
       return feature.properties.time_str
     })
+    return labels.filter((l) => l != undefined)
   }
 
   const buildChart = (selectedFeatures) => {
@@ -81,6 +82,12 @@ export const useChartsStore = defineStore('charts', () => {
           return false
         }
         if (m.wse == '-999999999999.0') {
+          return false
+        }
+        if (m.slope == '-999999999999.0') {
+          return false
+        }
+        if (m.with == '-999999999999.0') {
           return false
         }
         // check data quality flags
