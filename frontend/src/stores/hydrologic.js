@@ -110,7 +110,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: true,
       short_definition: 'Longitude',
-      units: 'decimal degrees'
+      units: 'decimal degrees',
+      plottable: false
     },
     {
       abbreviation: 'y',
@@ -118,7 +119,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: true,
       short_definition: 'Latitude',
-      units: 'decimal degrees'
+      units: 'decimal degrees',
+      plottable: false
     },
     {
       abbreviation: 'node_id',
@@ -127,7 +129,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'node',
       default: true,
       short_definition: 'Node ID',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'node_length',
@@ -135,7 +138,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'node',
       default: false,
       short_definition: 'Node length measured along the GRWL centerline points',
-      units: 'meters'
+      units: 'meters',
+      plottable: false
     },
     {
       abbreviation: 'reach_id',
@@ -143,19 +147,20 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'ID of each reach. The format of the id is as follows: CBBBBBRRRRT where C = Continent (the first number of the Pfafstetter basin code), B = Remaining Pfafstetter basin codes up to level 6, R = Reach number (assigned sequentially within a level 6 basin starting at the downstream end working upstream, T = Type (1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost reach)',
       fileType: 'reach',
       default: true,
-      short_definition: 'Reach ID',
-      units: ''
-    },
-    {
-      // Differs from the abbreviation in the SWORD documentation
+      short_definition: 'Reach ID', // Differs from the abbreviation in the SWORD documentation
       // https://zenodo.org/records/3898570
       // abbreviation: 'reach_length',
+      units: '',
+      plottable: false
+    },
+    {
       abbreviation: 'reach_len',
       definition: 'Reach length measured along the GRWL centerline points',
       fileType: 'reach',
       default: true,
       short_definition: 'Reach Length',
-      units: 'meters'
+      units: 'meters',
+      plottable: false
     },
     {
       abbreviation: 'wse',
@@ -164,7 +169,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: true,
       short_definition: 'Average water surface elevation (WSE)',
-      units: 'meters'
+      units: 'meters',
+      plottable: true
     },
     {
       abbreviation: 'wse_var',
@@ -174,7 +180,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'WSE variance along the GRWL centerline points used to calculate the average WSE for each node or reach',
-      units: 'square meters'
+      units: 'square meters',
+      plottable: true
     },
     {
       abbreviation: 'width',
@@ -182,7 +189,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: true,
       short_definition: 'Average width',
-      units: 'meters'
+      units: 'meters',
+      plottable: true
     },
     {
       abbreviation: 'width_var',
@@ -192,7 +200,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Width variance along the GRWL centerline points used to calculate the average width for each node or reach',
-      units: 'square meters'
+      units: 'square meters',
+      plottable: true
     },
     {
       abbreviation: 'facc',
@@ -202,7 +211,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019)',
-      units: 'square kilometers'
+      units: 'square kilometers',
+      plottable: true
     },
     {
       abbreviation: 'n_chan_max',
@@ -210,7 +220,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'Maximum number of channels for each node or reach',
-      units: ''
+      units: '',
+      plottable: true
     },
     {
       abbreviation: 'n_chan_mod',
@@ -218,7 +229,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'Mode of the number of channels for each node or reach',
-      units: ''
+      units: '',
+      plottable: true
     },
     {
       abbreviation: 'obstr_type',
@@ -228,7 +240,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Type of obstruction for each node or reach based on the Globale Obstruction Database (GROD, Whittemore et al., 2020) and HydroFALLS data (http://wp.geog.mcgill.ca/hydrolab/hydrofalls). Obstr_type values: 0 - No Dam, 1 - Dam, 2 - Channel Dam, 3 - Lock, 4 - Low Permeable Dam, 5 - Waterfall',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'grod_id',
@@ -236,7 +249,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'The unique GROD ID for each node or reach with obstr_type values 1-4',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'hfalls_id',
@@ -244,7 +258,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'The unique HydroFALLS ID for each node or reach with obstr_type value 5',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'dist_out',
@@ -252,7 +267,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'Distance from the river outlet for each node or reach',
-      units: 'meters'
+      units: 'meters',
+      plottable: false
     },
     {
       abbreviation: 'type',
@@ -262,7 +278,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Type identifier for a node or reach: 1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost reach/node',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'lakeflag',
@@ -272,7 +289,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'GRWL water body identifier for each reach:  0=river, 1=lake/reservoir, 2=tidally influenced river,  3=canal',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'slope',
@@ -281,7 +299,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Average reach slope',
-      units: 'meters/kilometer'
+      units: 'meters/kilometer',
+      plottable: true
     },
     {
       abbreviation: 'n_nodes',
@@ -289,7 +308,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Number of nodes associated with the reach',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'n_rch_up',
@@ -297,7 +317,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: false,
       short_definition: 'Number of upstream reaches for each reach',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'n_rch_down',
@@ -305,7 +326,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: false,
       short_definition: 'Number of downstream reaches for each reach',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'rch_id_up',
@@ -313,7 +335,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Upstream reach ID',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'rch_id_dn',
@@ -321,7 +344,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Downstram reach ID',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'swot_obs',
@@ -331,7 +355,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'The maximum number of SWOT passes to intersect each reach during the 21 day orbit cycle',
-      units: ''
+      units: '',
+      plottable: false
     },
     {
       abbreviation: 'swot_orbits',
@@ -341,7 +366,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'A list of the SWOT orbit tracks that intersect each reach during the 21 day orbit cycle',
-      units: ''
+      units: '',
+      plottable: false
     }
   ])
 
@@ -384,6 +410,12 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     return descriptions
   }
 
+  function getPlottableSwordVariables(fileType = 'node') {
+    return swordVariables.value.filter((variable) => {
+      return variable.plottable && (variable.fileType === fileType || variable.fileType === 'all')
+    })
+  }
+
   return {
     swotVariables,
     selectableVariables,
@@ -392,6 +424,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     defaultVariables,
     alwaysQueryVariables,
     swordVariables,
-    getSwordDescriptions
+    getSwordDescriptions,
+    getPlottableSwordVariables
   }
 })
