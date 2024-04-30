@@ -140,7 +140,7 @@ export const useChartsStore = defineStore('charts', () => {
       return node.attributes
     })
     const dataSet = {
-      label: `${selectedNodes[0].attributes.river_name}`,
+      label: `${selectedNodes[0].attributes.river_name} | ${selectedNodes[0].attributes.reach_id}`,
       data: data,
       parsing: {
         xAxisKey: 'dist_out',

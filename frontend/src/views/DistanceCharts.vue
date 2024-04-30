@@ -9,22 +9,26 @@
   <v-container v-else>
     <v-row>
       <v-col cols="2">
-        <v-sheet class="elevation-1">
+        <v-sheet class="elevation-1" color="input">
           <v-card-title>
             Variables
           </v-card-title>
-          <v-tabs v-model="varTab" direction="vertical">
+          <v-tabs v-model="varTab" direction="vertical" color="primary">
             <v-tab v-for="variable in nodeVariables" :value="variable" :key="variable.abbreviation">
-              {{ variable.abbreviation }}
+              {{ variable.plot_definition }}
             </v-tab>
           </v-tabs>
         </v-sheet>
+        <v-divider class="my-2"></v-divider>
+        <v-card class="pa-2">
+          {{ varTab.definition }}
+        </v-card>
       </v-col>
       <v-divider class="my-2" vertical></v-divider>
       <v-col>
         <v-window v-model="varTab">
           <v-window-item v-for="variable in nodeVariables" :key="variable.abbreviation" :value="variable">
-            <LineChart v-if="variable" class="chart" :data="chartStore.nodeChartData" :chosenVariable="variable" />
+            <NodeChart v-if="variable" class="chart" :data="chartStore.nodeChartData" :chosenVariable="variable" />
           </v-window-item>
         </v-window>
       </v-col>
@@ -33,7 +37,7 @@
 </template>
 
 <script setup>
-import LineChart from '@/components/LineChart.vue'
+import NodeChart from '@/components/NodeChart.vue'
 import { useChartsStore } from '../stores/charts';
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { useFeaturesStore } from '@/stores/features'
@@ -53,8 +57,11 @@ console.log("Node Variables", nodeVariables)
 let varTab = ref(nodeVariables[0])
 
 onMounted(async () => {
+  if (featureStore.nodes.length > 0) {
+    loading.value = false
+    return
+  }
   console.log("Getting nodes from reach")
-  loading.value = true
   const nodes = await getNodesFromReach(featureStore.activeFeature)
   featureStore.nodes = nodes
   console.log("Nodes", featureStore.nodes)

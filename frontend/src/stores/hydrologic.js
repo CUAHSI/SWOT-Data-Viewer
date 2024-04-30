@@ -170,7 +170,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: true,
       short_definition: 'Average water surface elevation (WSE)',
       units: 'meters',
-      plottable: true
+      plottable: true,
+      plot_definition: 'Water Surface Elevation',
     },
     {
       abbreviation: 'wse_var',
@@ -181,7 +182,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition:
         'WSE variance along the GRWL centerline points used to calculate the average WSE for each node or reach',
       units: 'square meters',
-      plottable: true
+      plottable: false
     },
     {
       abbreviation: 'width',
@@ -190,7 +191,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: true,
       short_definition: 'Average width',
       units: 'meters',
-      plottable: true
+      plottable: true,
+      plot_definition: 'Width',
     },
     {
       abbreviation: 'width_var',
@@ -201,7 +203,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition:
         'Width variance along the GRWL centerline points used to calculate the average width for each node or reach',
       units: 'square meters',
-      plottable: true
+      plottable: false
     },
     {
       abbreviation: 'facc',
@@ -212,7 +214,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition:
         'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019)',
       units: 'square kilometers',
-      plottable: true
+      plottable: true,
+      plot_definition: 'Flow Accumulation',
     },
     {
       abbreviation: 'n_chan_max',
@@ -221,7 +224,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition: 'Maximum number of channels for each node or reach',
       units: '',
-      plottable: true
+      plottable: false
     },
     {
       abbreviation: 'n_chan_mod',
@@ -230,7 +233,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition: 'Mode of the number of channels for each node or reach',
       units: '',
-      plottable: true
+      plottable: false
     },
     {
       abbreviation: 'obstr_type',
@@ -300,7 +303,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: true,
       short_definition: 'Average reach slope',
       units: 'meters/kilometer',
-      plottable: true
+      plottable: true,
+      plot_definition: 'Slope',
     },
     {
       abbreviation: 'n_nodes',
