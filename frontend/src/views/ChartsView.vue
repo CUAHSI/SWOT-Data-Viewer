@@ -7,7 +7,7 @@
     </v-tabs>
     <v-window v-model="varTab">
       <v-window-item v-for="variable in selectedVariables" :key="variable.abbreviation" :value="variable">
-        <LineChart v-if="variable" id="chart" :data="chartStore.chartData" :chosenVariable="variable" />
+        <LineChart v-if="variable" class="chart" :data="chartStore.chartData" :chosenVariable="variable" />
       </v-window-item>
     </v-window>
   </v-container>
@@ -62,7 +62,7 @@ let varTab = ref(selectedVariables[0])
 </script>
 
 <style scoped>
-#chart {
+.chart {
   height: 70vh;
 }
 </style>

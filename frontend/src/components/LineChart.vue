@@ -50,7 +50,7 @@ import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 import { mdiPalette, mdiDownloadBox, mdiFileDelimited, mdiCodeJson } from '@mdi/js'
 import { downloadCsv, downloadJson } from '../_helpers/hydroCron';
@@ -67,12 +67,13 @@ ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Toolt
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
 
-if (props.chosenVariable !== undefined) {
-  chartData.value.datasets = chartData.value.datasets.map((dataset) => {
+const setParsing = (datasets) => {
+  datasets.forEach((dataset) => {
     dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
-    console.log("Dataset", dataset)
-    return dataset
   })
+}
+if (props.chosenVariable !== undefined) {
+  setParsing(chartData.value.datasets)
 }
 
 const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
@@ -155,12 +156,10 @@ const updateChartColor = (color) => {
   if (!color) {
     color = chartStore.dynamicColors()
   }
-  chartStore.chartData.datasets.forEach((dataset) => {
+  line.value.chart.data.datasets.forEach((dataset) => {
     dataset.borderColor = color
-    dataset.backgroundColor = color
+    setParsing(line.value.chart.data.datasets)
   })
-  line.value.chart.data.datasets = chartStore.chartData.datasets
-  // TODO: for some reasone the chart gets clobbered when updating
   line.value.chart.update()
 }
 
@@ -169,25 +168,17 @@ const updateChartLine = () => {
   if (plotStyle.value === 'Connected') {
     showLine = true
   }
-  chartStore.chartData.datasets.forEach((dataset) => {
+  line.value.chart.data.datasets.forEach((dataset) => {
     dataset.showLine = showLine
+    setParsing(line.value.chart.data.datasets)
   })
-  line.value.chart.data.datasets = chartStore.chartData.datasets
-  // TODO: for some reasone the chart gets clobbered when updating
   line.value.chart.update()
 }
 
 const filterAllDatasets = () => {
   let dataQualityValues = dataQuality.value
-  chartStore.filterDataQuality(dataQualityValues)
-  line.value.chart.data.datasets = chartStore.chartData.datasets
+  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets)
+  setParsing(line.value.chart.data.datasets)
   line.value.chart.update()
 }
-
-
-onMounted(() => {
-  const chartInstance = line.value
-  chartStore.chart = chartInstance.chart
-});
-
 </script>
