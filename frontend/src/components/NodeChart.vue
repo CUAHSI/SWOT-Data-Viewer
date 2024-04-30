@@ -11,8 +11,6 @@
         <v-sheet>
           <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
             @update:modelValue="updateChartLine()"></v-select>
-          <v-select label="Data Quality" v-model="dataQuality" :items="dataQualityOptions" item-title="label"
-            item-value="value" @update:modelValue="filterAllDatasets()" multiple chips></v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="mb-2" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
             Download Plot
@@ -48,7 +46,6 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
-import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
@@ -59,7 +56,6 @@ const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const plotStyle = ref('Scatter')
-const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor)
@@ -76,9 +72,8 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
   setParsing(chartData.value.datasets)
 }
 
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.name} vs Time`
-
+const yLabel = `${props.chosenVariable?.plot_definition} (${props.chosenVariable?.units})`
+const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.plot_definition} vs Distance`
 
 const options = {
   responsive: true,
@@ -100,17 +95,10 @@ const options = {
   },
   scales: {
     x: {
-      type: 'time',
-      time: {
-        // unit: 'day',
-        // displayFormats: {
-        //   day: 'MM.dd'
-        // },
-        locale: enUS
-      },
+      type: 'linear',
       title: {
         display: true,
-        text: 'Date'
+        text: 'Distance from outlet (m)'
       }
     },
     y: {
@@ -121,8 +109,6 @@ const options = {
     }
   }
 }
-
-const dataQualityOptions = [{ label: 'good', value: 0 }, { label: 'suspect', value: 1 }, { label: 'degraded', value: 2 }, { label: 'bad', value: 3 }]
 
 const getChartName = () => {
   let identifier = `${props.data.datasets[0].label}-${props.chosenVariable.abbreviation}`
@@ -176,13 +162,6 @@ const updateChartLine = () => {
     dataset.showLine = showLine
     setParsing(line.value.chart.data.datasets)
   })
-  line.value.chart.update()
-}
-
-const filterAllDatasets = () => {
-  let dataQualityValues = dataQuality.value
-  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets)
-  setParsing(line.value.chart.data.datasets)
   line.value.chart.update()
 }
 </script>
