@@ -3,12 +3,7 @@ import { ref } from 'vue'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
-  const chart = ref(null)
   const showChart = ref(false)
-
-  const setChart = (chartInstance) => {
-    chart.value = chartInstance
-  }
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
@@ -44,9 +39,8 @@ export const useChartsStore = defineStore('charts', () => {
     return data
   }
 
-  const filterDataQuality = (dataQualityFlags) => {
+  const filterDataQuality = (dataQualityFlags, datasets) => {
     console.log('Filtering data quality', dataQualityFlags)
-    const datasets = chartData.value.datasets
     console.log('Starting Datasets', datasets)
     datasets.forEach((dataset) => {
       const pointStyles = dataset.data.map((m) => {
@@ -130,20 +124,13 @@ export const useChartsStore = defineStore('charts', () => {
     return 'rgb(' + r + ',' + g + ',' + b + ')'
   }
 
-  const getChart = () => {
-    return chart
-  }
-
   return {
     updateChartData,
     chartData,
     clearChartData,
     buildChart,
-    setChart,
     showVis,
     showChart,
-    getChart,
-    chart,
     dynamicColors,
     filterDataQuality
   }
