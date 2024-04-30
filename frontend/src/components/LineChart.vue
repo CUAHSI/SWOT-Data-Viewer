@@ -155,10 +155,11 @@ const updateChartColor = (color) => {
   if (!color) {
     color = chartStore.dynamicColors()
   }
-  line.value.chart.data.datasets.forEach((dataset) => {
+  chartStore.chartData.datasets.forEach((dataset) => {
     dataset.borderColor = color
     dataset.backgroundColor = color
   })
+  line.value.chart.data.datasets = chartStore.chartData.datasets
   // TODO: for some reasone the chart gets clobbered when updating
   line.value.chart.update()
 }
@@ -168,40 +169,19 @@ const updateChartLine = () => {
   if (plotStyle.value === 'Connected') {
     showLine = true
   }
-  line.value.chart.data.datasets.forEach((dataset) => {
+  chartStore.chartData.datasets.forEach((dataset) => {
     dataset.showLine = showLine
   })
+  line.value.chart.data.datasets = chartStore.chartData.datasets
   // TODO: for some reasone the chart gets clobbered when updating
   line.value.chart.update()
 }
 
 const filterAllDatasets = () => {
-  // TODO: this allows for narrowing the dataset but doesn't allow for expanding it
   let dataQualityValues = dataQuality.value
-  console.log("Initial datasets", chartData.value.datasets)
-  console.log("Data Quality Filters", dataQualityValues)
-  chartData.value.datasets.forEach((dataset) => {
-    console.log("Filtering dataset", dataset)
-    const filtered = filterDataset(dataset)
-    console.log("Filtered Dataset", filtered)
-  })
-  console.log("Filtered datasets", chartData.value.datasets)
-  // TODO: for some reason the chart doesn't get updated even though the data does
+  chartStore.filterDataQuality(dataQualityValues)
+  line.value.chart.data.datasets = chartStore.chartData.datasets
   line.value.chart.update()
-}
-
-const filterDataset = (dataset) => {
-  let dataQualityValues = dataQuality.value
-  console.log("Filtering dataset", dataset)
-  console.log("Starting number of points", dataset.data.length)
-  let filteredData = dataset.data.filter((dataPoint) => {
-    const include = dataQualityValues.includes(parseInt(dataPoint.reach_q))
-    console.log("Data Point Quality", parseInt(dataPoint.reach_q))
-    console.log("Include?", include)
-    return include
-  })
-  console.log("Ending number of points", filteredData.length)
-  return dataset.data = filteredData
 }
 
 
