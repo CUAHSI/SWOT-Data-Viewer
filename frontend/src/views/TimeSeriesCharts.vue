@@ -2,16 +2,20 @@
   <v-container v-if="hasData">
     <v-row>
       <v-col cols="2">
-        <v-sheet class="elevation-1">
+        <v-sheet class="elevation-1" color="input">
           <v-card-title>
             Variables
           </v-card-title>
-          <v-tabs v-model="varTab" direction="vertical">
+          <v-tabs v-model="varTab" direction="vertical" color="primary">
             <v-tab v-for="variable in selectedVariables" :value="variable" :key="variable.abbreviation">
               {{ variable.name }}
             </v-tab>
           </v-tabs>
         </v-sheet>
+        <v-divider class="my-2"></v-divider>
+        <v-card class="pa-2">
+          {{ varTab.definition }}
+        </v-card>
       </v-col>
       <v-divider class="my-2" vertical></v-divider>
       <v-col>
