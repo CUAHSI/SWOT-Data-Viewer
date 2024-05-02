@@ -1,6 +1,5 @@
 <template>
-  <v-navigation-drawer v-if="featureStore.activeFeature" location="right" width="auto" v-model="show" order="1"
-    style="width: 30vw">
+  <v-navigation-drawer v-if="featureStore.activeFeature" location="right" width="auto" v-model="show" order="1">
     <v-container v-if="featureStore.activeFeature">
       <v-btn v-if="featureStore.activeFeature" @click="show = !show" location="left" order="0" postition="absolute"
         :style="{ bottom: '30%', transform: translate(), position: 'absolute' }"

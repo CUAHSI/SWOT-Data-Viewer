@@ -78,6 +78,6 @@ onMounted(async () => {
 
 <style scoped>
 .chart {
-  height: 70vh;
+  height: 100%;
 }
 </style>

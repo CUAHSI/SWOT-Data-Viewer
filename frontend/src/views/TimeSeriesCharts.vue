@@ -55,6 +55,6 @@ let varTab = ref(selectedVariables[0])
 
 <style scoped>
 .chart {
-  height: 70vh;
+  height: 100%;
 }
 </style>
