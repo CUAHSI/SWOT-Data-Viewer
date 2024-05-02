@@ -9,10 +9,10 @@
       </v-col>
       <v-col xs="12" lg="2">
         <v-sheet>
-          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
-            @update:modelValue="updateChartLine()"></v-select>
           <v-select label="Data Quality" v-model="dataQuality" :items="dataQualityOptions" item-title="label"
             item-value="value" @update:modelValue="filterAllDatasets()" multiple chips></v-select>
+          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
+            @update:modelValue="updateChartLine()"></v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
             Download
