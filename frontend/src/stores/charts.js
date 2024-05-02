@@ -211,12 +211,13 @@ export const useChartsStore = defineStore('charts', () => {
     return {
       showLine: false,
       pointStyle: styles.pointStyles,
-      pointRadius: 5,
-      pointHoverRadius: 10,
+      pointRadius: 7,
+      pointHoverRadius: 15,
       fill: styles.fills,
       color: styles.colors,
       borderColor: styles.colors,
-      backgroundColor: 'rgb(75, 192, 192)'
+      backgroundColor: 'rgb(75, 192, 192)',
+      // borderWidth: 1,
     }
   }
 
