@@ -4,7 +4,7 @@
       <v-col lg="10">
         <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
           min-width="500px">
-          <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor]" />
+          <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor, zoomPlugin]" />
         </v-sheet>
       </v-col>
       <v-col lg="2">
@@ -26,6 +26,10 @@
           <v-btn @click="updateChartColor()" color="input" class="ma-1">
             <v-icon :icon="mdiPalette"></v-icon>
             Color
+          </v-btn>
+          <v-btn @click="resetZoom()" color="input" class="ma-1">
+            <v-icon :icon="mdiLoupe"></v-icon>
+            Reset Zoom
           </v-btn>
         </v-sheet>
       </v-col>
@@ -49,9 +53,10 @@ import 'chartjs-adapter-date-fns';
 import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiPalette, mdiDownloadBox, mdiFileDelimited, mdiCodeJson } from '@mdi/js'
+import { mdiPalette, mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiLoupe } from '@mdi/js'
 import { downloadCsv, downloadJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
+import zoomPlugin from 'chartjs-plugin-zoom';
 
 const { lgAndUp } = useDisplay()
 
@@ -61,7 +66,7 @@ const line = ref(null)
 const plotStyle = ref('Scatter')
 const downloading = ref({ csv: false, json: false, chart: false })
 
-ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor)
+ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
@@ -95,7 +100,21 @@ const options = {
     },
     customCanvasBackgroundColor: {
       color: 'white',
-    }
+    },
+    zoom: {
+      zoom: {
+        wheel: {
+          enabled: false,
+        },
+        pinch: {
+          enabled: false
+        },
+        drag: {
+          enabled: true
+        },
+        mode: 'xy',
+      }
+    },
   },
   scales: {
     x: {
@@ -112,6 +131,10 @@ const options = {
       }
     }
   }
+}
+
+const resetZoom = () => {
+  line.value.chart.resetZoom()
 }
 
 const getChartName = () => {
