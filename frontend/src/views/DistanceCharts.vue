@@ -6,26 +6,31 @@
     </h2>
     <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
   </v-container>
-  <v-container v-else>
+  <v-container v-else fluid fill-height>
     <v-row>
-      <v-col cols="2">
+      <v-col sm="2">
         <v-sheet class="elevation-1" color="input">
           <v-card-title>
             Variables
           </v-card-title>
           <v-tabs v-model="varTab" direction="vertical" color="primary">
             <v-tab v-for="variable in nodeVariables" :value="variable" :key="variable.abbreviation">
-              {{ variable.plot_definition }}
+              <template v-if="lgAndUp">
+                {{ variable.plot_definition }}
+              </template>
+              <template v-else>
+                {{ variable.abbreviation }}
+              </template>
             </v-tab>
           </v-tabs>
         </v-sheet>
-        <v-divider class="my-2"></v-divider>
-        <v-card class="pa-2">
+        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <v-card class="pa-2" v-if="lgAndUp">
           {{ varTab.definition }}
         </v-card>
       </v-col>
-      <v-divider class="my-2" vertical></v-divider>
-      <v-col>
+      <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
+      <v-col sm="10">
         <v-window v-model="varTab">
           <v-window-item v-for="variable in nodeVariables" :key="variable.abbreviation" :value="variable">
             <NodeChart v-if="variable" class="chart" :data="chartStore.nodeChartData" :chosenVariable="variable" />

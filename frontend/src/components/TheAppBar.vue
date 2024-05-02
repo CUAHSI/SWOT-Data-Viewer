@@ -7,7 +7,7 @@
 
       <v-spacer></v-spacer>
 
-      <v-card class="nav-items mr-2 d-flex mr-4" :elevation="2" v-if="!mdAndDown">
+      <v-card class="nav-items mr-2 d-flex mr-4" :elevation="2" v-if="!smAndDown">
         <nav>
           <v-btn v-for="path of paths" :key="path.attrs.to || path.attrs.href" v-bind="path.attrs"
             :id="`navbar-nav-${path.label.replaceAll(/[\/\s]/g, ``)}`" :elevation="0" active-class="primary"
@@ -19,7 +19,7 @@
       <v-spacer></v-spacer>
       <!-- <UserLogin @logged-in="login" v-if="!mdAndDown" :mobile="false" /> -->
 
-      <v-app-bar-nav-icon @click="$emit('toggleMobileNav')" v-if="mdAndDown" />
+      <v-app-bar-nav-icon @click="$emit('toggleMobileNav')" v-if="smAndDown" />
     </div>
   </v-app-bar>
 </template>
@@ -33,9 +33,9 @@ defineProps(['paths'])
 defineEmits(['toggleMobileNav'])
 
 const auth = useAuthStore();
-const { mdAndDown } = useDisplay()
+const { smAndDown } = useDisplay()
 
-function login(){
+function login() {
   auth.isLoggedIn = true
 }
 
@@ -78,5 +78,4 @@ function login(){
 // .mobile-nav-items .v-list-item.is-active {
 //   background-color: #1976d2 !important;
 //   color: #FFF;
-// }
-</style>
+// }</style>
