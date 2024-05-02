@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="hasData">
+  <v-container v-if="hasData" fluid fill-height>
     <v-row>
       <v-col sm="2">
         <v-card class="elevation-1" color="input">

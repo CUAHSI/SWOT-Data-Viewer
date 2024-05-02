@@ -1,33 +1,33 @@
 <template>
-  <v-container>
+  <v-container class="overflow-auto">
     <v-row>
-      <v-col lg="10">
-        <v-sheet :min-height="lgAndUp ? '65vh': '50vh'" :max-height="lgAndUp ? '100%' : '20vh'">
+      <v-col xs="12" lg="10">
+        <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
+          min-width="500px">
           <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor]" />
         </v-sheet>
       </v-col>
-      <v-divider class="my-2" vertical></v-divider>
-      <v-col lg="2">
+      <v-col xs="12" lg="2">
         <v-sheet>
           <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
             @update:modelValue="updateChartLine()"></v-select>
           <v-select label="Data Quality" v-model="dataQuality" :items="dataQualityOptions" item-title="label"
             item-value="value" @update:modelValue="filterAllDatasets()" multiple chips></v-select>
-          <v-btn :loading="downloading.chart" @click="downloadChart()" class="mb-2" color="input">
+          <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
-            Download Plot
+            Download
           </v-btn>
-          <v-btn :loading="downloading.csv" @click="downCsv()" class="mb-2" color="input">
+          <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
             <v-icon :icon="mdiFileDelimited"></v-icon>
-            Download CSV
+            CSV
           </v-btn>
-          <v-btn :loading="downloading.json" @click="downJson()" class="mb-2" color="input">
+          <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
             <v-icon :icon="mdiCodeJson"></v-icon>
-            Download JSON
+            JSON
           </v-btn>
-          <v-btn @click="updateChartColor()" color="input">
+          <v-btn @click="updateChartColor()" color="input" class="ma-1">
             <v-icon :icon="mdiPalette"></v-icon>
-            Randomize Color
+            Color
           </v-btn>
         </v-sheet>
       </v-col>

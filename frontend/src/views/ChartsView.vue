@@ -1,7 +1,5 @@
 <template>
   <v-container v-if="hasData" fluid fill-height>
-    <TimeSeriesCharts v-if="tab === 'timeseries'" />
-    <DistanceCharts v-if="tab === 'distance'" />
     <v-tabs v-model="tab" align-tabs="center" fixed-tabs color="primary" grow>
       <v-tab value="timeseries">
         <v-icon :icon="mdiTimelineClock"></v-icon>
@@ -12,6 +10,8 @@
         Distance
       </v-tab>
     </v-tabs>
+    <TimeSeriesCharts v-if="tab === 'timeseries'" />
+    <DistanceCharts v-if="tab === 'distance'" />
   </v-container>
 
   <v-container v-if="!hasData">
