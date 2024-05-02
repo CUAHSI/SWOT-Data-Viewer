@@ -80,7 +80,8 @@ const options = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: 'right',
+      display: false,
+      position: 'bottom',
     },
     title: {
       display: true,
