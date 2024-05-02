@@ -15,15 +15,15 @@
             @update:modelValue="updateChartLine()"></v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
-            Download
+            Download Chart
           </v-btn>
           <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
             <v-icon :icon="mdiFileDelimited"></v-icon>
-            CSV
+            Download CSV
           </v-btn>
           <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
             <v-icon :icon="mdiCodeJson"></v-icon>
-            JSON
+            Download JSON
           </v-btn>
           <v-btn @click="resetZoom()" color="input" class="ma-1">
             <v-icon :icon="mdiLoupe"></v-icon>
