@@ -65,19 +65,22 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Filtering data quality', dataQualityFlags)
     console.log('Starting Datasets', datasets)
     datasets.forEach((dataset) => {
-      const pointStyles = dataset.data.map((m) => {
-        let pointStyle = 'circle'
+      console.log('Starting pointstyle', dataset.pointStyle)
+      const pointStyles = dataset.data.map((m, i) => {
+        let pointStyle = dataset.pointStyle[i]
         if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
-          // TODO: could also set to false to hide the point
-          // need to figure out how to have the connecting line skip the point
+          // TODO: need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
-          pointStyle = 'star'
+          pointStyle = false
+        } else {
+          const styles = getPointStyle(m.reach_q)
+          pointStyle = styles.pointStyle
         }
         return pointStyle
       })
       dataset.pointStyle = pointStyles
+      console.log('Ending pointstyle', dataset.pointStyle)
     })
-    console.log('Ending Datasets', datasets)
   }
 
   const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
@@ -124,13 +127,7 @@ export const useChartsStore = defineStore('charts', () => {
           // TODO: this should be dynamic based on the selected variable
           yAxisKey: 'wse'
         },
-        // borderColor: dynamicColors(),
-        borderColor: 'rgb(75, 192, 192)',
-        showLine: false,
-        pointStyle: 'circle',
-        pointRadius: 5,
-        pointHoverRadius: 10,
-        fill: false
+        ...getDataSetStyle(measurements)
       }
     })
   }
@@ -146,12 +143,7 @@ export const useChartsStore = defineStore('charts', () => {
         xAxisKey: 'dist_out',
         yAxisKey: 'wse'
       },
-      borderColor: 'rgb(75, 192, 192)',
-      showLine: false,
-      pointStyle: 'circle',
-      pointRadius: 5,
-      pointHoverRadius: 10,
-      fill: false
+      ...getDataSetStyle(data)
     }
     return [dataSet]
   }
@@ -165,6 +157,67 @@ export const useChartsStore = defineStore('charts', () => {
     var g = Math.floor(Math.random() * 255)
     var b = Math.floor(Math.random() * 255)
     return 'rgb(' + r + ',' + g + ',' + b + ')'
+  }
+
+  const getPointStyle = (dataQuality) => {
+    let pointStyle = 'circle'
+    let color = 'black'
+    let fill = true
+    // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
+    console.log('Data Quality', dataQuality)
+    switch (parseInt(dataQuality)) {
+      case 0:
+        pointStyle = 'circle'
+        color = 'black'
+        fill = true
+        break
+      case 1:
+        pointStyle = 'star'
+        color = 'black'
+        fill = false
+        break
+      case 2:
+        pointStyle = 'crossRot'
+        color = 'orange'
+        fill = false
+        break
+      case 3:
+        pointStyle = 'cross'
+        color = 'red'
+        fill = false
+        break
+    }
+    return {
+      pointStyle,
+      color,
+      fill
+    }
+  }
+
+  const getDataSetStyle = (dataSet) => {
+    console.log('Getting data set style', dataSet)
+    const styles = {
+      colors: [],
+      pointStyles: [],
+      fills: []
+    }
+    dataSet.forEach((m) => {
+      const { pointStyle, color, fill } = getPointStyle(m.reach_q)
+      styles.colors.push(color)
+      styles.pointStyles.push(pointStyle)
+      styles.fills.push(fill)
+    })
+    console.log('Styles', styles)
+    return {
+      showLine: false,
+      pointStyle: styles.pointStyles,
+      pointRadius: 5,
+      pointHoverRadius: 10,
+      fill: styles.fills,
+      color: styles.colors,
+      borderColor: styles.colors,
+      backgroundColor: 'rgb(75, 192, 192)'
+    }
   }
 
   return {
