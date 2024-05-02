@@ -32,23 +32,6 @@
       </v-col>
     </v-row>
   </v-container>
-
-  <v-bottom-sheet v-model="sheetText" inset>
-    <v-card class="text-center" height="100%">
-      <v-card-text>
-        <v-btn @click="sheetText = null">
-          close
-        </v-btn>
-
-        <br>
-        <br>
-
-        <div>
-          {{ sheetText }}
-        </div>
-      </v-card-text>
-    </v-card>
-  </v-bottom-sheet>
 </template>
 
 <script setup>
@@ -62,8 +45,6 @@ import { useDisplay } from 'vuetify'
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore();
 const hydrologicStore = useHydrologicStore();
-
-let sheetText = ref(null)
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
 
