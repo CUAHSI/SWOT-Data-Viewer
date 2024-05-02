@@ -23,10 +23,6 @@
             <v-icon :icon="mdiCodeJson"></v-icon>
             Json
           </v-btn>
-          <v-btn @click="updateChartColor()" color="input" class="ma-1">
-            <v-icon :icon="mdiPalette"></v-icon>
-            Color
-          </v-btn>
           <v-btn @click="resetZoom()" color="input" class="ma-1">
             <v-icon :icon="mdiLoupe"></v-icon>
             Reset Zoom
@@ -167,17 +163,6 @@ const downJson = async () => {
   downloading.value.json = true
   await downloadJson()
   downloading.value.json = false
-}
-
-const updateChartColor = (color) => {
-  if (!color) {
-    color = chartStore.dynamicColors()
-  }
-  line.value.chart.data.datasets.forEach((dataset) => {
-    dataset.borderColor = color
-    setParsing(line.value.chart.data.datasets)
-  })
-  line.value.chart.update()
 }
 
 const updateChartLine = () => {
