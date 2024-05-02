@@ -1,13 +1,13 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="10">
-        <v-sheet min-height="65vh" max-height="100%">
+      <v-col lg="10">
+        <v-sheet :min-height="lgAndUp ? '65vh': '50vh'" :max-height="lgAndUp ? '100%' : '20vh'">
           <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor]" />
         </v-sheet>
       </v-col>
       <v-divider class="my-2" vertical></v-divider>
-      <v-col>
+      <v-col lg="2">
         <v-sheet>
           <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
             @update:modelValue="updateChartLine()"></v-select>
@@ -54,6 +54,9 @@ import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 import { mdiPalette, mdiDownloadBox, mdiFileDelimited, mdiCodeJson } from '@mdi/js'
 import { downloadCsv, downloadJson } from '../_helpers/hydroCron';
+import { useDisplay } from 'vuetify'
+
+const { lgAndUp } = useDisplay()
 
 const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })

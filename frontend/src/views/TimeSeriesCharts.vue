@@ -1,24 +1,29 @@
 <template>
   <v-container v-if="hasData">
     <v-row>
-      <v-col cols="2">
-        <v-sheet class="elevation-1" color="input">
+      <v-col sm="2">
+        <v-card class="elevation-1" color="input">
           <v-card-title>
             Variables
           </v-card-title>
           <v-tabs v-model="varTab" direction="vertical" color="primary">
             <v-tab v-for="variable in selectedVariables" :value="variable" :key="variable.abbreviation">
-              {{ variable.name }}
+              <template v-if="lgAndUp">
+                {{ variable.name }}
+              </template>
+              <template v-else>
+                {{ variable.abbreviation }}
+              </template>
             </v-tab>
           </v-tabs>
-        </v-sheet>
-        <v-divider class="my-2"></v-divider>
-        <v-card class="pa-2">
+        </v-card>
+        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <v-card class="pa-2" v-if="lgAndUp">
           {{ varTab.definition }}
         </v-card>
       </v-col>
-      <v-divider class="my-2" vertical></v-divider>
-      <v-col>
+      <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
+      <v-col sm="10">
         <v-window v-model="varTab">
           <v-window-item v-for="variable in selectedVariables" :key="variable.abbreviation" :value="variable">
             <LineChart v-if="variable" class="chart" :data="chartStore.chartData" :chosenVariable="variable" />
@@ -52,7 +57,9 @@ import { useChartsStore } from '../stores/charts';
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { ref } from 'vue'
 import { computed } from 'vue';
+import { useDisplay } from 'vuetify'
 
+const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore();
 const hydrologicStore = useHydrologicStore();
 

@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="hasData">
+  <v-container v-if="hasData" fluid fill-height>
     <TimeSeriesCharts v-if="tab === 'timeseries'" />
     <DistanceCharts v-if="tab === 'distance'" />
     <v-tabs v-model="tab" align-tabs="center" fixed-tabs color="primary" grow>
