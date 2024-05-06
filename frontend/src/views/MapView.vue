@@ -1,11 +1,8 @@
 <template>
-  <!-- <ModelSelectDrawer :show="showModelSelect" @toggle="showModelSelect = !showModelSelect" /> -->
-  <TheLeafletMap></TheLeafletMap>
+  <!-- Actual map component included in base App.vue to allow persistence -->
+  <DataViewDrawer />
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import ModelSelectDrawer from '../components/ModelSelectDrawer.vue';
-import TheLeafletMap from '../components/TheLeafletMap.vue';
-const showModelSelect = ref(true)
+import DataViewDrawer from '../components/DataViewDrawer.vue';
 </script>

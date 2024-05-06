@@ -3,9 +3,10 @@ name: Deploy static content to Pages
 
 on:
   push:
-    branches:
-      - main
-      - swot-front
+    # TODO: restrict branches
+    # branches:
+    #   - main
+    #   - swot-front
   workflow_dispatch:
 
 # Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
@@ -46,6 +47,7 @@ jobs:
           echo VITE_APP_FULL_URL=${{ secrets.VITE_APP_FULL_URL }} >> .env
           echo VITE_OAUTH2_REDIRECT_URL=${{ secrets.VITE_OAUTH2_REDIRECT_URL }} >> .env
           echo VITE_APP_BASE=${{ secrets.VITE_APP_BASE }} >> .env
+          echo VITE_HYDROCRON_URL=${{ secrets.VITE_HYDROCRON_URL }} >> .env
           cp .env ../.env
       - name: Install dependencies
         run: npm install

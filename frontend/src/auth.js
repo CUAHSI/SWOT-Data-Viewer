@@ -1,4 +1,4 @@
-import { ENDPOINTS, APP_URL } from '@/constants'
+import { ENDPOINTS, APP_FULL_URL } from '@/constants'
 import { useAuthStore } from '@/stores/auth'
 import { useAlertStore } from './stores/alerts'
 
@@ -12,14 +12,14 @@ export async function logIn(callback) {
   const authUrl = new URL(json.authorization_url)
   // TODO: use an env var for auth redirect instead of hard-coding
   // "#" hash routing was not passed from github env secret so had to hard code here.
-  authUrl.searchParams.set('redirect_uri', `${APP_URL}#/auth-redirect`)
+  authUrl.searchParams.set('redirect_uri', `${APP_FULL_URL}#/auth-redirect`)
   window.open(
     authUrl.toString(),
     '_blank',
     'location=1, status=1, scrollbars=1, width=800, height=800'
   )
   window.addEventListener('message', async (event) => {
-    if (!APP_URL.includes(event.origin)) {
+    if (!APP_FULL_URL.includes(event.origin)) {
       return
     }
 

@@ -10,6 +10,10 @@ export const useAlertStore = defineStore('alerts', () => {
       displayed.value = {}
     }, alert.duration * 1000)
   }
+  
+  function clearAlert(){
+    displayed.value = {}
+  }
 
-  return { displayed, displayAlert }
+  return { displayed, displayAlert, clearAlert }
 })

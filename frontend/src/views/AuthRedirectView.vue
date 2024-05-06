@@ -10,7 +10,7 @@
   
 <script setup>
 import { onMounted } from 'vue'
-import { APP_URL } from "@/constants";
+import { APP_FULL_URL } from "@/constants";
 onMounted(() => {
     // Get a dictionary of parameters in the redirect response URL
     const params = window.location.search
@@ -18,7 +18,7 @@ onMounted(() => {
     // window.opener references our original window from where the login popup was opened
     window.opener.postMessage(
         params,
-        APP_URL // Important security measure: https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
+        APP_FULL_URL // Important security measure: https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
     );
 });
 </script>

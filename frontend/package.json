@@ -16,6 +16,9 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.4.2",
     "@vueuse/core": "^10.5.0",
+    "chart.js": "^4.4.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^3.6.0",
     "esri-leaflet": "^3.0.12",
     "esri-leaflet-vector": "^4.2.3",
     "leaflet": "^1.9.4",
@@ -24,6 +27,7 @@
     "swagger-ui": "^5.9.0",
     "vite-plugin-vuetify": "^1.0.2",
     "vue": "^3.3.4",
+    "vue-chartjs": "^5.3.0",
     "vue-router": "^4.2.4",
     "vuetify": "^3.3.21"
   },
