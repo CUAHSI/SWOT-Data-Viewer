@@ -155,7 +155,7 @@ import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { mdiSatelliteVariant, mdiSword, mdiCodeJson, mdiFileDelimited } from '@mdi/js'
 import { computed } from 'vue';
-import { queryHydroCron } from "../_helpers/hydroCron";
+import { downloadJson, downloadCsv } from "../_helpers/hydroCron";
 
 const featureStore = useFeaturesStore();
 
@@ -176,45 +176,6 @@ const headers = [
   // { title: 'SWOT Time String', key: 'time_str', value: item => item.results.geojson }
 ]
 const sortBy = [{ key: 'startedAt', order: 'desc' }]
-
-function getLongFilename(feature) {
-  const featureType = feature.params.feature
-  const riverName = feature.sword.river_name
-  const reachId = feature.sword.reach_id
-  const startTime = feature.params.start_time
-  const endTime = feature.params.end_time
-  let filename = `${featureType}_${riverName}_${reachId}_${startTime}_${endTime}`
-  filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-  return filename
-}
-
-async function downloadJson(feature) {
-  const jsonData = JSON.stringify(feature.sword);
-  const blob = new Blob([jsonData], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${getLongFilename(feature)}.json`;
-
-  link.click();
-
-  URL.revokeObjectURL(url);
-}
-
-async function downloadCsv(feature) {
-  const csvData = await queryHydroCron(feature, 'csv')
-  const blob = new Blob([csvData], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${getLongFilename(feature)}.csv`;
-
-  link.click();
-
-  URL.revokeObjectURL(url);
-}
 
 async function viewHydroCronResult(feature) {
   const info = feature.results.geojson

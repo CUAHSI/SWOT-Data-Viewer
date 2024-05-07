@@ -38,6 +38,12 @@
 
 const members = [
   {
+    name: 'Tony Castronova',
+    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg',
+    position: 'Senior Research Hydrologist',
+    org: 'CUAHSI'
+  },
+  {
     name: 'Devin Cowan',
     image: 'https://www.cuahsi.org/uploads/team/img/_headshot/Devin-Cowan.jpg',
     position: 'Research Programmer',
@@ -53,12 +59,6 @@ const members = [
     name: 'Martin Seul',
     image: 'https://www.cuahsi.org/uploads/team/img/_headshot/Martin.jpg',
     position: 'Technical Director',
-    org: 'CUAHSI'
-  },
-  {
-    name: 'Tony Castronova',
-    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg',
-    position: 'Senior Research Hydrologist',
     org: 'CUAHSI'
   },
 ]

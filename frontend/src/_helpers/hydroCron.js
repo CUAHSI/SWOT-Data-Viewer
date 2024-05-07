@@ -10,8 +10,6 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const chartStore = useChartsStore()
   const hydrologicStore = useHydrologicStore()
   const alertStore = useAlertStore()
-  const url = `${HYDROCRON_URL}/v1/timeseries`
-
   if (swordFeature == null && !featuresStore.shouldFakeData) {
     console.error('No hydroCron query params, and shouldFakeData is false')
     return
@@ -63,7 +61,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     params.output = output
     console.log('Faked params', params)
   }
-  let response = await fetchHydroCronData(url, params, swordFeature)
+  let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
   if (response == null) {
     return
   }
@@ -144,4 +142,82 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   }
 }
 
-export { queryHydroCron }
+async function downloadJson(feature = null) {
+  if (feature == null) {
+    const featuresStore = useFeaturesStore()
+    feature = featuresStore.activeFeature
+  }
+  const jsonData = JSON.stringify(feature.sword)
+  const blob = new Blob([jsonData], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${getLongFilename(feature)}.json`
+
+  link.click()
+
+  URL.revokeObjectURL(url)
+}
+
+async function downloadCsv(feature = null) {
+  // if feature not defined, use featuresStore.activeFeature
+  if (feature == null) {
+    const featuresStore = useFeaturesStore()
+    feature = featuresStore.activeFeature
+  }
+  const csvData = await queryHydroCron(feature, 'csv')
+  const blob = new Blob([csvData], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${getLongFilename(feature)}.csv`
+
+  link.click()
+
+  URL.revokeObjectURL(url)
+}
+
+function getLongFilename(feature = null) {
+  if (feature == null) {
+    const featuresStore = useFeaturesStore()
+    feature = featuresStore.activeFeature
+  }
+  const featureType = feature.params.feature
+  const riverName = feature.sword.river_name
+  const reachId = feature.sword.reach_id
+  const startTime = feature.params.start_time
+  const endTime = feature.params.end_time
+  let filename = `${featureType}_${riverName}_${reachId}_${startTime}_${endTime}`
+  filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+  return filename
+}
+
+/**
+ * Retrieves nodes from a reach.
+ *
+ * @param {Object} feature - The feature object representing the reach.
+ * @returns {Promise} - A promise that resolves with the nodes from the reach.
+ */
+async function getNodesFromReach(reachFeature) {
+  let url =
+    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0/query'
+  let params = {
+    f: 'json',
+    // where: `reach_id = ${reachFeature.properties.reach_id}`,
+    where: `reach_id = ${reachFeature.params.feature_id}`,
+    outFields: '*'
+    // returnGeometry: true,
+    // spatialRel: 'esriSpatialRelIntersects',
+    // outSR: 4326
+  }
+  let query = Object.keys(params)
+    .map((key) => key + '=' + params[key])
+    .join('&')
+  let response = await fetch(`${url}?${query}`)
+  let data = await response.json()
+  return data.features
+}
+
+export { queryHydroCron, downloadJson, downloadCsv, getNodesFromReach }

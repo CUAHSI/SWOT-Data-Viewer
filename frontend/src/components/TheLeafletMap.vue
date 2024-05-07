@@ -5,7 +5,7 @@
 <script setup>
 import "leaflet/dist/leaflet.css";
 import "leaflet-easybutton/src/easy-button.css";
-import L from 'leaflet'
+import L, { canvas } from 'leaflet'
 import * as esriLeaflet from "esri-leaflet";
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import "leaflet-easybutton/src/easy-button";
@@ -27,9 +27,7 @@ onUpdated(() => {
 })
 
 onMounted(() => {
-    // TODO revert to zoom 3
-    let leaflet = L.map('mapContainer').setView([42.85635170598554, -72.56299010443047], 7);
-    // let leaflet = L.map('mapContainer').setView([0, 11], 3);
+    let leaflet = L.map('mapContainer').setView([0, 0], 3);
     Map.leaflet = leaflet;
     Map.hucbounds = [];
     Map.popups = [];
@@ -84,7 +82,7 @@ onMounted(() => {
         Stadia_StamenTonerBackground
     };
 
-    CartoDB_PositronNoLabels.addTo(leaflet);
+    CartoDB.addTo(leaflet);
 
 
     // add lakes features layer to map
@@ -147,11 +145,14 @@ onMounted(() => {
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
         url: url,
+        renderer: canvas({ tolerance: 5 }),
         simplifyFactor: 0.35,
         precision: 5,
         minZoom: 7,
         maxZoom: 18,
-        color: "blue",
+        color: mapStore.featureOptions.defaultColor,
+        weight: mapStore.featureOptions.weight,
+        opacity: mapStore.featureOptions.opacity,
         // fields: ["FID", "ZIP", "PO_NAME"],
     }).addTo(leaflet);
 
@@ -173,61 +174,63 @@ onMounted(() => {
     });
 
     // add nodes layer to map
-    // url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
-    // let sword_nodes = L.tileLayer.wms(url, {
-    //     layers: 0,
-    //     transparent: 'true',
-    //     format: 'image/png',
-    //     minZoom: 12,
-    //     maxZoom: 13,
-    // }).addTo(leaflet);
+    url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
+    let sword_nodes = L.tileLayer.wms(url, {
+        layers: 0,
+        transparent: 'true',
+        format: 'image/png',
+        minZoom: 12,
+        maxZoom: 13,
+    })
 
-    // url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
-    // const nodesFeatures = esriLeaflet.featureLayer({
-    //     url: url,
-    //     simplifyFactor: 0.35,
-    //     precision: 5,
-    //     minZoom: 13,
-    //     maxZoom: 18,
-    // }).addTo(leaflet);
+    url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
+    const nodesFeatures = esriLeaflet.featureLayer({
+        url: url,
+        simplifyFactor: 0.35,
+        precision: 5,
+        minZoom: 13,
+        maxZoom: 18,
+    })
 
-    // nodesFeatures.on("click", function (e) {
-    //     const popup = L.popup();
-    //     const content = `
-    //     <h3>${e.layer.feature.properties.river_name}</h3>
-    //     <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
-    //     <p>
-    //         <ul>
-    //             <li>SWORD Width: ${e.layer.feature.properties.width}</li>
-    //             <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
-    //             <li>SWORD Sinuosity: ${e.layer.feature.properties.sinuosity}</li>
-    //             <li>SWOT Dist_out: ${e.layer.feature.properties.dist_out}</li>
-    //         </ul>
-    //     </p>
-    //     `;
-    //     popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
-    // });
+    nodesFeatures.on("click", function (e) {
+        const popup = L.popup();
+        console.log("Selected node:", e.layer.feature.properties)
+        const content = `
+        <h3>${e.layer.feature.properties.river_name}</h3>
+        <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
+        <p>
+            <ul>
+                <li>SWORD Width: ${e.layer.feature.properties.width}</li>
+                <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
+                <li>SWORD Sinuosity: ${e.layer.feature.properties.sinuosity}</li>
+                <li>SWOT Dist_out: ${e.layer.feature.properties.dist_out}</li>
+            </ul>
+        </p>
+        `;
+        popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
+    });
 
-    // // add USGS gage layer to map
-    // url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
-    // let gages = L.tileLayer.wms(url, {
-    //     layers: 0,
-    //     transparent: 'true',
-    //     format: 'image/png',
-    //     minZoom: 9,
-    //     maxZoom: 18,
-    // }).addTo(map);
+    // add USGS gage layer to map
+    url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
+    let gages = L.tileLayer.wms(url, {
+        layers: 0,
+        transparent: 'true',
+        format: 'image/png',
+        minZoom: 9,
+        maxZoom: 18,
+        // BGCOLOR: '#f4d03f',
+    })
 
 
     // layer toggling
     let mixed = {
-        // "USGS Gages": gages,
-        "Lakes": lakes,
-        "Lakes Features": lakesFeatures,
-        "SWORD Reaches": reaches,
-        "Reaches Features": reachesFeatures,
+        "USGS Gages": gages,
+        // "Lakes": lakes,
+        "Lakes": lakesFeatures,
+        // "SWORD Reaches": reaches,
+        "Reaches": reachesFeatures,
         // "SWORD Nodes": sword_nodes,
-        // "Nodes Features": nodesFeatures,
+        "Nodes": nodesFeatures,
     };
 
     // /*

@@ -24,6 +24,7 @@ const light = {
   colors: {
     primary: colors.blue.darken2,
     secondary: colors.blueGrey.lighten4,
+    input: '#f6f6f6',
     accent: colors.blue.base,
     error: colors.red.accent3,
     success: colors.teal.accent4,

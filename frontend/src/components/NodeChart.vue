@@ -1,16 +1,14 @@
 <template>
   <v-container class="overflow-auto">
     <v-row>
-      <v-col xs="12" lg="10">
+      <v-col lg="10">
         <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
           min-width="500px">
-          <Line :data="chartData" :options="options" ref="line" :plugins="[zoomPlugin]" />
+          <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor, zoomPlugin]" />
         </v-sheet>
       </v-col>
-      <v-col xs="12" lg="2">
+      <v-col lg="2">
         <v-sheet>
-          <v-select label="Data Quality" v-model="dataQuality" :items="dataQualityOptions" item-title="label"
-            item-value="value" @update:modelValue="filterAllDatasets()" multiple chips></v-select>
           <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
             @update:modelValue="updateChartLine()"></v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
@@ -48,7 +46,6 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
-import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
@@ -63,7 +60,6 @@ const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const plotStyle = ref('Scatter')
-const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
@@ -80,9 +76,8 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
   setParsing(chartData.value.datasets)
 }
 
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.name} vs Time`
-
+const yLabel = `${props.chosenVariable?.plot_definition} (${props.chosenVariable?.units})`
+const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.plot_definition} vs Distance`
 
 const options = {
   responsive: true,
@@ -119,17 +114,10 @@ const options = {
   },
   scales: {
     x: {
-      type: 'time',
-      time: {
-        // unit: 'day',
-        // displayFormats: {
-        //   day: 'MM.dd'
-        // },
-        locale: enUS
-      },
+      type: 'linear',
       title: {
         display: true,
-        text: 'Date'
+        text: 'Distance from outlet (m)'
       }
     },
     y: {
@@ -140,8 +128,6 @@ const options = {
     }
   }
 }
-
-const dataQualityOptions = [{ label: 'good', value: 0 }, { label: 'suspect', value: 1 }, { label: 'degraded', value: 2 }, { label: 'bad', value: 3 }]
 
 const resetZoom = () => {
   line.value.chart.resetZoom()
@@ -188,13 +174,6 @@ const updateChartLine = () => {
     dataset.showLine = showLine
     setParsing(line.value.chart.data.datasets)
   })
-  line.value.chart.update()
-}
-
-const filterAllDatasets = () => {
-  let dataQualityValues = dataQuality.value
-  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets)
-  setParsing(line.value.chart.data.datasets)
   line.value.chart.update()
 }
 </script>

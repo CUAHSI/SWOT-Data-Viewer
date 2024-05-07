@@ -1,19 +1,20 @@
 <template>
-  <h2 class="ma-2 text-center">Charts</h2>
-  <v-container v-if="hasFeatures">
-    <v-tabs v-model="varTab" align-tabs="center">
-      <v-tab v-for="variable in selectedVariables" :value="variable" :key="variable.abbreviation">
-        {{ variable.name }}
+  <v-container v-if="hasData" fluid fill-height>
+    <v-tabs v-model="tab" align-tabs="center" fixed-tabs color="primary" grow>
+      <v-tab value="timeseries">
+        <v-icon :icon="mdiTimelineClock"></v-icon>
+        Timeseries
+      </v-tab>
+      <v-tab value="distance">
+        <v-icon :icon="mdiMapMarkerDistance"></v-icon>
+        Distance
       </v-tab>
     </v-tabs>
-    <v-window v-model="varTab">
-      <v-window-item v-for="variable in selectedVariables" :key="variable.abbreviation" :value="variable">
-        <LineChart v-if="variable" id="chart" :data="chartStore.chartData" :chosenVariable="variable" />
-      </v-window-item>
-    </v-window>
+    <TimeSeriesCharts v-if="tab === 'timeseries'" />
+    <DistanceCharts v-if="tab === 'distance'" />
   </v-container>
 
-  <v-container v-if="!hasFeatures">
+  <v-container v-if="!hasData">
     <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
       <span>
         You don't have any data to view yet.
@@ -41,29 +42,20 @@
 </template>
 
 <script setup>
-import LineChart from '@/components/LineChart.vue'
-import { useFeaturesStore } from '../stores/features';
 import { useChartsStore } from '../stores/charts';
-import { useHydrologicStore } from '@/stores/hydrologic'
 import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { computed } from 'vue';
+import { mdiTimelineClock, mdiMapMarkerDistance } from '@mdi/js'
+import TimeSeriesCharts from './TimeSeriesCharts.vue';
+import DistanceCharts from './DistanceCharts.vue';
 
-const featureStore = useFeaturesStore();
 const chartStore = useChartsStore();
-const hydrologicStore = useHydrologicStore();
 
 let sheetText = ref(null)
 
-let hasFeatures = computed(() => featureStore.selectedFeatures.length > 0)
+let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
 
-let selectedVariables = hydrologicStore.selectedVariables
-let varTab = ref(selectedVariables[0])
+let tab = ref('timeseries')
 
 </script>
-
-<style scoped>
-#chart {
-  height: 70vh;
-}
-</style>
