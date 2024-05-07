@@ -27,7 +27,7 @@ onUpdated(() => {
 })
 
 onMounted(() => {
-    let leaflet = L.map('mapContainer').setView([38, -95.9345], 5);
+    let leaflet = L.map('mapContainer').setView([0, 0], 3);
     Map.leaflet = leaflet;
     Map.hucbounds = [];
     Map.popups = [];
