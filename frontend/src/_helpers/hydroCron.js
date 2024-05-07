@@ -2,11 +2,8 @@ import { HYDROCRON_URL } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { useChartsStore } from '@/stores/charts'
 
 const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
-  const featuresStore = useFeaturesStore()
-  const chartStore = useChartsStore()
   const hydrologicStore = useHydrologicStore()
   const alertStore = useAlertStore()
   if (swordFeature == null) {
@@ -16,8 +13,33 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   console.log('Querying HydroCron for swordFeature', swordFeature)
   let params = {}
 
-  let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation).join(',')
-  const additional = hydrologicStore.alwaysQueryVariables
+  // TODO: get the start and end time from the date range
+  let feature_type = swordFeature?.attributes?.node_id == undefined ? 'Reach' : 'Node'
+  let feature_id = ''
+  switch (feature_type) {
+    case 'Reach':
+      feature_id = swordFeature?.properties?.reach_id
+      break
+    case 'Node':
+      feature_id = swordFeature?.attributes?.node_id
+      break
+    default:
+      feature_id = swordFeature.params.feature_id
+  }
+
+  let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation)
+  console.log('Selected fields:', fields)
+
+  // remove any variables that aren't allowed for this feature type
+  const allowedAbbreviations = hydrologicStore.queryVariables(feature_type).map((v) => v.abbreviation)
+  console.log('Filtering to only include allowed fields:', allowedAbbreviations)
+  fields = fields.filter((abbreviation) => {
+    return allowedAbbreviations.includes(abbreviation)
+  })
+  fields.join(',')
+  console.log('Fetching for selected fields', fields)
+
+  const additional = hydrologicStore.queryVariables(feature_type, true)
     .map((variable) => variable.abbreviation)
     .join(',')
   if (additional !== '') {
@@ -37,14 +59,8 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     return
   }
 
-  // TODO: get the feature type dynamically
-  // get the start and end time from the date range
-  let feature_id = swordFeature?.properties?.reach_id
-  if (feature_id == undefined) {
-    feature_id = swordFeature.params.feature_id
-  }
   params = {
-    feature: 'Reach',
+    feature: feature_type,
     feature_id: feature_id,
     start_time: '2024-01-01T00:00:00Z',
     end_time: '2024-10-30T00:00:00Z',
@@ -59,8 +75,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   if (output === 'csv') {
     return response.results.csv
   }
-  featuresStore.mergeFeature(response)
-  chartStore.buildChart(featuresStore.selectedFeatures)
+  return response
 }
 
 const fetchHydroCronData = async (url, params, swordFeature) => {

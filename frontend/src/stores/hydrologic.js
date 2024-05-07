@@ -12,7 +12,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Time of the measurement',
       default: false,
       always: true,
-      selectable: false
+      selectable: false,
+      fileType: 'all'
     },
     {
       abbreviation: 'wse',
@@ -22,7 +23,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Fitted reach water surface elevation, relative to the provided model of the geoid (geoid_hght), with corrections for media delays (wet and dry troposphere, and ionosphere), the crossover correction, and tidal effects (solid_tide, load_tidef, and pole_tide) applied.',
       default: true,
       always: false,
-      selectable: true
+      selectable: true,
+      fileType: 'all'
     },
     {
       abbreviation: 'slope',
@@ -32,7 +34,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Fitted water surface slope, relative to the provided model of the geoid(geoid_hght), and with the same corrections and tidal effects applied as for wse. The units are m/m. The downstream direction is defined by the PRD. A positive slope means that the downstream WSE is lower.',
       default: true,
       always: false,
-      selectable: true
+      selectable: true,
+      fileType: 'reach'
     },
     {
       abbreviation: 'width',
@@ -41,7 +44,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Reach width',
       default: true,
       always: false,
-      selectable: true
+      selectable: true,
+      fileType: 'all'
     },
     {
       abbreviation: 'area_total',
@@ -51,7 +55,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Total estimated water surface area, including area_detct and any dark water that was not detected as water in the SWOT observation but identified through the use of a prior water probability map.',
       default: false,
       always: false,
-      selectable: false
+      selectable: false,
+      fileType: 'all'
     },
     {
       abbreviation: 'd_x_area',
@@ -61,7 +66,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Change in the channel cross-sectional area from the value reported in the PRD. This parameter is used in the computation of discharge',
       default: false,
       always: false,
-      selectable: false
+      selectable: false,
+      fileType: 'reach'
     },
     {
       abbreviation: 'dschg_c',
@@ -70,7 +76,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'Discharge from the consensus algorithm',
       default: false,
       always: false,
-      selectable: false
+      selectable: false,
+      fileType: 'reach'
     },
     {
       abbreviation: 'geometry',
@@ -79,7 +86,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       definition: 'The geometry of the reach',
       default: false,
       always: false,
-      selectable: false
+      selectable: false,
+      fileType: 'all'
     },
     {
       abbreviation: 'reach_q',
@@ -89,12 +97,31 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Summary quality indicator for the reach measurement. Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively. Measurements that are marked as suspect may have large errors. Measurements that are marked as degraded very likely do have large errors. Measurements that are marked as bad may be nonsensicial and should be ignored.',
       default: false,
       always: true,
-      selectable: false
+      selectable: false,
+      fileType: 'reach'
+    },
+    {
+      abbreviation: 'node_q',
+      name: 'Node Quality',
+      unit: '',
+      definition:
+        'Summary quality indicator for the node measurement. Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively. Measurements that are marked as suspect may have large errors. Measurements that are marked as degraded very likely do have large errors. Measurements that are marked as bad may be nonsensicial and should be ignored.',
+      default: false,
+      always: true,
+      selectable: false,
+      fileType: 'node'
     }
   ])
 
   const defaultVariables = swotVariables.value.filter((variable) => variable.default)
-  const alwaysQueryVariables = swotVariables.value.filter((variable) => variable.always)
+  const queryVariables = (fileType='reach', always=undefined) => {
+    return swotVariables.value.filter(
+      (variable) => {
+        return  (variable.fileType === fileType.toLowerCase() || variable.fileType === 'all') &&
+        (always === undefined || variable.always === always)
+      }
+    )
+  }
   const selectedVariables = ref(defaultVariables)
 
   const selectableVariables = swotVariables.value.filter((variable) => variable.selectable)
@@ -171,7 +198,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition: 'Average water surface elevation (WSE)',
       units: 'meters',
       plottable: true,
-      plot_definition: 'Water Surface Elevation',
+      plot_definition: 'Water Surface Elevation'
     },
     {
       abbreviation: 'wse_var',
@@ -192,7 +219,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition: 'Average width',
       units: 'meters',
       plottable: true,
-      plot_definition: 'Width',
+      plot_definition: 'Width'
     },
     {
       abbreviation: 'width_var',
@@ -215,7 +242,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019)',
       units: 'square kilometers',
       plottable: true,
-      plot_definition: 'Flow Accumulation',
+      plot_definition: 'Flow Accumulation'
     },
     {
       abbreviation: 'n_chan_max',
@@ -304,7 +331,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition: 'Average reach slope',
       units: 'meters/kilometer',
       plottable: true,
-      plot_definition: 'Slope',
+      plot_definition: 'Slope'
     },
     {
       abbreviation: 'n_nodes',
@@ -426,7 +453,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     addVariable,
     selectedVariables,
     defaultVariables,
-    alwaysQueryVariables,
+    queryVariables,
     swordVariables,
     getSwordDescriptions,
     getPlottableSwordVariables

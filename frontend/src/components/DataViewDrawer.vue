@@ -25,8 +25,10 @@ import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot, mdiResistorNodes 
 import { queryHydroCron, getNodesFromReach } from "../_helpers/hydroCron";
 import StaticMetadata from './StaticMetadata.vue'
 import { useRouter } from 'vue-router'
+import { useChartsStore } from '@/stores/charts'
 
 const featureStore = useFeaturesStore()
+const chartStore = useChartsStore()
 
 let show = ref(false)
 
@@ -44,7 +46,9 @@ const router = useRouter()
 
 const query = async () => {
   querying.value.hydrocron = true
-  await queryHydroCron(featureStore.activeFeature)
+  const result = await queryHydroCron(featureStore.activeFeature)
+  featureStore.mergeFeature(result)
+  chartStore.buildChart(featureStore.selectedFeatures)
   querying.value.hydrocron = false
   router.push('/plots')
 }

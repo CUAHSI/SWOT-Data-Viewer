@@ -119,8 +119,10 @@ export const useChartsStore = defineStore('charts', () => {
       })
       console.log('Ending number of measurements', measurements.length)
       console.log('SWOT measurements', measurements)
+      console.log('SWOT feature', feature)
       return {
-        label: `${feature.sword.river_name} | ${feature.sword.reach_id}`,
+        // TODO:nodes label assumes reach
+        label: `${feature?.sword?.river_name} | ${feature?.sword?.reach_id}`,
         data: measurements,
         parsing: {
           xAxisKey: 'datetime',
