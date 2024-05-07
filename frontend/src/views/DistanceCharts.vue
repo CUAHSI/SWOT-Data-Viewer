@@ -48,7 +48,9 @@ import { useHydrologicStore } from '@/stores/hydrologic'
 import { useFeaturesStore } from '@/stores/features'
 import { ref, onMounted } from 'vue'
 import { getNodesFromReach } from '../_helpers/hydroCron';
+import { useDisplay } from 'vuetify'
 
+const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore();
 const hydrologicStore = useHydrologicStore();
 const featureStore = useFeaturesStore()

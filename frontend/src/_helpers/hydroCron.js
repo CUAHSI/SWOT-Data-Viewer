@@ -10,8 +10,6 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const chartStore = useChartsStore()
   const hydrologicStore = useHydrologicStore()
   const alertStore = useAlertStore()
-  const url = `${HYDROCRON_URL}/v1/timeseries`
-
   if (swordFeature == null && !featuresStore.shouldFakeData) {
     console.error('No hydroCron query params, and shouldFakeData is false')
     return
@@ -63,7 +61,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     params.output = output
     console.log('Faked params', params)
   }
-  let response = await fetchHydroCronData(url, params, swordFeature)
+  let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
   if (response == null) {
     return
   }

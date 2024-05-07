@@ -27,7 +27,7 @@ onUpdated(() => {
 })
 
 onMounted(() => {
-    let leaflet = L.map('mapContainer').setView([38, -95.9345], 5);
+    let leaflet = L.map('mapContainer').setView([0, 0], 3);
     Map.leaflet = leaflet;
     Map.hucbounds = [];
     Map.popups = [];
@@ -210,20 +210,21 @@ onMounted(() => {
         popup.setLatLng(e.latlng).setContent(content).openOn(leaflet);
     });
 
-    // // add USGS gage layer to map
-    // url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
-    // let gages = L.tileLayer.wms(url, {
-    //     layers: 0,
-    //     transparent: 'true',
-    //     format: 'image/png',
-    //     minZoom: 9,
-    //     maxZoom: 18,
-    // }).addTo(map);
+    // add USGS gage layer to map
+    url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?';
+    let gages = L.tileLayer.wms(url, {
+        layers: 0,
+        transparent: 'true',
+        format: 'image/png',
+        minZoom: 9,
+        maxZoom: 18,
+        // BGCOLOR: '#f4d03f',
+    })
 
 
     // layer toggling
     let mixed = {
-        // "USGS Gages": gages,
+        "USGS Gages": gages,
         // "Lakes": lakes,
         "Lakes": lakesFeatures,
         // "SWORD Reaches": reaches,
