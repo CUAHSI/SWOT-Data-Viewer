@@ -3,15 +3,14 @@ import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { useChartsStore } from '@/stores/charts'
-import { buildFakeData, knownQueriesWithData } from '@/_helpers/fakeData'
 
 const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const featuresStore = useFeaturesStore()
   const chartStore = useChartsStore()
   const hydrologicStore = useHydrologicStore()
   const alertStore = useAlertStore()
-  if (swordFeature == null && !featuresStore.shouldFakeData) {
-    console.error('No hydroCron query params, and shouldFakeData is false')
+  if (swordFeature == null) {
+    console.error('No hydroCron query params provided')
     return
   }
   console.log('Querying HydroCron for swordFeature', swordFeature)
@@ -38,28 +37,19 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     return
   }
 
-  if (!featuresStore.shouldFakeData) {
-    // TODO: get the feature type dynamically
-    // get the start and end time from the date range
-    let feature_id = swordFeature?.properties?.reach_id
-    if (feature_id == undefined) {
-      feature_id = swordFeature.params.feature_id
-    }
-    params = {
-      feature: 'Reach',
-      feature_id: feature_id,
-      start_time: '2024-01-01T00:00:00Z',
-      end_time: '2024-10-30T00:00:00Z',
-      output: output,
-      fields: fields
-    }
-  } else {
-    // Build fake data
-    // get a random known query from the knownQueriesWithData array
-    params = knownQueriesWithData[Math.floor(Math.random() * knownQueriesWithData.length)]
-    params.fields = fields
-    params.output = output
-    console.log('Faked params', params)
+  // TODO: get the feature type dynamically
+  // get the start and end time from the date range
+  let feature_id = swordFeature?.properties?.reach_id
+  if (feature_id == undefined) {
+    feature_id = swordFeature.params.feature_id
+  }
+  params = {
+    feature: 'Reach',
+    feature_id: feature_id,
+    start_time: '2024-01-01T00:00:00Z',
+    end_time: '2024-10-30T00:00:00Z',
+    output: output,
+    fields: fields
   }
   let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
   if (response == null) {
@@ -70,15 +60,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     return response.results.csv
   }
   featuresStore.mergeFeature(response)
-  if (featuresStore.shouldFakeData) {
-    let fakeData = buildFakeData(featuresStore.selectedFeatures)
-    // update the chartData before selecting the feature otherwise it will show blank
-    chartStore.chartData = fakeData
-    console.log('Fake data', fakeData)
-  } else {
-    // chartStore.buildChart([...featuresStore.selectedFeatures, response])
-    chartStore.buildChart(featuresStore.selectedFeatures)
-  }
+  chartStore.buildChart(featuresStore.selectedFeatures)
 }
 
 const fetchHydroCronData = async (url, params, swordFeature) => {

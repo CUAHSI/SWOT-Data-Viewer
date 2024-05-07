@@ -5,7 +5,6 @@ import { useMapStore } from '@/stores/map'
 export const useFeaturesStore = defineStore('features', () => {
   const selectedFeatures = ref([])
   const activeFeature = ref(null)
-  const shouldFakeData = ref(false)
   const nodes = ref([])
 
   const mapStore = useMapStore()
@@ -53,7 +52,6 @@ export const useFeaturesStore = defineStore('features', () => {
     selectedFeatures,
     selectFeature,
     activeFeature,
-    shouldFakeData,
     clearSelectedFeatures,
     deselectFeature,
     checkFeatureSelected,
