@@ -40,6 +40,10 @@ export const useFeaturesStore = defineStore('features', () => {
   }
 
   const clearSelectedFeatures = () => {
+    for (const feature of selectedFeatures.value) {
+      console.log("Deselecting feature", feature)
+      mapStore.deselectFeature(feature)
+    }
     selectedFeatures.value = []
     activeFeature.value = null
     mapStore.clearAllFeatures()

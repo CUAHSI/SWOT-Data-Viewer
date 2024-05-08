@@ -93,6 +93,13 @@ onMounted(() => {
         precision: 5,
         minZoom: 9,
         maxZoom: 18,
+        style: function () {
+            return {
+                weight: 0, // remove border
+                fillOpacity: 0.7,
+                fill: true
+            };
+        },
         // fields: ["FID", "ZIP", "PO_NAME"],
     }).addTo(leaflet);
 
@@ -119,8 +126,12 @@ onMounted(() => {
 
         lakesFeatures.setFeatureStyle(e.layer.feature.id, {
             color: "#9D78D2",
-            weight: 3,
-            opacity: 1
+        });
+
+        popup.on('remove', function () {
+            lakesFeatures.setFeatureStyle(e.layer.feature.id, {
+                color: "#3388ff",
+            });
         });
     });
 
@@ -151,7 +162,7 @@ onMounted(() => {
         minZoom: 7,
         maxZoom: 18,
         color: mapStore.featureOptions.defaultColor,
-        weight: mapStore.featureOptions.weight,
+        weight: mapStore.featureOptions.defaultWeight,
         opacity: mapStore.featureOptions.opacity,
         // fields: ["FID", "ZIP", "PO_NAME"],
     }).addTo(leaflet);
@@ -161,12 +172,12 @@ onMounted(() => {
     reachesFeatures.on("click", async function (e) {
         const feature = e.layer.feature
         if (featureStore.checkFeatureSelected(feature)) {
-            featureStore.deselectFeature(feature)
+            featureStore.clearSelectedFeatures()
         } else {
             // Only allow one feature to be selected at a time
             featureStore.clearSelectedFeatures()
             if (feature?.properties) {
-                feature.sword = feature.properties
+                // feature.sword = feature.properties
                 feature.id = feature.properties.OBJECTID
             }
             featureStore.selectFeature(feature)

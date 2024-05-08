@@ -6,19 +6,22 @@ export const useMapStore = defineStore('map', () => {
   const featureOptions = ref({
     selectedColor: 'red',
     defaultColor: 'blue',
-    weight: 5,
+    defaultWeight: 2,
+    selectedWeight: 5,
     opacity: 0.7
   })
 
   const deselectFeature = (feature) => {
     mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
-      color: featureOptions.value.defaultColor
+      color: featureOptions.value.defaultColor,
+      weight: featureOptions.value.defaultWeight,
     })
   }
 
   const selectFeature = (feature) => {
     mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
-      color: featureOptions.value.selectedColor
+      color: featureOptions.value.selectedColor,
+      weight: featureOptions.value.selectedWeight,
     })
   }
 
