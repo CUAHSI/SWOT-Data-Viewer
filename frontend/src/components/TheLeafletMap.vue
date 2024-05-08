@@ -142,18 +142,19 @@ onMounted(() => {
         transparent: 'true',
         format: 'image/png',
         minZoom: 0,
-        maxZoom: 18,
+        maxZoom: 8,
     }).addTo(leaflet);
 
     // add reaches layer to map
-    url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
-    let reaches = L.tileLayer.wms(url, {
-        layers: 0,
-        transparent: 'true',
-        format: 'image/png',
-        minZoom: 0,
-        maxZoom: 7,
-    }).addTo(leaflet);
+    // url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
+    // let reaches = L.tileLayer.wms(url, {
+    //     layers: 0,
+    //     transparent: 'true',
+    //     format: 'image/png',
+    //     minZoom: 0,
+    //     maxZoom: 8,
+    // }).addTo(leaflet);
+
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
         url: url,
