@@ -49,7 +49,6 @@ import { useFeaturesStore } from '@/stores/features'
 import { ref, onMounted } from 'vue'
 import { getNodesFromReach } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
-import { queryHydroCron } from '../_helpers/hydroCron';
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore();
@@ -57,7 +56,7 @@ const hydrologicStore = useHydrologicStore();
 const featureStore = useFeaturesStore()
 
 
-// TODO on tab switch, update distance chart data by query nodes
+// TODO:nodes on tab switch, update distance chart data by query nodes
 let loading = ref(true)
 
 let nodeVariables = hydrologicStore.getPlottableSwordVariables('node')
@@ -73,13 +72,7 @@ onMounted(async () => {
   const nodes = await getNodesFromReach(featureStore.activeFeature)
   featureStore.nodes = nodes
   console.log("Nodes", featureStore.nodes)
-  nodes.forEach(async(node) => {
-    console.log("Querying Node", node)
-    const results = await queryHydroCron(node)
-    console.log("Node Results", results)
-    // TODO:nodes figure out how to handle the results
-    // each result is a json timeseries containing selected vars for a single node
-  })
+  // TODO:nodes remove build distance chart here
   chartStore.buildDistanceChart(nodes)
   loading.value = false
 })

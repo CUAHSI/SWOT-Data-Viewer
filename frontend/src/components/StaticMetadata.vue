@@ -45,13 +45,13 @@ const extendMetadata = () => {
 
 const extendedMetadata = () => {
   if (!featureStore.activeFeature) return {}
-  // TODO assumes reach, won't work for nodes
+  // TODO:nodes assumes reach, won't work for nodes
   return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, false, 'reach')
 }
 
 const defaultSwordMetadata = () => {
   if (!featureStore.activeFeature) return {}
-  // TODO assumes reach, won't work for nodes
+  // TODO:nodes assumes reach, won't work for nodes
   return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, true, 'reach')
 }
 

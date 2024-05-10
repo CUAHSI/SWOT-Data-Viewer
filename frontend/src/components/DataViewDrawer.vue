@@ -22,7 +22,7 @@ import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot, mdiResistorNodes } from '@mdi/js'
 // import DynamicData from '@/components/DynamicData.vue'
-import { queryHydroCron, getNodesFromReach } from "../_helpers/hydroCron";
+import { queryHydroCron, getNodesFromReach, getNodeDataForReach } from "../_helpers/hydroCron";
 import StaticMetadata from './StaticMetadata.vue'
 import { useRouter } from 'vue-router'
 import { useChartsStore } from '@/stores/charts'
@@ -50,6 +50,12 @@ const query = async () => {
   featureStore.mergeFeature(result)
   chartStore.buildChart(featureStore.selectedFeatures)
   querying.value.hydrocron = false
+
+  // async get node data
+  getNodeDataForReach(featureStore.activeFeature).then((nodeData) => {
+    // TODO:nodes build distance chart
+    console.log("Node Data", nodeData)
+  })
   router.push('/plots')
 }
 

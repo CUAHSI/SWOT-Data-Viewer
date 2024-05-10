@@ -114,8 +114,8 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   const alertStore = useAlertStore()
   // https://podaac.github.io/hydrocron/timeseries.html#response-codes
   if (response.status < 500) {
+    console.log("Processing hydrocron response", response)
     let data = await response.json()
-    console.log('Swot data response', data)
     if (response.status == 400 || data.hits == undefined || data.hits < 1) {
       alertStore.displayAlert({
         title: 'No data found',
@@ -227,4 +227,34 @@ async function getNodesFromReach(reachFeature) {
   return data.features
 }
 
-export { queryHydroCron, downloadJson, downloadCsv, getNodesFromReach }
+async function getNodeDataForReach(reachFeature) {
+  const featureStore = useFeaturesStore()
+  console.log('Retrieving nodes for reach', reachFeature)
+  let nodes = await getNodesFromReach(reachFeature)
+  featureStore.nodes = nodes
+  return getDataFromNodes(nodes)
+}
+
+async function getDataFromNodes(nodeFeatures) {
+  const featureStore = useFeaturesStore()
+  console.log('Retrieving data for nodes', nodeFeatures)
+  const nodesData = []
+  nodeFeatures.forEach(async (node) => {
+    console.log('Retrieving data for node', node)
+    const result = await queryHydroCron(node)
+    nodesData.push(result)
+    featureStore.nodesData.push(result)
+  })
+  console.log('Nodes data:', nodesData)
+
+  return nodesData
+}
+
+export {
+  queryHydroCron,
+  downloadJson,
+  downloadCsv,
+  getNodesFromReach,
+  getNodeDataForReach,
+  getDataFromNodes
+}

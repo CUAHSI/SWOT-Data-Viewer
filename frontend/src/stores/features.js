@@ -6,6 +6,7 @@ export const useFeaturesStore = defineStore('features', () => {
   const selectedFeatures = ref([])
   const activeFeature = ref(null)
   const nodes = ref([])
+  const nodesData = ref([])
 
   const mapStore = useMapStore()
 
@@ -61,5 +62,6 @@ export const useFeaturesStore = defineStore('features', () => {
     checkFeatureSelected,
     mergeFeature,
     nodes,
+    nodesData,
   }
 })

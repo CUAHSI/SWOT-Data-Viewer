@@ -121,7 +121,7 @@ export const useChartsStore = defineStore('charts', () => {
       console.log('SWOT measurements', measurements)
       console.log('SWOT feature', feature)
       return {
-        // TODO:nodes label assumes reach
+        // TODO: nodes label assumes reach
         label: `${feature?.sword?.river_name} | ${feature?.sword?.reach_id}`,
         data: measurements,
         parsing: {
