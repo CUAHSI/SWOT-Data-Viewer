@@ -29,7 +29,8 @@ export const useChartsStore = defineStore('charts', () => {
 
   const getNodeLabels = (nodes) => {
     const labels = nodes.map((node) => {
-      return node.attributes.dist_out
+      // TODO:nodes this will only grab the first node dist value -- there is variation among the hits
+      return node.results.geojson.features[0].properties.node_dist
     })
     return labels.filter((l) => l != undefined)
   }
@@ -47,13 +48,12 @@ export const useChartsStore = defineStore('charts', () => {
     return data
   }
 
-  const buildDistanceChart = (selectedNodes) => {
-    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
-    console.log('Building vis for selected features', selectedNodes)
-    const datasets = getNodeChartDatasets(selectedNodes)
+  const buildDistanceChart = (nodeData) => {
+    console.log('Building chart for node-level swot data', nodeData)
+    const datasets = getNodeChartDatasets(nodeData)
     console.log('Datasets', datasets)
     const data = {
-      labels: getNodeLabels(selectedNodes),
+      labels: getNodeLabels(nodeData),
       datasets: datasets
     }
     console.log('Node Chart Data', data)
@@ -134,16 +134,24 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const getNodeChartDatasets = (selectedNodes) => {
-    const data = selectedNodes.map((node) => {
-      return node.attributes
-    })
+  const getNodeChartDatasets = (nodeData) => {
+    console.log("getting node chart datasets", nodeData)
+    // TODO:node improve parse
+    // nodeData is an array of nodes
+    // each node is an object representing a node feature.
+    // node.results.geojson.features is an array of jeojson features -- this is the timeseries data for the node
+    // each of these geojson features represents a single measurement in time an space (given timestamp at a node)
+    // TODO:nodes I was expecting that the node_dist would be constant across timestamps but it isn't
+    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
+    const data = nodeData.map((node) => node.results.geojson.features)
+    console.log('Node data parsed', data)
+    console.log('using reach from ', nodeData[0])
     const dataSet = {
-      label: `${selectedNodes[0].attributes.river_name} | ${selectedNodes[0].attributes.reach_id}`,
+      label: `${nodeData[0]?.sword?.river_name} | ${nodeData[0]?.sword?.reach_id}`,
       data: data,
       parsing: {
-        xAxisKey: 'dist_out',
-        yAxisKey: 'wse'
+        xAxisKey: 'properties.node_dist',
+        yAxisKey: 'properties.wse'
       },
       ...getDataSetStyle(data)
     }
@@ -204,7 +212,7 @@ export const useChartsStore = defineStore('charts', () => {
       fills: []
     }
     dataSet.forEach((m) => {
-      const { pointStyle, color, fill } = getPointStyle(m.reach_q)
+      const { pointStyle, color, fill } = getPointStyle(m.reach_q ? m.reach_q : m.node_q)
       styles.colors.push(color)
       styles.pointStyles.push(pointStyle)
       styles.fills.push(fill)

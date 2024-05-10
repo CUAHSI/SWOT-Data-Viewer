@@ -51,12 +51,16 @@ const query = async () => {
   chartStore.buildChart(featureStore.selectedFeatures)
   querying.value.hydrocron = false
 
-  // async get node data
-  getNodeDataForReach(featureStore.activeFeature).then((nodeData) => {
-    // TODO:nodes build distance chart
-    console.log("Node Data", nodeData)
-  })
   router.push('/plots')
+
+  // async get node data
+  // getNodeDataForReach(featureStore.activeFeature).then((nodeData) => {
+  //   // TODO:nodes build distance chart
+  //   console.log("Node Data", nodeData)
+  //   chartStore.buildDistanceChart(featureStore.nodesData)
+  // })
+  await getNodeDataForReach(featureStore.activeFeature)
+  chartStore.buildDistanceChart(featureStore.nodesData)
 }
 
 const getNodesInActiveReach = async () => {

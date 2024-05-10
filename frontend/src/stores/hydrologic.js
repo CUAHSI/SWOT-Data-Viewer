@@ -110,7 +110,17 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: true,
       selectable: false,
       fileType: 'node'
-    }
+    },
+    {
+      abbreviation: 'node_dist',
+      name: 'Node Distance',
+      unit: 'm',
+      definition: 'Mean distance between observed and prior river database node locations.',
+      default: false,
+      always: true,
+      selectable: false,
+      fileType: 'node'
+    },
   ])
 
   const defaultVariables = swotVariables.value.filter((variable) => variable.default)

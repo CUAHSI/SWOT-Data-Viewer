@@ -114,7 +114,6 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   const alertStore = useAlertStore()
   // https://podaac.github.io/hydrocron/timeseries.html#response-codes
   if (response.status < 500) {
-    console.log("Processing hydrocron response", response)
     let data = await response.json()
     if (response.status == 400 || data.hits == undefined || data.hits < 1) {
       alertStore.displayAlert({

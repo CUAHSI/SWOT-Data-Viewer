@@ -45,15 +45,12 @@
 import NodeChart from '@/components/NodeChart.vue'
 import { useChartsStore } from '../stores/charts';
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { useFeaturesStore } from '@/stores/features'
 import { ref, onMounted } from 'vue'
-import { getNodesFromReach } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore();
 const hydrologicStore = useHydrologicStore();
-const featureStore = useFeaturesStore()
 
 
 // TODO:nodes on tab switch, update distance chart data by query nodes
@@ -64,17 +61,13 @@ console.log("Node Variables", nodeVariables)
 let varTab = ref(nodeVariables[0])
 
 onMounted(async () => {
-  if (featureStore.nodes.length > 0) {
+  if (chartStore.nodeChartData.value !== undefined && chartStore.nodeChartData.value.datasets.length > 0) {
     loading.value = false
     return
   }
-  console.log("Getting nodes from reach")
-  const nodes = await getNodesFromReach(featureStore.activeFeature)
-  featureStore.nodes = nodes
-  console.log("Nodes", featureStore.nodes)
-  // TODO:nodes remove build distance chart here
-  chartStore.buildDistanceChart(nodes)
+  // TODO:nodes subscribe to chartStore.nodeChartData.value.datasets
   loading.value = false
+
 })
 
 </script>
