@@ -31,7 +31,9 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   console.log('Selected fields:', fields)
 
   // remove any variables that aren't allowed for this feature type
-  const allowedAbbreviations = hydrologicStore.queryVariables(feature_type).map((v) => v.abbreviation)
+  const allowedAbbreviations = hydrologicStore
+    .queryVariables(feature_type)
+    .map((v) => v.abbreviation)
   console.log('Filtering to only include allowed fields:', allowedAbbreviations)
   fields = fields.filter((abbreviation) => {
     return allowedAbbreviations.includes(abbreviation)
@@ -39,7 +41,8 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   fields.join(',')
   console.log('Fetching for selected fields', fields)
 
-  const additional = hydrologicStore.queryVariables(feature_type, true)
+  const additional = hydrologicStore
+    .queryVariables(feature_type, true)
     .map((variable) => variable.abbreviation)
     .join(',')
   if (additional !== '') {
