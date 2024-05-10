@@ -15,6 +15,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
 
   // TODO: get the start and end time from the date range
   let feature_type = swordFeature?.attributes?.node_id == undefined ? 'Reach' : 'Node'
+  swordFeature.feature_type = feature_type
   let feature_id = ''
   switch (feature_type) {
     case 'Reach':
@@ -126,9 +127,15 @@ const processHydroCronResult = async (response, params, swordFeature) => {
       return null
     }
     data.params = params
-    if (swordFeature?.properties) {
+    data.feature_type = swordFeature.feature_type
+    if (swordFeature.feature_type === 'Reach' && swordFeature?.properties) {
       data.sword = swordFeature.properties
+      // TODO: reach_id instead of OBJECTID
       data.id = swordFeature.properties.OBJECTID
+    }
+    if (swordFeature.feature_type === 'Node' && swordFeature?.attributes) {
+      data.sword = swordFeature.attributes
+      data.id = swordFeature.attributes.node_id
     }
     return data
   } else {
