@@ -84,6 +84,39 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
+  const filterMeasurements = (measurements, dataQualityFlags) => {
+      // TODO: this is a hack to remove the invalid measurements
+      // need to handle this with a formal validator
+    console.log('Starting number of measurements', measurements.length)
+    measurements = measurements.filter((m) => {
+      if (m.time_str == 'no_data') {
+        return false
+      }
+      m.datetime = new Date(m.time_str)
+      if (isNaN(m.datetime)) {
+        return false
+      }
+      if (m.wse == '-999999999999.0') {
+        return false
+      }
+      if (m.slope == '-999999999999.0') {
+        return false
+      }
+      if (m.with == '-999999999999.0') {
+        return false
+      }
+      // check data quality flags
+      if (dataQualityFlags != null) {
+        if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
+          return false
+        }
+      }
+      return true
+    })
+    console.log('Ending number of measurements', measurements.length)
+    return measurements
+  }
+
   const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     console.log('Getting chart datasets for selected features', selectedFeatures)
@@ -92,35 +125,7 @@ export const useChartsStore = defineStore('charts', () => {
       let measurements = feature.queries[0].results.geojson.features.map((feature) => {
         return feature.properties
       })
-      // TODO: this is a hack to remove the invalid measurements
-      // need to handle this with a formal validator
-      console.log('Starting number of measurements', measurements.length)
-      measurements = measurements.filter((m) => {
-        if (m.time_str == 'no_data') {
-          return false
-        }
-        m.datetime = new Date(m.time_str)
-        if (isNaN(m.datetime)) {
-          return false
-        }
-        if (m.wse == '-999999999999.0') {
-          return false
-        }
-        if (m.slope == '-999999999999.0') {
-          return false
-        }
-        if (m.with == '-999999999999.0') {
-          return false
-        }
-        // check data quality flags
-        if (dataQualityFlags != null) {
-          if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
-            return false
-          }
-        }
-        return true
-      })
-      console.log('Ending number of measurements', measurements.length)
+      measurements = filterMeasurements(measurements, dataQualityFlags)
       console.log('SWOT measurements', measurements)
       console.log('SWOT feature', feature)
       return {
@@ -139,27 +144,26 @@ export const useChartsStore = defineStore('charts', () => {
 
   const getNodeChartDatasets = (nodes) => {
     console.log('getting node chart datasets for nodes', nodes)
-    // TODO:node fix parse
-    // nodeData is an array of nodes
-    // each node is an object representing a node feature.
-    // node.results.geojson.features is an array of jeojson features -- this is the timeseries data for the node
-    // each of these geojson features represents a single measurement in time an space (given timestamp at a node)
     // TODO:nodes I was expecting that the node_dist would be constant across timestamps but it isn't
     // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
-    const data = nodes.map((node) => {
+    let measurements = nodes.map((node) => {
       console.log('Parsing node', node)
-      return node?.queries[0]?.results?.geojson?.features || []
+      return node.queries[0].results.geojson.features.map((feature) => {
+        return feature.properties
+      })
     })
-    console.log('Node data parsed', data)
+    measurements = measurements.flat()
+    measurements = filterMeasurements(measurements)
+    console.log('Node measurements parsed', measurements)
     console.log('using reach from ', nodes[0])
     const dataSet = {
-      label: `${nodes[0]?.attributes?.river_name} | ${nodes[0]?.attributes?.node_id}`,
-      data: data,
+      label: `${nodes[0]?.attributes?.river_name}`,
+      data: measurements,
       parsing: {
-        xAxisKey: 'properties.node_dist',
-        yAxisKey: 'properties.wse'
+        xAxisKey: 'node_dist',
+        yAxisKey: 'wse'
       },
-      ...getDataSetStyle(data)
+      ...getDataSetStyle(measurements)
     }
     return [dataSet]
   }
