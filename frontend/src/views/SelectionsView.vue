@@ -55,7 +55,7 @@
                   <div class="text-overline mb-1">
                     {{ variant }}
                   </div>
-                  <v-card-title>{{ feature.sword.river_name }}</v-card-title>
+                  <v-card-title>{{ feature.properties.river_name }}</v-card-title>
                   <v-card-subtitle>
                     {{ feature.sword.reach_id }}
                   </v-card-subtitle>

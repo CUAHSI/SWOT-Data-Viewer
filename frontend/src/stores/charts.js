@@ -18,7 +18,8 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getLabels = (selectedFeatures) => {
-    const labels = selectedFeatures[0].results.geojson.features.map((feature) => {
+    // TODO: for now we just use the first query
+    const labels = selectedFeatures[0].queries[0].results.geojson.features.map((feature) => {
       if (feature.properties.time_str == 'no_data') {
         return
       }
@@ -30,7 +31,7 @@ export const useChartsStore = defineStore('charts', () => {
   const getNodeLabels = (nodes) => {
     const labels = nodes.map((node) => {
       // TODO:nodes this will only grab the first node dist value -- there is variation among the hits
-      return node.results.geojson.features[0].properties.node_dist
+      return node.queries[0].results.geojson.features[0].properties.node_dist
     })
     return labels.filter((l) => l != undefined)
   }
@@ -48,12 +49,12 @@ export const useChartsStore = defineStore('charts', () => {
     return data
   }
 
-  const buildDistanceChart = (nodeData) => {
-    console.log('Building chart for node-level swot data', nodeData)
-    const datasets = getNodeChartDatasets(nodeData)
+  const buildDistanceChart = (nodes) => {
+    console.log('Building chart for node-level swot data', nodes)
+    const datasets = getNodeChartDatasets(nodes)
     console.log('Datasets', datasets)
     const data = {
-      labels: getNodeLabels(nodeData),
+      labels: getNodeLabels(nodes),
       datasets: datasets
     }
     console.log('Node Chart Data', data)
@@ -85,8 +86,10 @@ export const useChartsStore = defineStore('charts', () => {
 
   const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
+    console.log('Getting chart datasets for selected features', selectedFeatures)
     return selectedFeatures.map((feature) => {
-      let measurements = feature.results.geojson.features.map((feature) => {
+      // TODO: for now we just use the first query
+      let measurements = feature.queries[0].results.geojson.features.map((feature) => {
         return feature.properties
       })
       // TODO: this is a hack to remove the invalid measurements
@@ -122,7 +125,7 @@ export const useChartsStore = defineStore('charts', () => {
       console.log('SWOT feature', feature)
       return {
         // TODO: nodes label assumes reach
-        label: `${feature?.sword?.river_name} | ${feature?.sword?.reach_id}`,
+        label: `${feature?.properties?.river_name} | ${feature?.feature_id}`,
         data: measurements,
         parsing: {
           xAxisKey: 'datetime',
@@ -134,20 +137,23 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const getNodeChartDatasets = (nodeData) => {
-    console.log("getting node chart datasets", nodeData)
-    // TODO:node improve parse
+  const getNodeChartDatasets = (nodes) => {
+    console.log('getting node chart datasets for nodes', nodes)
+    // TODO:node fix parse
     // nodeData is an array of nodes
     // each node is an object representing a node feature.
     // node.results.geojson.features is an array of jeojson features -- this is the timeseries data for the node
     // each of these geojson features represents a single measurement in time an space (given timestamp at a node)
     // TODO:nodes I was expecting that the node_dist would be constant across timestamps but it isn't
     // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
-    const data = nodeData.map((node) => node.results.geojson.features)
+    const data = nodes.map((node) => {
+      console.log('Parsing node', node)
+      return node?.queries[0]?.results?.geojson?.features || []
+    })
     console.log('Node data parsed', data)
-    console.log('using reach from ', nodeData[0])
+    console.log('using reach from ', nodes[0])
     const dataSet = {
-      label: `${nodeData[0]?.sword?.river_name} | ${nodeData[0]?.sword?.reach_id}`,
+      label: `${nodes[0]?.attributes?.river_name} | ${nodes[0]?.attributes?.node_id}`,
       data: data,
       parsing: {
         xAxisKey: 'properties.node_dist',
@@ -226,7 +232,7 @@ export const useChartsStore = defineStore('charts', () => {
       fill: styles.fills,
       color: styles.colors,
       borderColor: styles.colors,
-      backgroundColor: 'rgb(75, 192, 192)',
+      backgroundColor: 'rgb(75, 192, 192)'
       // borderWidth: 1,
     }
   }

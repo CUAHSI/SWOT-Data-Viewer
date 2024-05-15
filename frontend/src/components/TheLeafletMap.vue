@@ -176,10 +176,6 @@ onMounted(() => {
         } else {
             // Only allow one feature to be selected at a time
             featureStore.clearSelectedFeatures()
-            if (feature?.properties) {
-                feature.sword = feature.properties
-                feature.id = feature.properties.OBJECTID
-            }
             featureStore.selectFeature(feature)
         }
     });

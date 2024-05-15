@@ -27,6 +27,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     default:
       feature_id = swordFeature.params.feature_id
   }
+  swordFeature.feature_id = feature_id
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation)
   console.log('Selected fields:', fields)
@@ -94,7 +95,8 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
         'Content-Type': 'application/json'
       }
     })
-    return processHydroCronResult(result, params, swordFeature)
+    const processedResult = await processHydroCronResult(result, params, swordFeature)
+    return processedResult
   } catch (e) {
     console.error('Error fetching data', e)
     alertStore.displayAlert({
@@ -114,8 +116,8 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   const alertStore = useAlertStore()
   // https://podaac.github.io/hydrocron/timeseries.html#response-codes
   if (response.status < 500) {
-    let data = await response.json()
-    if (response.status == 400 || data.hits == undefined || data.hits < 1) {
+    let query = await response.json()
+    if (response.status == 400 || query.hits == undefined || query.hits < 1) {
       alertStore.displayAlert({
         title: 'No data found',
         text: `No data found for ${JSON.stringify(params)}`,
@@ -125,18 +127,15 @@ const processHydroCronResult = async (response, params, swordFeature) => {
       })
       return null
     }
-    data.params = params
-    data.feature_type = swordFeature.feature_type
-    if (swordFeature.feature_type === 'Reach' && swordFeature?.properties) {
-      data.sword = swordFeature.properties
-      // TODO: reach_id instead of OBJECTID
-      data.id = swordFeature.properties.OBJECTID
+    
+    console.log('Saving results to feature', swordFeature)
+    query.params = params
+    // check if the feature already has queries
+    if (swordFeature.queries === undefined) {
+      swordFeature.queries = []
     }
-    if (swordFeature.feature_type === 'Node' && swordFeature?.attributes) {
-      data.sword = swordFeature.attributes
-      data.id = swordFeature.attributes.node_id
-    }
-    return data
+    swordFeature.queries.push(query)
+    return query
   } else {
     alertStore.displayAlert({
       title: 'Error fetching SWOT data',
@@ -153,7 +152,8 @@ async function downloadJson(feature = null) {
     const featuresStore = useFeaturesStore()
     feature = featuresStore.activeFeature
   }
-  const jsonData = JSON.stringify(feature.sword)
+  // TODO this is static data, need to get the dynamic swot data
+  const jsonData = JSON.stringify(feature.properties)
   const blob = new Blob([jsonData], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
 
@@ -191,8 +191,8 @@ function getLongFilename(feature = null) {
     feature = featuresStore.activeFeature
   }
   const featureType = feature.params.feature
-  const riverName = feature.sword.river_name
-  const reachId = feature.sword.reach_id
+  const riverName = feature.properties.river_name
+  const reachId = feature.properties.reach_id
   const startTime = feature.params.start_time
   const endTime = feature.params.end_time
   let filename = `${featureType}_${riverName}_${reachId}_${startTime}_${endTime}`
@@ -212,7 +212,8 @@ async function getNodesFromReach(reachFeature) {
   let params = {
     f: 'json',
     // where: `reach_id = ${reachFeature.properties.reach_id}`,
-    where: `reach_id = ${reachFeature.params.feature_id}`,
+    // TODO: for now we just use the first query
+    where: `reach_id = ${reachFeature.queries[0].params.feature_id}`,
     outFields: '*'
     // returnGeometry: true,
     // spatialRel: 'esriSpatialRelIntersects',
@@ -227,26 +228,23 @@ async function getNodesFromReach(reachFeature) {
 }
 
 async function getNodeDataForReach(reachFeature) {
-  const featureStore = useFeaturesStore()
   console.log('Retrieving nodes for reach', reachFeature)
   let nodes = await getNodesFromReach(reachFeature)
-  featureStore.nodes = nodes
-  return getDataFromNodes(nodes)
+  reachFeature.nodes = nodes
+  await getDataForNodes(nodes)
+  console.log("Reach with updated node data", reachFeature)
+  return reachFeature
 }
 
-async function getDataFromNodes(nodeFeatures) {
+async function getDataForNodes(nodes) {
   const featureStore = useFeaturesStore()
-  console.log('Retrieving data for nodes', nodeFeatures)
-  const nodesData = []
-  nodeFeatures.forEach(async (node) => {
-    console.log('Retrieving data for node', node)
-    const result = await queryHydroCron(node)
-    nodesData.push(result)
-    featureStore.nodesData.push(result)
-  })
-  console.log('Nodes data:', nodesData)
-
-  return nodesData
+  console.log('Retrieving data for nodes', nodes)
+  await Promise.all(nodes.map(async (node) => {
+    await queryHydroCron(node)
+  }))
+  console.log('Nodes with data:', nodes)
+  featureStore.nodes.push(...nodes)
+  return nodes
 }
 
 export {
@@ -255,5 +253,5 @@ export {
   downloadCsv,
   getNodesFromReach,
   getNodeDataForReach,
-  getDataFromNodes
+  getDataForNodes
 }

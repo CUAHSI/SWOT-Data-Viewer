@@ -46,21 +46,13 @@ const router = useRouter()
 
 const query = async () => {
   querying.value.hydrocron = true
-  const result = await queryHydroCron(featureStore.activeFeature)
-  featureStore.mergeFeature(result)
+  await queryHydroCron(featureStore.activeFeature)
   chartStore.buildChart(featureStore.selectedFeatures)
   querying.value.hydrocron = false
 
   router.push('/plots')
-
-  // async get node data
-  // getNodeDataForReach(featureStore.activeFeature).then((nodeData) => {
-  //   // TODO:nodes build distance chart
-  //   console.log("Node Data", nodeData)
-  //   chartStore.buildDistanceChart(featureStore.nodesData)
-  // })
   await getNodeDataForReach(featureStore.activeFeature)
-  chartStore.buildDistanceChart(featureStore.nodesData)
+  chartStore.buildDistanceChart(featureStore.nodes)
 }
 
 const getNodesInActiveReach = async () => {
