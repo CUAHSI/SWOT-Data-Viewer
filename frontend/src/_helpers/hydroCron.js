@@ -127,7 +127,7 @@ const processHydroCronResult = async (response, params, swordFeature) => {
       })
       return null
     }
-    
+
     console.log('Saving results to feature', swordFeature)
     query.params = params
     // check if the feature already has queries
@@ -147,23 +147,64 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   }
 }
 
-async function downloadJson(feature = null) {
+async function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+async function downloadFeatureJson(feature = null) {
   if (feature == null) {
     const featuresStore = useFeaturesStore()
     feature = featuresStore.activeFeature
   }
-  // TODO this is static data, need to get the dynamic swot data
-  const jsonData = JSON.stringify(feature.properties)
+  const wrapper = {
+    queries: feature.queries
+  }
+  // alternatively, we could use the geojson from the feature
+  // feature.queries[0].results.geojson
+  const jsonData = JSON.stringify(wrapper)
   const blob = new Blob([jsonData], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
+  const filename = getLongFilename(feature) + '.json'
+  downloadBlob(blob, filename)
+}
 
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${getLongFilename(feature)}.json`
+async function downloadMultiNodesJson(nodes = []) {
+  if (nodes.length === 0) {
+    nodes = useFeaturesStore().nodes
+  }
+  const wrapper = {
+    nodes: nodes
+  }
+  const jsonData = JSON.stringify(wrapper)
+  const blob = new Blob([jsonData], { type: 'application/json' })
+  let filename = getLongFilename(nodes[0]) + '.json'
+  filename = `${nodes.length}_nodes_${filename}`
+  downloadBlob(blob, filename)
+}
 
-  link.click()
-
-  URL.revokeObjectURL(url)
+async function downloadMultiNodesCsv(nodes = []) {
+  if (nodes.length === 0) {
+    nodes = useFeaturesStore().nodes
+  }
+  const csvData = await Promise.all(
+    nodes.map(async (node, index) => {
+      const csv = await queryHydroCron(node, 'csv')
+      // strip the header from all but the first node
+      if (index !== 0) {
+        return csv.split('\n').slice(1).join('\n')
+      }
+      return csv
+    })
+  )
+  console.log('CSV data:', csvData)
+  const blob = new Blob(csvData, { type: 'text/csv' })
+  let filename = getLongFilename(nodes[0]) + '.csv'
+  filename = `${nodes.length}_nodes_${filename}`
+  downloadBlob(blob, filename)
 }
 
 async function downloadCsv(feature = null) {
@@ -174,15 +215,8 @@ async function downloadCsv(feature = null) {
   }
   const csvData = await queryHydroCron(feature, 'csv')
   const blob = new Blob([csvData], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${getLongFilename(feature)}.csv`
-
-  link.click()
-
-  URL.revokeObjectURL(url)
+  const filename = `${getLongFilename(feature)}.csv`
+  downloadBlob(blob, filename)
 }
 
 function getLongFilename(feature = null) {
@@ -190,14 +224,14 @@ function getLongFilename(feature = null) {
     const featuresStore = useFeaturesStore()
     feature = featuresStore.activeFeature
   }
-  const featureType = feature.params.feature
-  const riverName = feature.properties.river_name
-  const reachId = feature.properties.reach_id
-  const startTime = feature.params.start_time
-  const endTime = feature.params.end_time
+  const featureType = feature.feature_type
+  const riverName =
+    featureType == 'Reach' ? feature.properties.river_name : feature.attributes.river_name
+  const reachId = featureType == 'Reach' ? feature.properties.reach_id : feature.attributes.reach_id
+  const startTime = feature.queries[0].params.start_time
+  const endTime = feature.queries[0].params.end_time
   let filename = `${featureType}_${riverName}_${reachId}_${startTime}_${endTime}`
-  filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase()
-  return filename
+  return filename.replace(/[^a-z0-9]/gi, '_').toLowerCase()
 }
 
 /**
@@ -232,16 +266,18 @@ async function getNodeDataForReach(reachFeature) {
   let nodes = await getNodesFromReach(reachFeature)
   reachFeature.nodes = nodes
   await getDataForNodes(nodes)
-  console.log("Reach with updated node data", reachFeature)
+  console.log('Reach with updated node data', reachFeature)
   return reachFeature
 }
 
 async function getDataForNodes(nodes) {
   const featureStore = useFeaturesStore()
   console.log('Retrieving data for nodes', nodes)
-  await Promise.all(nodes.map(async (node) => {
-    await queryHydroCron(node)
-  }))
+  await Promise.all(
+    nodes.map(async (node) => {
+      await queryHydroCron(node)
+    })
+  )
   console.log('Nodes with data:', nodes)
   // TODO: right now we just keep a single set of nodes. But we could instead retain all node data
   // featureStore.nodes.push(...nodes)
@@ -251,7 +287,9 @@ async function getDataForNodes(nodes) {
 
 export {
   queryHydroCron,
-  downloadJson,
+  downloadFeatureJson,
+  downloadMultiNodesJson,
+  downloadMultiNodesCsv,
   downloadCsv,
   getNodesFromReach,
   getNodeDataForReach,

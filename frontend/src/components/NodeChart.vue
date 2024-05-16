@@ -47,7 +47,7 @@ import 'chartjs-adapter-date-fns';
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiLoupe } from '@mdi/js'
-import { downloadCsv, downloadJson } from '../_helpers/hydroCron';
+import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 
@@ -150,13 +150,13 @@ const downloadChart = async () => {
 
 const downCsv = async () => {
   downloading.value.csv = true
-  await downloadCsv()
+  await downloadMultiNodesCsv()
   downloading.value.csv = false
 }
 
 const downJson = async () => {
   downloading.value.json = true
-  await downloadJson()
+  await downloadMultiNodesJson()
   downloading.value.json = false
 }
 </script>
