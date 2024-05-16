@@ -1,5 +1,10 @@
 <template>
     <div v-show="$route.meta.showMap" id="mapContainer"></div>
+    <v-card v-if="zoom < minReachSelectionZoom" id="zoomIndicator" color="info">
+        <v-card-text>
+            <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches
+        </v-card-text>
+    </v-card>
 </template>
 
 <script setup>
@@ -14,6 +19,7 @@ import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
+import { mdiMagnifyPlus } from '@mdi/js'
 
 const mapStore = useMapStore()
 const alertStore = useAlertStore();
@@ -21,13 +27,17 @@ const featureStore = useFeaturesStore();
 const chartStore = useChartsStore();
 
 const Map = mapStore.mapObject
+const minReachSelectionZoom = 7
+const mapInitialZoom = 3
+let zoom = ref(mapInitialZoom)
 
 onUpdated(() => {
     Map.leaflet.invalidateSize()
 })
 
 onMounted(() => {
-    let leaflet = L.map('mapContainer').setView([0, 0], 3);
+    let leaflet = L.map('mapContainer').setView([0, 0], mapInitialZoom);
+    zoom.value = leaflet.getZoom()
     Map.leaflet = leaflet;
     Map.hucbounds = [];
     Map.popups = [];
@@ -83,6 +93,41 @@ onMounted(() => {
     };
 
     CartoDB.addTo(leaflet);
+
+    leaflet.on('zoomend', function (e) {
+        zoom.value = e.target._zoom;
+    });
+
+    let Position = L.Control.extend({
+        _container: null,
+        options: {
+            position: 'bottomleft'
+        },
+
+        onAdd: function () {
+            const latlng = L.DomUtil.create('div', 'mouseposition');
+            this._latlng = latlng;
+            return latlng;
+        },
+
+        updateHTML: function (lat, lng) {
+            this._latlng.innerHTML = `Lat/Lng: ${lat} ${lng}`
+        }
+    });
+    const position = new Position();
+    leaflet.addControl(position);
+
+    leaflet.addEventListener('mousemove', (e) => {
+        const [lat, lng] = getLatLong(e);
+        position.updateHTML(lat, lng);
+    });
+
+    function getLatLong(e) {
+        let lat = Math.round(e.latlng.lat * 100000) / 100000;
+        let lng = Math.round(e.latlng.lng * 100000) / 100000;
+        return [lat, lng];
+    }
+
 
 
     // add lakes features layer to map
@@ -144,6 +189,18 @@ onMounted(() => {
         maxZoom: 9,
     }).addTo(leaflet);
 
+    url = 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Esri_Hydro_Reference_Overlay/MapServer'
+    // url = 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Esri_Hydro_Reference_Labels/MapServer'
+
+    let hydro = esriLeaflet.tiledMapLayer({
+        url: url,
+        layers: 0,
+        transparent: 'true',
+        format: 'image/png',
+        minZoom: 0,
+        maxZoom: minReachSelectionZoom - 1,
+    })
+
     // add reaches layer to map
     url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
     let reaches = L.tileLayer.wms(url, {
@@ -151,15 +208,16 @@ onMounted(() => {
         transparent: 'true',
         format: 'image/png',
         minZoom: 0,
-        maxZoom: 7,
+        maxZoom: minReachSelectionZoom - 1,
     }).addTo(leaflet);
+
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
         url: url,
         renderer: canvas({ tolerance: 5 }),
         simplifyFactor: 0.35,
         precision: 5,
-        minZoom: 7,
+        minZoom: minReachSelectionZoom,
         maxZoom: 18,
         color: mapStore.featureOptions.defaultColor,
         weight: mapStore.featureOptions.defaultWeight,
@@ -238,6 +296,7 @@ onMounted(() => {
         "Reaches": reachesFeatures,
         // "SWORD Nodes": sword_nodes,
         "Nodes": nodesFeatures,
+        "Esri_Hydro_Reference_Overlay": hydro,
     };
 
     // /*
@@ -580,5 +639,16 @@ function validate_bbox_size() {
 #mapContainer {
     width: 100%;
     height: 100%;
+}
+
+#zoomIndicator {
+    position:fixed;
+    bottom: 10%;
+    left: 10px;
+    /* background-color: white; */
+    padding: 5px;
+    /* border-radius: 5px; */
+    /* border: 1px solid black; */
+    z-index: 1000;
 }
 </style>
