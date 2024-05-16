@@ -189,6 +189,18 @@ onMounted(() => {
         maxZoom: 9,
     }).addTo(leaflet);
 
+    url = 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Esri_Hydro_Reference_Overlay/MapServer'
+    // url = 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Esri_Hydro_Reference_Labels/MapServer'
+
+    let hydro = esriLeaflet.tiledMapLayer({
+        url: url,
+        layers: 0,
+        transparent: 'true',
+        format: 'image/png',
+        minZoom: 0,
+        maxZoom: minReachSelectionZoom - 1,
+    })
+
     // add reaches layer to map
     url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
     let reaches = L.tileLayer.wms(url, {
@@ -198,6 +210,7 @@ onMounted(() => {
         minZoom: 0,
         maxZoom: minReachSelectionZoom - 1,
     }).addTo(leaflet);
+
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
         url: url,
@@ -283,6 +296,7 @@ onMounted(() => {
         "Reaches": reachesFeatures,
         // "SWORD Nodes": sword_nodes,
         "Nodes": nodesFeatures,
+        "Esri_Hydro_Reference_Overlay": hydro,
     };
 
     // /*
