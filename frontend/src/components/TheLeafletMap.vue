@@ -1,5 +1,10 @@
 <template>
     <div v-show="$route.meta.showMap" id="mapContainer"></div>
+    <v-card v-if="zoom < minReachSelectionZoom" id="zoomIndicator" color="info">
+        <v-card-text>
+            <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches
+        </v-card-text>
+    </v-card>
 </template>
 
 <script setup>
@@ -14,6 +19,7 @@ import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
+import { mdiMagnifyPlus } from '@mdi/js'
 
 const mapStore = useMapStore()
 const alertStore = useAlertStore();
@@ -21,13 +27,17 @@ const featureStore = useFeaturesStore();
 const chartStore = useChartsStore();
 
 const Map = mapStore.mapObject
+const minReachSelectionZoom = 7
+const mapInitialZoom = 3
+let zoom = ref(mapInitialZoom)
 
 onUpdated(() => {
     Map.leaflet.invalidateSize()
 })
 
 onMounted(() => {
-    let leaflet = L.map('mapContainer').setView([0, 0], 3);
+    let leaflet = L.map('mapContainer').setView([0, 0], mapInitialZoom);
+    zoom.value = leaflet.getZoom()
     Map.leaflet = leaflet;
     Map.hucbounds = [];
     Map.popups = [];
@@ -84,6 +94,9 @@ onMounted(() => {
 
     CartoDB.addTo(leaflet);
 
+    leaflet.on('zoomend', function (e) {
+        zoom.value = e.target._zoom;
+    });
 
     // add lakes features layer to map
     let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
@@ -151,7 +164,7 @@ onMounted(() => {
         transparent: 'true',
         format: 'image/png',
         minZoom: 0,
-        maxZoom: 7,
+        maxZoom: minReachSelectionZoom - 1,
     }).addTo(leaflet);
     url = url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
     const reachesFeatures = esriLeaflet.featureLayer({
@@ -159,7 +172,7 @@ onMounted(() => {
         renderer: canvas({ tolerance: 5 }),
         simplifyFactor: 0.35,
         precision: 5,
-        minZoom: 7,
+        minZoom: minReachSelectionZoom,
         maxZoom: 18,
         color: mapStore.featureOptions.defaultColor,
         weight: mapStore.featureOptions.defaultWeight,
@@ -580,5 +593,16 @@ function validate_bbox_size() {
 #mapContainer {
     width: 100%;
     height: 100%;
+}
+
+#zoomIndicator {
+    position:fixed;
+    bottom: 10%;
+    left: 10px;
+    /* background-color: white; */
+    padding: 5px;
+    /* border-radius: 5px; */
+    /* border: 1px solid black; */
+    z-index: 1000;
 }
 </style>
