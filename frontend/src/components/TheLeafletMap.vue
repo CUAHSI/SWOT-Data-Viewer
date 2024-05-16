@@ -197,8 +197,6 @@ onMounted(() => {
         layers: 0,
         transparent: 'true',
         format: 'image/png',
-        minZoom: 0,
-        maxZoom: minReachSelectionZoom - 1,
     })
 
     // add reaches layer to map
