@@ -109,7 +109,7 @@ export const useChartsStore = defineStore('charts', () => {
       if (m.slope == '-999999999999.0') {
         return false
       }
-      if (m.with == '-999999999999.0') {
+      if (m.width == '-999999999999.0') {
         return false
       }
       // check data quality flags
