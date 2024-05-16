@@ -56,6 +56,7 @@ import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline }
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
+import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 
 const { lgAndUp } = useDisplay()
 
@@ -120,6 +121,26 @@ const options = {
         mode: 'xy',
       }
     },
+    tooltip: {
+      // https://www.chartjs.org/docs/latest/configuration/tooltip.html
+      callbacks: {
+        label: function (context) {
+          // var label = context.dataset.label || '';
+          let selectedVariable = props.chosenVariable
+          let label = `${capitalizeFirstLetter(selectedVariable.abbreviation)}`
+          if (label) {
+            label += ': ';
+          }
+          if (context.parsed.y !== null) {
+            // label += new Intl.NumberFormat('en-US', { style: 'decimal', maximumFractionDigits: 5 }).format(context.parsed.y);
+            label += context.parsed.y
+          }
+          label += ` ${selectedVariable.unit}`
+          return label;
+        }
+      },
+      displayColors: false,
+    }
   },
   scales: {
     x: {
