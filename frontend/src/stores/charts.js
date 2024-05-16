@@ -5,6 +5,7 @@ export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   let nodeChartData = ref({})
   const showChart = ref(false)
+  const hasNodeData = ref(false)
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
@@ -15,10 +16,15 @@ export const useChartsStore = defineStore('charts', () => {
 
   const clearChartData = () => {
     chartData.value = {}
+    chartData.value = {}
+    nodeChartData.value = {}
+    showChart.value = false
+    hasNodeData.value = false
   }
 
   const getLabels = (selectedFeatures) => {
-    const labels = selectedFeatures[0].results.geojson.features.map((feature) => {
+    // TODO: for now we just use the first query
+    const labels = selectedFeatures[0].queries[0].results.geojson.features.map((feature) => {
       if (feature.properties.time_str == 'no_data') {
         return
       }
@@ -29,7 +35,8 @@ export const useChartsStore = defineStore('charts', () => {
 
   const getNodeLabels = (nodes) => {
     const labels = nodes.map((node) => {
-      return node.attributes.dist_out
+      // TODO:nodes this will only grab the first node dist value -- there is variation among the hits
+      return node.queries[0].results.geojson.features[0].properties.node_dist
     })
     return labels.filter((l) => l != undefined)
   }
@@ -47,17 +54,17 @@ export const useChartsStore = defineStore('charts', () => {
     return data
   }
 
-  const buildDistanceChart = (selectedNodes) => {
-    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
-    console.log('Building vis for selected features', selectedNodes)
-    const datasets = getNodeChartDatasets(selectedNodes)
+  const buildDistanceChart = (nodes) => {
+    console.log('Building chart for node-level swot data', nodes)
+    const datasets = getNodeChartDatasets(nodes)
     console.log('Datasets', datasets)
     const data = {
-      labels: getNodeLabels(selectedNodes),
+      labels: getNodeLabels(nodes),
       datasets: datasets
     }
     console.log('Node Chart Data', data)
     nodeChartData.value = data
+    hasNodeData.value = true
     return data
   }
 
@@ -83,44 +90,53 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
-    // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
-    return selectedFeatures.map((feature) => {
-      let measurements = feature.results.geojson.features.map((feature) => {
-        return feature.properties
-      })
+  const filterMeasurements = (measurements, dataQualityFlags) => {
       // TODO: this is a hack to remove the invalid measurements
       // need to handle this with a formal validator
-      console.log('Starting number of measurements', measurements.length)
-      measurements = measurements.filter((m) => {
-        if (m.time_str == 'no_data') {
+    console.log('Starting number of measurements', measurements.length)
+    measurements = measurements.filter((m) => {
+      if (m.time_str == 'no_data') {
+        return false
+      }
+      m.datetime = new Date(m.time_str)
+      if (isNaN(m.datetime)) {
+        return false
+      }
+      if (m.wse == '-999999999999.0') {
+        return false
+      }
+      if (m.slope == '-999999999999.0') {
+        return false
+      }
+      if (m.with == '-999999999999.0') {
+        return false
+      }
+      // check data quality flags
+      if (dataQualityFlags != null) {
+        if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
           return false
         }
-        m.datetime = new Date(m.time_str)
-        if (isNaN(m.datetime)) {
-          return false
-        }
-        if (m.wse == '-999999999999.0') {
-          return false
-        }
-        if (m.slope == '-999999999999.0') {
-          return false
-        }
-        if (m.with == '-999999999999.0') {
-          return false
-        }
-        // check data quality flags
-        if (dataQualityFlags != null) {
-          if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
-            return false
-          }
-        }
-        return true
+      }
+      return true
+    })
+    console.log('Ending number of measurements', measurements.length)
+    return measurements
+  }
+
+  const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
+    // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
+    console.log('Getting chart datasets for selected features', selectedFeatures)
+    return selectedFeatures.map((feature) => {
+      // TODO: for now we just use the first query
+      let measurements = feature.queries[0].results.geojson.features.map((feature) => {
+        return feature.properties
       })
-      console.log('Ending number of measurements', measurements.length)
+      measurements = filterMeasurements(measurements, dataQualityFlags)
       console.log('SWOT measurements', measurements)
+      console.log('SWOT feature', feature)
       return {
-        label: `${feature.sword.river_name} | ${feature.sword.reach_id}`,
+        // TODO: nodes label assumes reach
+        label: `${feature?.properties?.river_name} | ${feature?.feature_id}`,
         data: measurements,
         parsing: {
           xAxisKey: 'datetime',
@@ -132,18 +148,28 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const getNodeChartDatasets = (selectedNodes) => {
-    const data = selectedNodes.map((node) => {
-      return node.attributes
+  const getNodeChartDatasets = (nodes) => {
+    console.log('getting node chart datasets for nodes', nodes)
+    // TODO:nodes I was expecting that the node_dist would be constant across timestamps but it isn't
+    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
+    let measurements = nodes.map((node) => {
+      console.log('Parsing node', node)
+      return node.queries[0].results.geojson.features.map((feature) => {
+        return feature.properties
+      })
     })
+    measurements = measurements.flat()
+    measurements = filterMeasurements(measurements)
+    console.log('Node measurements parsed', measurements)
+    console.log('using reach from ', nodes[0])
     const dataSet = {
-      label: `${selectedNodes[0].attributes.river_name} | ${selectedNodes[0].attributes.reach_id}`,
-      data: data,
+      label: `${nodes[0]?.properties?.river_name} | ${nodes[0]?.properties?.reach_id}`,
+      data: measurements,
       parsing: {
-        xAxisKey: 'dist_out',
+        xAxisKey: 'node_dist',
         yAxisKey: 'wse'
       },
-      ...getDataSetStyle(data)
+      ...getDataSetStyle(measurements)
     }
     return [dataSet]
   }
@@ -202,7 +228,7 @@ export const useChartsStore = defineStore('charts', () => {
       fills: []
     }
     dataSet.forEach((m) => {
-      const { pointStyle, color, fill } = getPointStyle(m.reach_q)
+      const { pointStyle, color, fill } = getPointStyle(m.reach_q ? m.reach_q : m.node_q)
       styles.colors.push(color)
       styles.pointStyles.push(pointStyle)
       styles.fills.push(fill)
@@ -216,7 +242,7 @@ export const useChartsStore = defineStore('charts', () => {
       fill: styles.fills,
       color: styles.colors,
       borderColor: styles.colors,
-      backgroundColor: 'rgb(75, 192, 192)',
+      backgroundColor: 'rgb(75, 192, 192)'
       // borderWidth: 1,
     }
   }
@@ -230,7 +256,8 @@ export const useChartsStore = defineStore('charts', () => {
     buildDistanceChart,
     showVis,
     showChart,
+    hasNodeData,
     dynamicColors,
-    filterDataQuality
+    filterDataQuality,
   }
 })

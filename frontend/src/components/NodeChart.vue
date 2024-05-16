@@ -9,8 +9,6 @@
       </v-col>
       <v-col lg="2">
         <v-sheet>
-          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
-            @update:modelValue="updateChartLine()"></v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
             Download Chart
@@ -46,20 +44,17 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
-import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiPalette, mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiLoupe } from '@mdi/js'
-import { downloadCsv, downloadJson } from '../_helpers/hydroCron';
+import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiLoupe } from '@mdi/js'
+import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 
 const { lgAndUp } = useDisplay()
 
-const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
-const plotStyle = ref('Scatter')
 const downloading = ref({ csv: false, json: false, chart: false })
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
@@ -76,8 +71,8 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
   setParsing(chartData.value.datasets)
 }
 
-const yLabel = `${props.chosenVariable?.plot_definition} (${props.chosenVariable?.units})`
-const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.plot_definition} vs Distance`
+const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
+const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.name} vs Distance`
 
 const options = {
   responsive: true,
@@ -155,25 +150,13 @@ const downloadChart = async () => {
 
 const downCsv = async () => {
   downloading.value.csv = true
-  await downloadCsv()
+  await downloadMultiNodesCsv()
   downloading.value.csv = false
 }
 
 const downJson = async () => {
   downloading.value.json = true
-  await downloadJson()
+  await downloadMultiNodesJson()
   downloading.value.json = false
-}
-
-const updateChartLine = () => {
-  let showLine = false
-  if (plotStyle.value === 'Connected') {
-    showLine = true
-  }
-  line.value.chart.data.datasets.forEach((dataset) => {
-    dataset.showLine = showLine
-    setParsing(line.value.chart.data.datasets)
-  })
-  line.value.chart.update()
 }
 </script>

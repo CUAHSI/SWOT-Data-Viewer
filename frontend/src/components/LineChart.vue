@@ -53,7 +53,7 @@ import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 import { mdiPalette, mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiLoupe } from '@mdi/js'
-import { downloadCsv, downloadJson } from '../_helpers/hydroCron';
+import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 
@@ -175,7 +175,7 @@ const downCsv = async () => {
 
 const downJson = async () => {
   downloading.value.json = true
-  await downloadJson()
+  await downloadFeatureJson()
   downloading.value.json = false
 }
 

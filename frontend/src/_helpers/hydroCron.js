@@ -2,23 +2,39 @@ import { HYDROCRON_URL } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { useChartsStore } from '@/stores/charts'
-import { buildFakeData, knownQueriesWithData } from '@/_helpers/fakeData'
 
 const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
-  const featuresStore = useFeaturesStore()
-  const chartStore = useChartsStore()
   const hydrologicStore = useHydrologicStore()
   const alertStore = useAlertStore()
-  if (swordFeature == null && !featuresStore.shouldFakeData) {
-    console.error('No hydroCron query params, and shouldFakeData is false')
+  if (swordFeature == null) {
+    console.error('No hydroCron query params provided')
     return
   }
   console.log('Querying HydroCron for swordFeature', swordFeature)
   let params = {}
 
-  let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation).join(',')
-  const additional = hydrologicStore.alwaysQueryVariables
+  // TODO: get the start and end time from the date range
+  let feature_type = swordFeature?.properties?.node_id == undefined ? 'Reach' : 'Node'
+  swordFeature.feature_type = feature_type
+  let feature_id = feature_type === 'Reach' ? swordFeature?.properties?.reach_id : swordFeature?.properties?.node_id
+  swordFeature.feature_id = feature_id
+
+  let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation)
+  console.log('Selected fields:', fields)
+
+  // remove any variables that aren't allowed for this feature type
+  const allowedAbbreviations = hydrologicStore
+    .queryVariables(feature_type)
+    .map((v) => v.abbreviation)
+  console.log('Filtering to only include allowed fields:', allowedAbbreviations)
+  fields = fields.filter((abbreviation) => {
+    return allowedAbbreviations.includes(abbreviation)
+  })
+  fields.join(',')
+  console.log('Fetching for selected fields', fields)
+
+  const additional = hydrologicStore
+    .queryVariables(feature_type, true)
     .map((variable) => variable.abbreviation)
     .join(',')
   if (additional !== '') {
@@ -38,28 +54,15 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     return
   }
 
-  if (!featuresStore.shouldFakeData) {
-    // TODO: get the feature type dynamically
-    // get the start and end time from the date range
-    let feature_id = swordFeature?.properties?.reach_id
-    if (feature_id == undefined) {
-      feature_id = swordFeature.params.feature_id
-    }
-    params = {
-      feature: 'Reach',
-      feature_id: feature_id,
-      start_time: '2024-01-01T00:00:00Z',
-      end_time: '2024-10-30T00:00:00Z',
-      output: output,
-      fields: fields
-    }
-  } else {
-    // Build fake data
-    // get a random known query from the knownQueriesWithData array
-    params = knownQueriesWithData[Math.floor(Math.random() * knownQueriesWithData.length)]
-    params.fields = fields
-    params.output = output
-    console.log('Faked params', params)
+  params = {
+    feature: feature_type,
+    feature_id: feature_id,
+    start_time: '2024-01-01T00:00:00Z',
+    end_time: '2024-10-30T00:00:00Z',
+    output: output,
+    fields: fields,
+    // https://podaac.github.io/hydrocron/timeseries.html#compact-string-required-no
+    compact: 'true'
   }
   let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
   if (response == null) {
@@ -69,16 +72,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   if (output === 'csv') {
     return response.results.csv
   }
-  featuresStore.mergeFeature(response)
-  if (featuresStore.shouldFakeData) {
-    let fakeData = buildFakeData(featuresStore.selectedFeatures)
-    // update the chartData before selecting the feature otherwise it will show blank
-    chartStore.chartData = fakeData
-    console.log('Fake data', fakeData)
-  } else {
-    // chartStore.buildChart([...featuresStore.selectedFeatures, response])
-    chartStore.buildChart(featuresStore.selectedFeatures)
-  }
+  return response
 }
 
 const fetchHydroCronData = async (url, params, swordFeature) => {
@@ -93,7 +87,8 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
         'Content-Type': 'application/json'
       }
     })
-    return processHydroCronResult(result, params, swordFeature)
+    const processedResult = await processHydroCronResult(result, params, swordFeature)
+    return processedResult
   } catch (e) {
     console.error('Error fetching data', e)
     alertStore.displayAlert({
@@ -113,9 +108,8 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   const alertStore = useAlertStore()
   // https://podaac.github.io/hydrocron/timeseries.html#response-codes
   if (response.status < 500) {
-    let data = await response.json()
-    console.log('Swot data response', data)
-    if (response.status == 400 || data.hits == undefined || data.hits < 1) {
+    let query = await response.json()
+    if (response.status == 400 || query.hits == undefined || query.hits < 1) {
       alertStore.displayAlert({
         title: 'No data found',
         text: `No data found for ${JSON.stringify(params)}`,
@@ -125,12 +119,15 @@ const processHydroCronResult = async (response, params, swordFeature) => {
       })
       return null
     }
-    data.params = params
-    if (swordFeature?.properties) {
-      data.sword = swordFeature.properties
-      data.id = swordFeature.properties.OBJECTID
+
+    console.log('Saving results to feature', swordFeature)
+    query.params = params
+    // check if the feature already has queries
+    if (swordFeature.queries === undefined) {
+      swordFeature.queries = []
     }
-    return data
+    swordFeature.queries.push(query)
+    return query
   } else {
     alertStore.displayAlert({
       title: 'Error fetching SWOT data',
@@ -142,22 +139,64 @@ const processHydroCronResult = async (response, params, swordFeature) => {
   }
 }
 
-async function downloadJson(feature = null) {
+async function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+async function downloadFeatureJson(feature = null) {
   if (feature == null) {
     const featuresStore = useFeaturesStore()
     feature = featuresStore.activeFeature
   }
-  const jsonData = JSON.stringify(feature.sword)
+  const wrapper = {
+    queries: feature.queries
+  }
+  // alternatively, we could use the geojson from the feature
+  // feature.queries[0].results.geojson
+  const jsonData = JSON.stringify(wrapper)
   const blob = new Blob([jsonData], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
+  const filename = getLongFilename(feature) + '.json'
+  downloadBlob(blob, filename)
+}
 
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${getLongFilename(feature)}.json`
+async function downloadMultiNodesJson(nodes = []) {
+  if (nodes.length === 0) {
+    nodes = useFeaturesStore().nodes
+  }
+  const wrapper = {
+    nodes: nodes
+  }
+  const jsonData = JSON.stringify(wrapper)
+  const blob = new Blob([jsonData], { type: 'application/json' })
+  let filename = getLongFilename(nodes[0]) + '.json'
+  filename = `${nodes.length}_nodes_${filename}`
+  downloadBlob(blob, filename)
+}
 
-  link.click()
-
-  URL.revokeObjectURL(url)
+async function downloadMultiNodesCsv(nodes = []) {
+  if (nodes.length === 0) {
+    nodes = useFeaturesStore().nodes
+  }
+  const csvData = await Promise.all(
+    nodes.map(async (node, index) => {
+      const csv = await queryHydroCron(node, 'csv')
+      // strip the header from all but the first node
+      if (index !== 0) {
+        return csv.split('\n').slice(1).join('\n')
+      }
+      return csv
+    })
+  )
+  console.log('CSV data:', csvData)
+  const blob = new Blob(csvData, { type: 'text/csv' })
+  let filename = getLongFilename(nodes[0]) + '.csv'
+  filename = `${nodes.length}_nodes_${filename}`
+  downloadBlob(blob, filename)
 }
 
 async function downloadCsv(feature = null) {
@@ -168,15 +207,8 @@ async function downloadCsv(feature = null) {
   }
   const csvData = await queryHydroCron(feature, 'csv')
   const blob = new Blob([csvData], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${getLongFilename(feature)}.csv`
-
-  link.click()
-
-  URL.revokeObjectURL(url)
+  const filename = `${getLongFilename(feature)}.csv`
+  downloadBlob(blob, filename)
 }
 
 function getLongFilename(feature = null) {
@@ -184,14 +216,13 @@ function getLongFilename(feature = null) {
     const featuresStore = useFeaturesStore()
     feature = featuresStore.activeFeature
   }
-  const featureType = feature.params.feature
-  const riverName = feature.sword.river_name
-  const reachId = feature.sword.reach_id
-  const startTime = feature.params.start_time
-  const endTime = feature.params.end_time
+  const featureType = feature.feature_type
+  const riverName = feature.properties.river_name
+  const reachId = feature.properties.reach_id
+  const startTime = feature.queries[0].params.start_time
+  const endTime = feature.queries[0].params.end_time
   let filename = `${featureType}_${riverName}_${reachId}_${startTime}_${endTime}`
-  filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase()
-  return filename
+  return filename.replace(/[^a-z0-9]/gi, '_').toLowerCase()
 }
 
 /**
@@ -206,7 +237,8 @@ async function getNodesFromReach(reachFeature) {
   let params = {
     f: 'json',
     // where: `reach_id = ${reachFeature.properties.reach_id}`,
-    where: `reach_id = ${reachFeature.params.feature_id}`,
+    // TODO: for now we just use the first query
+    where: `reach_id = ${reachFeature.queries[0].params.feature_id}`,
     outFields: '*'
     // returnGeometry: true,
     // spatialRel: 'esriSpatialRelIntersects',
@@ -217,7 +249,47 @@ async function getNodesFromReach(reachFeature) {
     .join('&')
   let response = await fetch(`${url}?${query}`)
   let data = await response.json()
+
+  // SWORD Nodes have attributes, insteady of properties. For consistency, we rename attributes to properties
+  data.features.forEach((node) => {
+    Object.defineProperty(node, 'properties', Object.getOwnPropertyDescriptor(node, 'attributes'))
+    delete node.attributes
+  })
+  console.log('Nodes for reach', data.features)
   return data.features
 }
 
-export { queryHydroCron, downloadJson, downloadCsv, getNodesFromReach }
+async function getNodeDataForReach(reachFeature) {
+  console.log('Retrieving nodes for reach', reachFeature)
+  let nodes = await getNodesFromReach(reachFeature)
+  reachFeature.nodes = nodes
+  await getDataForNodes(nodes)
+  console.log('Reach with updated node data', reachFeature)
+  return reachFeature
+}
+
+async function getDataForNodes(nodes) {
+  const featureStore = useFeaturesStore()
+  console.log('Retrieving data for nodes', nodes)
+  await Promise.all(
+    nodes.map(async (node) => {
+      await queryHydroCron(node)
+    })
+  )
+  console.log('Nodes with data:', nodes)
+  // TODO: right now we just keep a single set of nodes. But we could instead retain all node data
+  // featureStore.nodes.push(...nodes)
+  featureStore.nodes = nodes
+  return nodes
+}
+
+export {
+  queryHydroCron,
+  downloadFeatureJson,
+  downloadMultiNodesJson,
+  downloadMultiNodesCsv,
+  downloadCsv,
+  getNodesFromReach,
+  getNodeDataForReach,
+  getDataForNodes
+}

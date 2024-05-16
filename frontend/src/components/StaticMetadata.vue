@@ -4,7 +4,7 @@
       <v-card-item class="text-center">
         <v-card-title>{{ getFeatureName() }}</v-card-title>
         <!-- <v-card-subtitle>
-                  {{ featureStore.activeFeature.sword.reach_id }}
+                  {{ featureStore.activeFeature.properties.reach_id }}
                 </v-card-subtitle> -->
       </v-card-item>
       <v-card-text>
@@ -39,25 +39,25 @@ let extended = ref(false)
 
 const extendMetadata = () => {
   if (!featureStore.activeFeature) return
-  extendedMetadata.value = hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, false, 'reach')
+  extendedMetadata.value = hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, false, 'reach')
   extended.value = true
 }
 
 const extendedMetadata = () => {
   if (!featureStore.activeFeature) return {}
-  // TODO assumes reach, won't work for nodes
-  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, false, 'reach')
+  // TODO:nodes assumes reach, won't work for nodes
+  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, false, 'reach')
 }
 
 const defaultSwordMetadata = () => {
   if (!featureStore.activeFeature) return {}
-  // TODO assumes reach, won't work for nodes
-  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.sword, true, 'reach')
+  // TODO:nodes assumes reach, won't work for nodes
+  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, true, 'reach')
 }
 
 const getFeatureName = () => {
   if (!featureStore.activeFeature) return ''
-  const river_name = featureStore.activeFeature.sword.river_name
+  const river_name = featureStore.activeFeature.properties.river_name
   if (river_name === 'NODATA') {
     return 'UNNAMED RIVER'
   }
