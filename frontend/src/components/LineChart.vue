@@ -26,7 +26,7 @@
             Download JSON
           </v-btn>
           <v-btn @click="resetZoom()" color="input" class="ma-1">
-            <v-icon :icon="mdiLoupe"></v-icon>
+            <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
             Reset Zoom
           </v-btn>
         </v-sheet>
@@ -52,7 +52,7 @@ import { enUS } from 'date-fns/locale';
 import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiPalette, mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiLoupe } from '@mdi/js'
+import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline } from '@mdi/js'
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
@@ -103,15 +103,19 @@ const options = {
       color: 'white',
     },
     zoom: {
+      pan: {
+        enabled: true,
+        mode: 'xy',
+      },
       zoom: {
         wheel: {
-          enabled: false,
+          enabled: true,
         },
         pinch: {
           enabled: false
         },
         drag: {
-          enabled: true
+          enabled: false
         },
         mode: 'xy',
       }
