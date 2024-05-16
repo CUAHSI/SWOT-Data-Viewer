@@ -23,7 +23,7 @@
           <template v-slot:item.actions="{ item }">
             <v-tooltip text="Download SWOT JSON">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="mdiCodeJson" size="small" @click="downloadJson(item)"></v-btn>
+                <v-btn v-bind="props" :icon="mdiCodeJson" size="small" @click="downloadFeatureJson(item)"></v-btn>
               </template>
             </v-tooltip>
             <v-tooltip text="Download SWOT CSV">
@@ -55,7 +55,7 @@
                   <div class="text-overline mb-1">
                     {{ variant }}
                   </div>
-                  <v-card-title>{{ feature.sword.river_name }}</v-card-title>
+                  <v-card-title>{{ feature.properties.river_name }}</v-card-title>
                   <v-card-subtitle>
                     {{ feature.sword.reach_id }}
                   </v-card-subtitle>
@@ -104,7 +104,7 @@
               <v-card-actions>
                 <v-tooltip text="Download SWOT JSON">
                   <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" :icon="mdiCodeJson" size="small" @click="downloadJson(feature)"></v-btn>
+                    <v-btn v-bind="props" :icon="mdiCodeJson" size="small" @click="downloadFeatureJson(feature)"></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="Download SWOT CSV">
@@ -155,7 +155,7 @@ import { RouterLink } from 'vue-router';
 import { ref } from 'vue'
 import { mdiSatelliteVariant, mdiSword, mdiCodeJson, mdiFileDelimited } from '@mdi/js'
 import { computed } from 'vue';
-import { downloadJson, downloadCsv } from "../_helpers/hydroCron";
+import { downloadFeatureJson, downloadCsv } from "../_helpers/hydroCron";
 
 const featureStore = useFeaturesStore();
 

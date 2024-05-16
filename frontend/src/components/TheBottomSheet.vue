@@ -2,9 +2,9 @@
   <v-bottom-sheet v-model="chartStore.showChart" inset>
     <v-card v-if="featureStore.activeFeature" height="100%">
       <v-card-item class="text-center">
-        <v-card-title>{{ featureStore.activeFeature.sword.river_name }}</v-card-title>
+        <v-card-title>{{ featureStore.activeFeature.properties.river_name }}</v-card-title>
         <v-card-subtitle>
-          {{ featureStore.activeFeature.sword.reach_id }}
+          {{ featureStore.activeFeature.properties.reach_id }}
         </v-card-subtitle>
       </v-card-item>
 

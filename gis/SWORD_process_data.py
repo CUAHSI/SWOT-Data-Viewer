@@ -1,11 +1,12 @@
-# arcpy can be run using a defined argis pro environment. This is typically installed  
-# C:\Program Files\ArcGIS\Pro\bin\Python\envs\arcgispro-py3 
+# arcpy can be run using a defined argis pro environment. This is typically installed
+# C:\Program Files\ArcGIS\Pro\bin\Python\envs\arcgispro-py3
 # see more here https://resources.esri.ca/getting-technical/how-to-configure-visual-studio-code-with-arcgis-pro-s-python-environment
 
 import arcpy
 import os
 import shutil
 import zipfile
+
 
 def extract_zip(zip_file, extract_to, subdirectory_name):
     """
@@ -20,13 +21,14 @@ def extract_zip(zip_file, extract_to, subdirectory_name):
         str: Path to the directory where the contents were extracted.
     """
     print("Extracting ZIP file...")
-    
+
     extract_dir = os.path.join(extract_to, subdirectory_name)
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         zip_ref.extractall(extract_dir)
         print(extract_dir)
 
     return extract_dir
+
 
 def merge_and_reproject_shapefiles(input_directory, zip_file, output_directory, shapefile_substrings, output_spatial_reference, subdirectory_name):
     """
@@ -46,14 +48,15 @@ def merge_and_reproject_shapefiles(input_directory, zip_file, output_directory, 
     Returns:
         None
     """
-    
+
     print("Merging and reprojecting shapefiles...")
-   
+
     # Set output directory for the extracted contents
     output_directory = os.path.join(input_directory, output_directory)
 
     # Extract the contents of the ZIP file to a specified subdirectory
-    extracted_dir = extract_zip(os.path.join(input_directory, zip_file), output_directory, subdirectory_name)
+    extracted_dir = extract_zip(os.path.join(
+        input_directory, zip_file), output_directory, subdirectory_name)
 
     for shapefile_substring in shapefile_substrings:
         # Set output geodatabase name
@@ -73,7 +76,8 @@ def merge_and_reproject_shapefiles(input_directory, zip_file, output_directory, 
 
         # Check if there are shapefiles to merge and reproject
         if not shapefiles:
-            print(f"No shapefiles containing substring '{shapefile_substring}' found in the input directory.")
+            print(
+                f"No shapefiles containing substring '{shapefile_substring}' found in the input directory.")
             continue
 
         # Merge shapefiles into a single feature class
@@ -82,9 +86,11 @@ def merge_and_reproject_shapefiles(input_directory, zip_file, output_directory, 
         arcpy.Merge_management(shapefiles, merged_feature_class)
 
         # Reproject the merged feature class
-        arcpy.management.Project(merged_feature_class, os.path.join(output_gdb, output_featureclass + "_mercator"), output_spatial_reference)
+        arcpy.management.Project(merged_feature_class, os.path.join(
+            output_gdb, output_featureclass + "_mercator"), output_spatial_reference)
 
-        print(f"Merge and reprojection for '{shapefile_substring}' completed successfully.")
+        print(
+            f"Merge and reprojection for '{shapefile_substring}' completed successfully.")
 
         # Delete the merged feature class
         arcpy.Delete_management(merged_feature_class)
@@ -92,7 +98,7 @@ def merge_and_reproject_shapefiles(input_directory, zip_file, output_directory, 
         print(f"Merged feature class for '{shapefile_substring}' deleted.")
 
     # Delete the extracted ZIP file
-    #os.remove(os.path.join(input_directory, zip_file))
+    # os.remove(os.path.join(input_directory, zip_file))
 
     print("Extracted ZIP file deleted.")
 
@@ -100,6 +106,7 @@ def merge_and_reproject_shapefiles(input_directory, zip_file, output_directory, 
     shutil.rmtree(extracted_dir)
 
     print("Extracted folder deleted.")
+
 
 # Example usage:
 input_directory = r"C:\Maps\SWOT"
@@ -109,4 +116,5 @@ shapefile_substrings = ["nodes", "reaches"]
 output_spatial_reference = arcpy.SpatialReference(3857)
 subdirectory_name = "shp"
 
-merge_and_reproject_shapefiles(input_directory, zip_file, output_directory, shapefile_substrings, output_spatial_reference, subdirectory_name)
+merge_and_reproject_shapefiles(input_directory, zip_file, output_directory,
+                               shapefile_substrings, output_spatial_reference, subdirectory_name)

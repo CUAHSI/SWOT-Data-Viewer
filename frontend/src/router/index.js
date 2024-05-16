@@ -26,11 +26,11 @@ const router = createRouter({
       name: 'api',
       component: ApiView
     },
-    // {
-    //   path: '/selections',
-    //   name: 'selections',
-    //   component: () => import('../views/SelectionsView.vue')
-    // },
+    {
+      path: '/selections',
+      name: 'selections',
+      component: () => import('../views/SelectionsView.vue')
+    },
     {
       path: '/plots',
       name: 'plots',
