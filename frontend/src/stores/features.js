@@ -42,7 +42,7 @@ export const useFeaturesStore = defineStore('features', () => {
 
   const clearSelectedFeatures = () => {
     for (const feature of selectedFeatures.value) {
-      console.log("Deselecting feature", feature)
+      console.log('Deselecting feature', feature)
       mapStore.deselectFeature(feature)
     }
     selectedFeatures.value = []
@@ -55,6 +55,18 @@ export const useFeaturesStore = defineStore('features', () => {
     return selectedFeatures.value.some((f) => f.id === feature.id)
   }
 
+  const getFeatureName = (feature = null) => {
+    if (feature == null) {
+      feature = activeFeature.value
+    }
+    if (!feature) return ''
+    const river_name = feature.properties.river_name
+    if (river_name === 'NODATA') {
+      return 'UNNAMED RIVER'
+    }
+    return river_name
+  }
+
   return {
     selectedFeatures,
     selectFeature,
@@ -64,5 +76,6 @@ export const useFeaturesStore = defineStore('features', () => {
     checkFeatureSelected,
     mergeFeature,
     nodes,
+    getFeatureName
   }
 })

@@ -2,7 +2,7 @@
   <v-sheet class="mx-auto" elevation="8">
     <v-card v-if="featureStore.activeFeature" height="100%">
       <v-card-item class="text-center">
-        <v-card-title>{{ getFeatureName() }}</v-card-title>
+        <v-card-title>{{ featureStore.getFeatureName() }}</v-card-title>
         <!-- <v-card-subtitle>
                   {{ featureStore.activeFeature.properties.reach_id }}
                 </v-card-subtitle> -->
@@ -23,7 +23,8 @@
     </v-card>
   </v-sheet>
   <v-btn v-if="!extended" @click="extendMetadata" color="primary"><v-icon :icon="mdiSword"></v-icon>Metadata</v-btn>
-  <v-btn v-else @click="extended = false" color="primary"><v-icon :icon="mdiSword"></v-icon>Hide Extended Metadata</v-btn>
+  <v-btn v-else @click="extended = false" color="primary"><v-icon :icon="mdiSword"></v-icon>Hide Extended
+    Metadata</v-btn>
 </template>
 
 <script setup>
@@ -53,15 +54,6 @@ const defaultSwordMetadata = () => {
   if (!featureStore.activeFeature) return {}
   // TODO:nodes assumes reach, won't work for nodes
   return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, true, 'reach')
-}
-
-const getFeatureName = () => {
-  if (!featureStore.activeFeature) return ''
-  const river_name = featureStore.activeFeature.properties.river_name
-  if (river_name === 'NODATA') {
-    return 'UNNAMED RIVER'
-  }
-  return river_name
 }
 
 </script>
