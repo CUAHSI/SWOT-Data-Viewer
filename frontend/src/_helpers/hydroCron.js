@@ -14,19 +14,9 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   let params = {}
 
   // TODO: get the start and end time from the date range
-  let feature_type = swordFeature?.attributes?.node_id == undefined ? 'Reach' : 'Node'
+  let feature_type = swordFeature?.properties?.node_id == undefined ? 'Reach' : 'Node'
   swordFeature.feature_type = feature_type
-  let feature_id = ''
-  switch (feature_type) {
-    case 'Reach':
-      feature_id = swordFeature?.properties?.reach_id
-      break
-    case 'Node':
-      feature_id = swordFeature?.attributes?.node_id
-      break
-    default:
-      feature_id = swordFeature.params.feature_id
-  }
+  let feature_id = feature_type === 'Reach' ? swordFeature?.properties?.reach_id : swordFeature?.properties?.node_id
   swordFeature.feature_id = feature_id
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation)
@@ -227,9 +217,8 @@ function getLongFilename(feature = null) {
     feature = featuresStore.activeFeature
   }
   const featureType = feature.feature_type
-  const riverName =
-    featureType == 'Reach' ? feature.properties.river_name : feature.attributes.river_name
-  const reachId = featureType == 'Reach' ? feature.properties.reach_id : feature.attributes.reach_id
+  const riverName = feature.properties.river_name
+  const reachId = feature.properties.reach_id
   const startTime = feature.queries[0].params.start_time
   const endTime = feature.queries[0].params.end_time
   let filename = `${featureType}_${riverName}_${reachId}_${startTime}_${endTime}`
@@ -260,6 +249,13 @@ async function getNodesFromReach(reachFeature) {
     .join('&')
   let response = await fetch(`${url}?${query}`)
   let data = await response.json()
+
+  // SWORD Nodes have attributes, insteady of properties. For consistency, we rename attributes to properties
+  data.features.forEach((node) => {
+    Object.defineProperty(node, 'properties', Object.getOwnPropertyDescriptor(node, 'attributes'))
+    delete node.attributes
+  })
+  console.log('Nodes for reach', data.features)
   return data.features
 }
 

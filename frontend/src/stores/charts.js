@@ -163,7 +163,7 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Node measurements parsed', measurements)
     console.log('using reach from ', nodes[0])
     const dataSet = {
-      label: `${nodes[0]?.attributes?.river_name} | ${nodes[0]?.attributes?.reach_id}`,
+      label: `${nodes[0]?.properties?.river_name} | ${nodes[0]?.properties?.reach_id}`,
       data: measurements,
       parsing: {
         xAxisKey: 'node_dist',
