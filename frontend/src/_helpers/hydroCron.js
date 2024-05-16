@@ -243,7 +243,9 @@ async function getDataForNodes(nodes) {
     await queryHydroCron(node)
   }))
   console.log('Nodes with data:', nodes)
-  featureStore.nodes.push(...nodes)
+  // TODO: right now we just keep a single set of nodes. But we could instead retain all node data
+  // featureStore.nodes.push(...nodes)
+  featureStore.nodes = nodes
   return nodes
 }
 

@@ -5,6 +5,7 @@ export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   let nodeChartData = ref({})
   const showChart = ref(false)
+  const hasNodeData = ref(false)
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
@@ -15,6 +16,10 @@ export const useChartsStore = defineStore('charts', () => {
 
   const clearChartData = () => {
     chartData.value = {}
+    chartData.value = {}
+    nodeChartData.value = {}
+    showChart.value = false
+    hasNodeData.value = false
   }
 
   const getLabels = (selectedFeatures) => {
@@ -59,6 +64,7 @@ export const useChartsStore = defineStore('charts', () => {
     }
     console.log('Node Chart Data', data)
     nodeChartData.value = data
+    hasNodeData.value = true
     return data
   }
 
@@ -157,7 +163,7 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Node measurements parsed', measurements)
     console.log('using reach from ', nodes[0])
     const dataSet = {
-      label: `${nodes[0]?.attributes?.river_name}`,
+      label: `${nodes[0]?.attributes?.river_name} | ${nodes[0]?.attributes?.reach_id}`,
       data: measurements,
       parsing: {
         xAxisKey: 'node_dist',
@@ -250,7 +256,8 @@ export const useChartsStore = defineStore('charts', () => {
     buildDistanceChart,
     showVis,
     showChart,
+    hasNodeData,
     dynamicColors,
-    filterDataQuality
+    filterDataQuality,
   }
 })

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useMapStore } from '@/stores/map'
+import { useChartsStore } from '@/stores/charts'
 
 export const useFeaturesStore = defineStore('features', () => {
   const selectedFeatures = ref([])
@@ -8,6 +9,7 @@ export const useFeaturesStore = defineStore('features', () => {
   const nodes = ref([])
 
   const mapStore = useMapStore()
+  const chartStore = useChartsStore()
 
   function selectFeature(feature) {
     mapStore.selectFeature(feature)
@@ -46,6 +48,7 @@ export const useFeaturesStore = defineStore('features', () => {
     selectedFeatures.value = []
     activeFeature.value = null
     mapStore.clearAllFeatures()
+    chartStore.clearChartData()
   }
 
   const checkFeatureSelected = (feature) => {
