@@ -22,7 +22,7 @@
             Download JSON
           </v-btn>
           <v-btn @click="resetZoom()" color="input" class="ma-1">
-            <v-icon :icon="mdiLoupe"></v-icon>
+            <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
             Reset Zoom
           </v-btn>
         </v-sheet>
@@ -46,10 +46,11 @@ import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiLoupe } from '@mdi/js'
+import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline } from '@mdi/js'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
+import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 
 const { lgAndUp } = useDisplay()
 
@@ -93,18 +94,45 @@ const options = {
       color: 'white',
     },
     zoom: {
+      pan: {
+        enabled: true,
+        mode: 'xy',
+      },
       zoom: {
         wheel: {
-          enabled: false,
+          enabled: true,
         },
         pinch: {
           enabled: false
         },
         drag: {
-          enabled: true
+          enabled: false
         },
         mode: 'xy',
       }
+    },
+    tooltip: {
+      // https://www.chartjs.org/docs/latest/configuration/tooltip.html
+      callbacks: {
+        label: function (context) {
+          // var label = context.dataset.label || '';
+          let selectedVariable = props.chosenVariable
+          let label = `${capitalizeFirstLetter(selectedVariable.abbreviation)}`
+          if (label) {
+            label += ': ';
+          }
+          if (context.parsed.y !== null) {
+            // label += new Intl.NumberFormat('en-US', { style: 'decimal', maximumFractionDigits: 5 }).format(context.parsed.y);
+            label += context.parsed.y
+          }
+          label += ` ${selectedVariable.unit}`
+          return label;
+        },
+        title: function (context) {
+          return `Distance: ${context[0].parsed.x} m`
+        },
+      },
+      displayColors: false,
     },
   },
   scales: {

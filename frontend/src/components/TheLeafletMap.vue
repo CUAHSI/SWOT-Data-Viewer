@@ -1,6 +1,6 @@
 <template>
     <div v-show="$route.meta.showMap" id="mapContainer"></div>
-    <v-card v-if="zoom < minReachSelectionZoom" id="zoomIndicator" color="info">
+    <v-card v-if="$route.meta.showMap && zoom < minReachSelectionZoom" id="zoomIndicator" color="info">
         <v-card-text>
             <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches
         </v-card-text>
@@ -197,8 +197,6 @@ onMounted(() => {
         layers: 0,
         transparent: 'true',
         format: 'image/png',
-        minZoom: 0,
-        maxZoom: minReachSelectionZoom - 1,
     })
 
     // add reaches layer to map

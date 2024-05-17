@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useFeaturesStore } from '@/stores/features'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
@@ -91,8 +92,8 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const filterMeasurements = (measurements, dataQualityFlags) => {
-      // TODO: this is a hack to remove the invalid measurements
-      // need to handle this with a formal validator
+    // TODO: this is a hack to remove the invalid measurements
+    // need to handle this with a formal validator
     console.log('Starting number of measurements', measurements.length)
     measurements = measurements.filter((m) => {
       if (m.time_str == 'no_data') {
@@ -108,7 +109,7 @@ export const useChartsStore = defineStore('charts', () => {
       if (m.slope == '-999999999999.0') {
         return false
       }
-      if (m.with == '-999999999999.0') {
+      if (m.width == '-999999999999.0') {
         return false
       }
       // check data quality flags
@@ -124,6 +125,7 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
+    const featureStore = useFeaturesStore()
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     console.log('Getting chart datasets for selected features', selectedFeatures)
     return selectedFeatures.map((feature) => {
@@ -136,7 +138,7 @@ export const useChartsStore = defineStore('charts', () => {
       console.log('SWOT feature', feature)
       return {
         // TODO: nodes label assumes reach
-        label: `${feature?.properties?.river_name} | ${feature?.feature_id}`,
+        label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
         data: measurements,
         parsing: {
           xAxisKey: 'datetime',
@@ -149,6 +151,7 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getNodeChartDatasets = (nodes) => {
+    const featureStore = useFeaturesStore()
     console.log('getting node chart datasets for nodes', nodes)
     // TODO:nodes I was expecting that the node_dist would be constant across timestamps but it isn't
     // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
@@ -163,7 +166,7 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Node measurements parsed', measurements)
     console.log('using reach from ', nodes[0])
     const dataSet = {
-      label: `${nodes[0]?.properties?.river_name} | ${nodes[0]?.properties?.reach_id}`,
+      label: `${featureStore.getFeatureName(nodes[0])} | ${nodes[0]?.properties?.reach_id}`,
       data: measurements,
       parsing: {
         xAxisKey: 'node_dist',
@@ -258,6 +261,6 @@ export const useChartsStore = defineStore('charts', () => {
     showChart,
     hasNodeData,
     dynamicColors,
-    filterDataQuality,
+    filterDataQuality
   }
 })
