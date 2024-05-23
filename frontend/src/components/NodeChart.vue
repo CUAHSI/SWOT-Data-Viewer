@@ -25,6 +25,7 @@
             <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
             Reset Zoom
           </v-btn>
+          <v-select label="Timestamp Selector" v-model="timeStamps" :items="timeStamps"  @update:modelValue="filterAllDatasets()" multiple chips></v-select>
         </v-sheet>
       </v-col>
     </v-row>
@@ -51,12 +52,16 @@ import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydro
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
+import { useChartsStore } from '../stores/charts';
 
 const { lgAndUp } = useDisplay()
 
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const downloading = ref({ csv: false, json: false, chart: false })
+const chartStore = useChartsStore()
+
+const timeStamps = ref(chartStore.getNodeTimeStamps())
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data

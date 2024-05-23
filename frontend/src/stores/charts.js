@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
+import { NODE_DATETIME_VARIATION } from '@/constants'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
@@ -111,6 +112,41 @@ export const useChartsStore = defineStore('charts', () => {
     })
     console.log('Ending Datasets', datasets)
   }
+
+  const getNodeTimeStamps = (dataset) => {
+    if (dataset == null) {
+      dataset = nodeChartData.value.datasets[0]
+    }
+    const newData = dataset.data.map((m) => {
+      return m.datetime
+    })
+    // now we need to filter out the duplicates
+    const uniqueData = [...new Set(newData)]
+    
+    // sort the data
+    uniqueData.sort((a, b) => {
+      return new Date(a) - new Date(b)
+    })
+
+    // group the data by time range close enough to be considered the same
+    const groupedData = []
+    let currentGroup = []
+    let lastTime = new Date(uniqueData[0])
+    uniqueData.forEach((time) => {
+      const currentTime = new Date(time)
+      const diff = Math.abs(currentTime - lastTime)
+      if (diff < NODE_DATETIME_VARIATION * 60 * 1000) {
+        currentGroup.push(time)
+      } else {
+        groupedData.push(currentGroup)
+        currentGroup = [time]
+      }
+      lastTime = currentTime
+    })
+    groupedData.push(currentGroup)
+    return groupedData
+  }
+
 
 
   const filterMeasurements = (measurements, dataQualityFlags) => {
@@ -285,5 +321,6 @@ export const useChartsStore = defineStore('charts', () => {
     dynamicColors,
     filterDataQuality,
     filterDatasetsToTimeRange,
+    getNodeTimeStamps,
   }
 })
