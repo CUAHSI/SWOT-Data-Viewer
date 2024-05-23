@@ -106,45 +106,48 @@ export const useChartsStore = defineStore('charts', () => {
       const filteredData = dataset.data.filter((m) => {
         const datetime = new Date(m.datetime)
         return datetime >= start && datetime <= end
-      }
-      )
+      })
       dataset.data = filteredData
     })
     console.log('Ending Datasets', datasets)
   }
 
-  const getNodeTimeStamps = (dataset) => {
-    if (dataset == null) {
-      dataset = nodeChartData.value.datasets[0]
-    }
-    const newData = dataset.data.map((m) => {
-      return m.datetime
-    })
-    // now we need to filter out the duplicates
-    const uniqueData = [...new Set(newData)]
-    
-    // sort the data
-    uniqueData.sort((a, b) => {
-      return new Date(a) - new Date(b)
+  const getNodeTimeStamps = (measurements) => {
+    // group the data by time range close enough to be considered the same
+    // takes an array of measurements and returns an array of arrays of measurements
+    // each array of measurements is considered to be the same time stamp
+    // this is useful for plotting multiple datasets with the same time stamp
+
+    // first sort all the data by timestamp
+    measurements.sort((a, b) => {
+      return new Date(a.datetime) - new Date(b.datetime)
     })
 
-    // group the data by time range close enough to be considered the same
-    const groupedData = []
+    const timeStampGroups = []
     let currentGroup = []
-    let lastTime = new Date(uniqueData[0])
-    uniqueData.forEach((time) => {
-      const currentTime = new Date(time)
-      const diff = Math.abs(currentTime - lastTime)
-      if (diff < NODE_DATETIME_VARIATION * 60 * 1000) {
-        currentGroup.push(time)
-      } else {
-        groupedData.push(currentGroup)
-        currentGroup = [time]
+    let lastTime = null
+    measurements.forEach((m) => {
+      const datetime = new Date(m.datetime)
+      if (lastTime == null) {
+        lastTime = datetime
       }
-      lastTime = currentTime
+      if (Math.abs(datetime - lastTime) <= NODE_DATETIME_VARIATION * 60 * 1000) {
+        currentGroup.push(m)
+      } else {
+        timeStampGroups.push(currentGroup)
+        currentGroup = [m]
+      }
+      lastTime = datetime
     })
-    groupedData.push(currentGroup)
-    return groupedData
+    timeStampGroups.push(currentGroup)
+
+    // now sort each group by node_dist
+    timeStampGroups.forEach((group) => {
+      group.sort((a, b) => {
+        return a.node_dist - b.node_dist
+      })
+    })
+    return timeStampGroups
   }
 
 
@@ -222,17 +225,27 @@ export const useChartsStore = defineStore('charts', () => {
     measurements = measurements.flat()
     measurements = filterMeasurements(measurements)
     console.log('Node measurements parsed', measurements)
+
+    // instead of creating a single dataset, create a dataset for each timestamp
+    // now create a separate dataset for each timestamp
+    const timeStampGroups = getNodeTimeStamps(measurements)
+    console.log('Time Stamp Groups', timeStampGroups)
+
     console.log('using reach from ', nodes[0])
-    const dataSet = {
-      label: `${featureStore.getFeatureName(nodes[0])} | ${nodes[0]?.properties?.reach_id}`,
-      data: measurements,
-      parsing: {
-        xAxisKey: 'node_dist',
-        yAxisKey: 'wse'
-      },
-      ...getDataSetStyle(measurements)
+    const datasets = timeStampGroups.map((timeStampGroup) => {
+      console.log('Time Stamp Group', timeStampGroup)
+      return {
+        label: `${featureStore.getFeatureName(nodes[0])} | ${nodes[0]?.properties?.reach_id} @ ${timeStampGroup[0].time_str}`,
+        data: timeStampGroup,
+        parsing: {
+          xAxisKey: 'node_dist',
+          yAxisKey: 'wse'
+        },
+        ...getNodeDataSetStyle(timeStampGroup)
+      }
     }
-    return [dataSet]
+    )
+    return datasets
   }
 
   const showVis = () => {
@@ -307,6 +320,29 @@ export const useChartsStore = defineStore('charts', () => {
       // borderWidth: 1,
     }
   }
+  const getNodeDataSetStyle = (dataSet) => {
+    console.log('Getting node data set style', dataSet)
+    const styles = {
+      colors: [],
+    }
+    dataSet.forEach(() => {
+      styles.colors.push(dynamicColors())
+    })
+    console.log('Styles', styles)
+    return {
+      showLine: true,
+      // pointRadius: 7,
+      // pointHoverRadius: 15,
+      // fill: styles.colors,
+      // color: styles.colors,
+      borderColor: styles.colors, // The line fill color.
+      backgroundColor: styles.colors,  // The line color.
+      spanGaps: false,
+      pointBackgroundColor: 'rgba(0, 0, 0, 0.1)',
+      pointBorderColor: 'rgba(0, 0, 0, 0.1)',
+      // borderWidth: 1,
+    }
+  }
 
   return {
     updateChartData,
@@ -321,6 +357,6 @@ export const useChartsStore = defineStore('charts', () => {
     dynamicColors,
     filterDataQuality,
     filterDatasetsToTimeRange,
-    getNodeTimeStamps,
+    getNodeTimeStamps
   }
 })
