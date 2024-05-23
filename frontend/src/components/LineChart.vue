@@ -49,6 +49,7 @@ import {
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
+import { addMinutes, subMinutes } from "date-fns";
 import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
@@ -57,6 +58,7 @@ import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
+import { NODE_DATETIME_VARIATION } from '@/constants'
 
 const { lgAndUp } = useDisplay()
 
@@ -163,10 +165,46 @@ const options = {
         text: yLabel
       }
     }
-  }
+  },
+  onClick: (e) => handleTimeseriesPointClick(e),
+  // events: ["click", "contextmenu"],
 }
 
 const dataQualityOptions = [{ label: 'good', value: 0 }, { label: 'suspect', value: 1 }, { label: 'degraded', value: 2 }, { label: 'bad', value: 3 }]
+
+const handleTimeseriesPointClick = (e) => {
+  // TODO: right click context menu
+  // e.native.preventDefault()
+  // if (e.native.button !== 2) {
+  //   console.log("not right click")
+  //   return
+  // }
+  const elems = line.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+  if (elems.length <= 0) {
+    return
+  }
+  const datasetIndex = elems[0].datasetIndex
+  const index = elems[0].index
+  const dataset = line.value.chart.data.datasets[datasetIndex]
+  const data = dataset.data[index]
+  console.log("clicked data:", data)
+  console.log("clicked dataset:", dataset)
+  // TODO: y axis variable is not being set correctly
+  console.log("y axis variable:", dataset.parsing.yAxisKey)
+  console.log("datetime:", data.datetime)
+
+  const datetime = data.datetime
+  const allDatasets = line.value.chart.data.datasets
+  const dataForDatetime = allDatasets.map((dataset) => {
+    const data = dataset.data.find((data) => data.datetime === datetime)
+    return data
+  })
+  console.log("average data for datetime:", dataForDatetime)
+
+  // TODO use the datetime and plot all of the nodes' data for that datetime
+  // chartStore.filterDatasetsToTimeRange(allDatasets, subMinutes(datetime, NODE_DATETIME_VARIATION), addMinutes(datetime, NODE_DATETIME_VARIATION))
+  // line.value.chart.update()
+}
 
 const resetZoom = () => {
   line.value.chart.resetZoom()

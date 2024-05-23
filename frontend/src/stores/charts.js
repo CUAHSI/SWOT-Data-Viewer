@@ -91,6 +91,28 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
+  const filterDatasetsToTimeRange = (datasets, start, end) => {
+    // if end is null, use now
+    if (end == null) {
+      end = new Date()
+    }
+    if (start == null) {
+      start = new Date(0)
+    }
+    console.log('Filtering time range', start, end)
+    console.log('Starting Datasets', datasets)
+    datasets.forEach((dataset) => {
+      const filteredData = dataset.data.filter((m) => {
+        const datetime = new Date(m.datetime)
+        return datetime >= start && datetime <= end
+      }
+      )
+      dataset.data = filteredData
+    })
+    console.log('Ending Datasets', datasets)
+  }
+
+
   const filterMeasurements = (measurements, dataQualityFlags) => {
     // TODO: this is a hack to remove the invalid measurements
     // need to handle this with a formal validator
@@ -261,6 +283,7 @@ export const useChartsStore = defineStore('charts', () => {
     showChart,
     hasNodeData,
     dynamicColors,
-    filterDataQuality
+    filterDataQuality,
+    filterDatasetsToTimeRange,
   }
 })
