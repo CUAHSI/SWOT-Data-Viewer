@@ -1,35 +1,60 @@
 <template>
   <v-container class="overflow-auto">
     <v-row>
-      <v-col xs="12" lg="10">
+      <v-col xs="12" lg="9">
         <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
           min-width="500px">
           <Line :data="chartData" :options="options" ref="line" :plugins="[zoomPlugin]" />
         </v-sheet>
       </v-col>
-      <v-col xs="12" lg="2">
-        <v-sheet>
-          <v-select label="Data Quality" v-model="dataQuality" :items="dataQualityOptions" item-title="label"
-            item-value="value" @update:modelValue="filterAllDatasets()" multiple chips></v-select>
-          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
-            @update:modelValue="updateChartLine()"></v-select>
-          <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
-            <v-icon :icon="mdiDownloadBox"></v-icon>
-            Download Chart
-          </v-btn>
-          <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
-            <v-icon :icon="mdiFileDelimited"></v-icon>
-            Download CSV
-          </v-btn>
-          <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
-            <v-icon :icon="mdiCodeJson"></v-icon>
-            Download JSON
-          </v-btn>
-          <v-btn @click="resetZoom()" color="input" class="ma-1">
-            <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
-            Reset Zoom
-          </v-btn>
-        </v-sheet>
+      <v-col xs="12" lg="3">
+        <v-expansion-panels with="100%" v-model="panel" multiple>
+          <v-expansion-panel value="plotOptions">
+            <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <v-select label="Data Quality" v-model="dataQuality" :items="dataQualityOptions" item-title="label"
+                item-value="value" @update:modelValue="filterAllDatasets()" multiple chips></v-select>
+              <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
+                @update:modelValue="updateChartLine()"></v-select>
+              <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
+                <v-icon :icon="mdiDownloadBox"></v-icon>
+                Download Chart
+              </v-btn>
+              <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
+                <v-icon :icon="mdiFileDelimited"></v-icon>
+                Download CSV
+              </v-btn>
+              <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
+                <v-icon :icon="mdiCodeJson"></v-icon>
+                Download JSON
+              </v-btn>
+              <v-btn @click="resetZoom()" color="input" class="ma-1">
+                <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
+                Reset Zoom
+              </v-btn>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+          <v-expansion-panel :disabled="selectedTimes.length == 0" value="selectedTimes">
+            <v-expansion-panel-title>Selected Timestamps</v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <v-list>
+                <v-list-item v-for="node in selectedTimes" :key="node.datetime">
+                  <template v-slot:append>
+                    <v-icon :icon="mdiCloseBox" color="error" @click="removeSelectedNode(node)"></v-icon>
+                  </template>
+                  <v-list-item-content>
+                    <v-list-item-title>{{ node.datetime }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ node.time_str }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-expansion-panel-text>
+            <v-btn v-if="selectedTimes.length > 0" class="ma-1 float-right" color="input" @click="viewLongProfileByDates">
+              <v-icon :icon="mdiChartBellCurveCumulative"></v-icon>
+              View Long Profile
+            </v-btn>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-col>
     </v-row>
   </v-container>
@@ -51,9 +76,10 @@ import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
 import { addMinutes, subMinutes } from "date-fns";
 import { useChartsStore } from '@/stores/charts'
+import { useAlertStore } from '@/stores/alerts'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline } from '@mdi/js'
+import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiChartBellCurveCumulative, mdiCloseBox } from '@mdi/js'
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
@@ -61,8 +87,11 @@ import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 
 const { lgAndUp } = useDisplay()
+const panel = ref(["plotOptions"])
+const selectedTimes = ref([])
 
 const chartStore = useChartsStore()
+const alertStore = useAlertStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const plotStyle = ref('Scatter')
@@ -187,24 +216,65 @@ const handleTimeseriesPointClick = (e) => {
   const index = elems[0].index
   const dataset = line.value.chart.data.datasets[datasetIndex]
   const data = dataset.data[index]
-  console.log("clicked data:", data)
-  console.log("clicked dataset:", dataset)
-  // TODO: y axis variable is not being set correctly
-  console.log("y axis variable:", dataset.parsing.yAxisKey)
-  console.log("datetime:", data.datetime)
+  // console.log("clicked data:", data)
+  // console.log("clicked dataset:", dataset)
+  // // TODO: y axis variable is not being set correctly
+  // console.log("y axis variable:", dataset.parsing.yAxisKey)
+  // console.log("datetime:", data.datetime)
 
-  const datetime = data.datetime
-  const allDatasets = line.value.chart.data.datasets
-  const dataForDatetime = allDatasets.map((dataset) => {
-    const data = dataset.data.find((data) => data.datetime === datetime)
-    return data
-  })
-  console.log("average data for datetime:", dataForDatetime)
+  // const datetime = data.datetime
+  // const allDatasets = line.value.chart.data.datasets
+  // const dataForDatetime = allDatasets.map((dataset) => {
+  //   const data = dataset.data.find((data) => data.datetime === datetime)
+  //   return data
+  // })
+  // console.log("average data for datetime:", dataForDatetime)
 
+  addSelectedNode(data)
+}
+
+const viewLongProfileByDates = () => {
   // TODO use the datetime and plot all of the nodes' data for that datetime
   // chartStore.filterDatasetsToTimeRange(allDatasets, subMinutes(datetime, NODE_DATETIME_VARIATION), addMinutes(datetime, NODE_DATETIME_VARIATION))
-  // line.value.chart.update()
+  alertStore.displayAlert({
+    title: 'Long Profile Filter Not Implemented',
+    text: `The long profile filter by dates has not been implemented yet.`,
+    type: 'warning',
+    closable: true,
+    duration: 3
+  })
 }
+
+const addSelectedNode = (node) => {
+  // first make sure the node is not already selected
+  if (selectedTimes.value.includes(node)) {
+    alertStore.displayAlert({
+      title: 'Point already selected',
+      text: `The point at ${node.datetime} has already been selected.`,
+      type: 'warning',
+      closable: true,
+      duration: 3
+    })
+    return
+  }
+  selectedTimes.value.push(node)
+  panel.value = ["selectedTimes"]
+  // TODO use datalabels to show selection?
+  // https://chartjs-plugin-datalabels.netlify.app/samples/events/selection.html
+}
+
+const removeSelectedNode = (node) => {
+  const index = selectedTimes.value.indexOf(node)
+  if (index > -1) {
+    selectedTimes.value.splice(index, 1)
+  }
+
+  if (selectedTimes.value.length === 0) {
+    panel.value = ["plotOptions"]
+  }
+}
+
+
 
 const resetZoom = () => {
   line.value.chart.resetZoom()
