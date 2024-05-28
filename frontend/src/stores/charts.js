@@ -311,7 +311,7 @@ export const useChartsStore = defineStore('charts', () => {
     return {
       showLine: false,
       pointStyle: styles.pointStyles,
-      pointRadius: 7,
+      pointRadius: 5,
       pointHoverRadius: 15,
       fill: styles.fills,
       color: styles.colors,
@@ -337,7 +337,7 @@ export const useChartsStore = defineStore('charts', () => {
     return {
       showLine: true,
       pointStyle: styles.pointStyles,
-      pointRadius: 7,
+      pointRadius: 5,
       pointHoverRadius: 15,
       fill: styles.dynamicColors,
       // color: styles.colors,
