@@ -323,23 +323,29 @@ export const useChartsStore = defineStore('charts', () => {
   const getNodeDataSetStyle = (dataSet) => {
     console.log('Getting node data set style', dataSet)
     const styles = {
-      colors: [],
+      pointColors: [],
+      pointStyles: [],
+      dynamicColors: [],
     }
-    dataSet.forEach(() => {
-      styles.colors.push(dynamicColors())
+    dataSet.forEach((m) => {
+      const { pointStyle, color } = getPointStyle(m.node_q)
+      styles.pointColors.push(color)
+      styles.pointStyles.push(pointStyle)
+      styles.dynamicColors.push(dynamicColors())
     })
     console.log('Styles', styles)
     return {
       showLine: true,
-      // pointRadius: 7,
-      // pointHoverRadius: 15,
-      // fill: styles.colors,
+      pointStyle: styles.pointStyles,
+      pointRadius: 7,
+      pointHoverRadius: 15,
+      fill: styles.dynamicColors,
       // color: styles.colors,
-      borderColor: styles.colors, // The line fill color.
-      backgroundColor: styles.colors,  // The line color.
+      borderColor: styles.dynamicColors, // The line fill color.
+      backgroundColor: styles.dynamicColors,  // The line color.
       spanGaps: false,
-      pointBackgroundColor: 'rgba(0, 0, 0, 0.1)',
-      pointBorderColor: 'rgba(0, 0, 0, 0.1)',
+      pointBackgroundColor: styles.pointColors,
+      pointBorderColor: styles.pointColors,
       // borderWidth: 1,
     }
   }
