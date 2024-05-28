@@ -57,11 +57,11 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       unit: 'm^2',
       definition:
         'Total estimated water surface area, including area_detct and any dark water that was not detected as water in the SWOT observation but identified through the use of a prior water probability map.',
-      default: false,
+      default: true,
       always: false,
-      selectable: false,
+      selectable: true,
       fileType: 'all',
-      plottable: false,
+      plottable: true,
     },
     {
       abbreviation: 'd_x_area',
