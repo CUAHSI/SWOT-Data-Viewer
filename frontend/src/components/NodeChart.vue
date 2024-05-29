@@ -6,6 +6,9 @@
           min-width="500px">
           <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor, zoomPlugin]" />
         </v-sheet>
+        <v-sheet class="pa-2" color="input">
+          <TimeRangeSlider />
+        </v-sheet>
       </v-col>
       <v-col lg="2">
         <v-sheet>
@@ -27,7 +30,6 @@
             <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
             Reset Zoom
           </v-btn>
-          <!-- <v-select label="Timestamp Selector" v-model="timeStamps" :items="timeStamps" multiple chips></v-select> -->
         </v-sheet>
       </v-col>
     </v-row>
@@ -55,6 +57,7 @@ import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import { useChartsStore } from '../stores/charts';
+import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 
 const { lgAndUp } = useDisplay()
 

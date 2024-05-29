@@ -7,6 +7,11 @@ export const useFeaturesStore = defineStore('features', () => {
   const selectedFeatures = ref([])
   const activeFeature = ref(null)
   const nodes = ref([])
+  // set the mintime to date of first data, 2023-03-29, relative to ECMAScript epoch in milliseconds
+  const minTime = new Date('2023-03-29').toISOString().split("T", 1)[0]
+  // set the maxtime to today
+  const maxTime = new Date().toISOString().split("T", 1)[0]
+  const timeRange = ref([minTime, maxTime])
 
   const mapStore = useMapStore()
   const chartStore = useChartsStore()
@@ -76,6 +81,9 @@ export const useFeaturesStore = defineStore('features', () => {
     checkFeatureSelected,
     mergeFeature,
     nodes,
-    getFeatureName
+    getFeatureName,
+    timeRange,
+    minTime,
+    maxTime
   }
 })
