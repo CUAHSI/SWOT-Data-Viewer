@@ -36,8 +36,8 @@ export const useChartsStore = defineStore('charts', () => {
 
   const getNodeLabels = (nodes) => {
     const labels = nodes.map((node) => {
-      // TODO:nodes this will only grab the first node dist value -- there is variation among the hits
-      return node.queries[0].results.geojson.features[0].properties.node_dist
+      // TODO:nodes this will only grab the first p_dist_out value -- there is variation among the hits
+      return node.queries[0].results.geojson.features[0].properties.p_dist_out
     })
     return labels.filter((l) => l != undefined)
   }
@@ -153,8 +153,6 @@ export const useChartsStore = defineStore('charts', () => {
   const getNodeChartDatasets = (nodes) => {
     const featureStore = useFeaturesStore()
     console.log('getting node chart datasets for nodes', nodes)
-    // TODO:nodes I was expecting that the node_dist would be constant across timestamps but it isn't
-    // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
     let measurements = nodes.map((node) => {
       console.log('Parsing node', node)
       return node.queries[0].results.geojson.features.map((feature) => {
@@ -169,7 +167,7 @@ export const useChartsStore = defineStore('charts', () => {
       label: `${featureStore.getFeatureName(nodes[0])} | ${nodes[0]?.properties?.reach_id}`,
       data: measurements,
       parsing: {
-        xAxisKey: 'node_dist',
+        xAxisKey: 'p_dist_out',
         yAxisKey: 'wse'
       },
       ...getDataSetStyle(measurements)
