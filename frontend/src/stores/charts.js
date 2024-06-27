@@ -100,14 +100,25 @@ export const useChartsStore = defineStore('charts', () => {
     if (start == null) {
       start = new Date(0)
     }
+    if (start > end) {
+      console.error('Invalid time range')
+      return
+    }
+    if (datasets == null) {
+      console.log('Filtering using all datasets')
+      datasets = chartData.value.datasets
+    }
     console.log('Filtering time range', start, end)
     console.log('Starting Datasets', datasets)
+
     datasets.forEach((dataset) => {
-      const filteredData = dataset.data.filter((m) => {
-        const datetime = new Date(m.datetime)
-        return datetime >= start && datetime <= end
-      })
-      dataset.data = filteredData
+      // determine whether the dataset is within the time range
+      // https://github.com/chartjs/Chart.js/issues/689
+      if (dataset.minDateTime > end || dataset.maxDateTime < start) {
+        dataset.hidden = true
+      } else {
+        dataset.hidden = false
+      }
     })
     console.log('Ending Datasets', datasets)
   }
@@ -239,11 +250,22 @@ export const useChartsStore = defineStore('charts', () => {
           xAxisKey: 'p_dist_out',
           yAxisKey: 'wse'
         },
-        ...getNodeDataSetStyle(timeStampGroup)
+        ...getNodeDataSetStyle(timeStampGroup),
+        ...getMinMaxDateTimes(timeStampGroup)
       }
     }
     )
     return datasets
+  }
+
+  const getMinMaxDateTimes = (timeStampGroup) => {
+    const minDateTime = Math.min(...timeStampGroup.map((m) => m.datetime))
+    const maxDateTime = Math.max(...timeStampGroup.map((m) => m.datetime))
+    return {
+      minDateTime,
+      maxDateTime,
+      hidden: false
+    }
   }
 
   const showVis = () => {

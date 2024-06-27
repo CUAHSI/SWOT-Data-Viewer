@@ -7,7 +7,7 @@
           <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor, zoomPlugin]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
-          <TimeRangeSlider />
+          <TimeRangeSlider @update="resetData" />
         </v-sheet>
       </v-col>
       <v-col lg="2">
@@ -30,6 +30,10 @@
             <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
             Reset Zoom
           </v-btn>
+          <v-btn @click="resetData()" color="input" class="ma-1">
+            <v-icon :icon="mdiEraser"></v-icon>
+            Refresh Data
+          </v-btn>
         </v-sheet>
       </v-col>
     </v-row>
@@ -51,7 +55,7 @@ import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline } from '@mdi/js'
+import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiEraser } from '@mdi/js'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
@@ -211,6 +215,11 @@ const updateChartLine = () => {
     dataset.showLine = showLine
     setParsing(line.value.chart.data.datasets)
   })
+  line.value.chart.update()
+}
+
+const resetData = () => {
+  line.value.chart.data.datasets = chartData.value.datasets
   line.value.chart.update()
 }
 </script>
