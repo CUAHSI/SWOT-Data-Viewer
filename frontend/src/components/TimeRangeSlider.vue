@@ -20,8 +20,6 @@
 import { ref } from 'vue'
 import { useFeaturesStore } from '../stores/features';
 import { useChartsStore } from '@/stores/charts'
-import { addMinutes, subMinutes } from "date-fns";
-import { NODE_DATETIME_VARIATION } from '@/constants'
 
 // define an update event that emits the new range
 const emit = defineEmits(['update'])
@@ -58,9 +56,7 @@ const updateDateRange = () => {
 }
 
 async function filterDatasetsToTimeRange() {
-  const startTime = subMinutes(dateRange.value[0], NODE_DATETIME_VARIATION)
-  const endTime = addMinutes(dateRange.value[1], NODE_DATETIME_VARIATION)
-  chartStore.filterDatasetsToTimeRange(chartStore.nodeChartData.datasets, startTime, endTime)
+  chartStore.filterDatasetsToTimeRange(chartStore.nodeChartData.datasets, dateRange.value[0], dateRange.value[1])
   emit('update', sliderRange.value)
 }
 
