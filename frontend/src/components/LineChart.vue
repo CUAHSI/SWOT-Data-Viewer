@@ -34,22 +34,25 @@
               </v-btn>
             </v-expansion-panel-text>
           </v-expansion-panel>
-          <v-expansion-panel :disabled="selectedTimes.length == 0" value="selectedTimes">
+          <v-expansion-panel :disabled="selectedTimeseriesPoints.length == 0" value="selectedTimeseriesPoints">
             <v-expansion-panel-title>Selected Timestamps</v-expansion-panel-title>
             <v-expansion-panel-text>
               <v-list>
-                <v-list-item v-for="node in selectedTimes" :key="node.datetime">
+                <v-list-item v-for="timeSeriesPoint in selectedTimeseriesPoints" :key="timeSeriesPoint.datetime">
                   <template v-slot:append>
-                    <v-icon :icon="mdiCloseBox" color="error" @click="removeSelectedNode(node)"></v-icon>
+                    <v-icon :icon="mdiCloseBox" color="error"
+                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint)"></v-icon>
                   </template>
                   <v-list-item-content>
-                    <v-list-item-title>{{ node.datetime }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ node.time_str }}</v-list-item-subtitle>
+                    <v-list-item-title>{{ timeSeriesPoint.datetime }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ timeSeriesPoint.time_str }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
             </v-expansion-panel-text>
-            <v-btn v-if="selectedTimes.length > 0" class="ma-1 float-right" color="input" @click="viewLongProfileByDates">
+            <v-btn v-if="selectedTimeseriesPoints.length > 0" :loading="!chartStore.hasNodeData"
+              :disabled="!chartStore.hasNodeData" class="ma-1 float-right" color="input"
+              @click="viewLongProfileByDates">
               <v-icon :icon="mdiChartBellCurveCumulative"></v-icon>
               View Long Profile
             </v-btn>
@@ -74,9 +77,9 @@ import {
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
-import { addMinutes, subMinutes } from "date-fns";
 import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
+import { useFeaturesStore } from '@/stores/features'
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiChartBellCurveCumulative, mdiCloseBox } from '@mdi/js'
@@ -84,14 +87,14 @@ import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
-import { NODE_DATETIME_VARIATION } from '@/constants'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(["plotOptions"])
-const selectedTimes = ref([])
+const selectedTimeseriesPoints = ref([])
 
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
+const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const plotStyle = ref('Scatter')
@@ -230,46 +233,46 @@ const handleTimeseriesPointClick = (e) => {
   // })
   // console.log("average data for datetime:", dataForDatetime)
 
-  addSelectedNode(data)
+  addSelectedTimeseriesPoint(data)
 }
 
 const viewLongProfileByDates = () => {
-  // TODO use the datetime and plot all of the nodes' data for that datetime
-  // chartStore.filterDatasetsToTimeRange(allDatasets, subMinutes(datetime, NODE_DATETIME_VARIATION), addMinutes(datetime, NODE_DATETIME_VARIATION))
-  alertStore.displayAlert({
-    title: 'Long Profile Filter Not Implemented',
-    text: `The long profile filter by dates has not been implemented yet.`,
-    type: 'warning',
-    closable: true,
-    duration: 3
-  })
+  chartStore.setDatasetVisibility(chartStore.nodeChartData.datasets, true)
+  chartStore.filterDatasetsBySetOfDates(null, selectedTimeseriesPoints.value)
+  chartStore.chartTab = "distance"
+  // TODO: update the date range slider based on the selections
+  featuresStore.timeRange.value = [selectedTimeseriesPoints.value[0].datetime, selectedTimeseriesPoints.value[selectedTimeseriesPoints.value.length - 1].datetime]
 }
 
-const addSelectedNode = (node) => {
+const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
   // first make sure the node is not already selected
-  if (selectedTimes.value.includes(node)) {
+  if (selectedTimeseriesPoints.value.includes(timeSeriesPoint)) {
     alertStore.displayAlert({
       title: 'Point already selected',
-      text: `The point at ${node.datetime} has already been selected.`,
+      text: `The point at ${timeSeriesPoint.datetime} has already been selected.`,
       type: 'warning',
       closable: true,
       duration: 3
     })
     return
   }
-  selectedTimes.value.push(node)
-  panel.value = ["selectedTimes"]
+  // instead of push, make sure the points are in order by datetime
+  const newPoints = [...selectedTimeseriesPoints.value, timeSeriesPoint]
+  newPoints.sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
+  selectedTimeseriesPoints.value = newPoints
+
+  panel.value = ["selectedTimeseriesPoints"]
   // TODO use datalabels to show selection?
   // https://chartjs-plugin-datalabels.netlify.app/samples/events/selection.html
 }
 
-const removeSelectedNode = (node) => {
-  const index = selectedTimes.value.indexOf(node)
+const removeSelectedTimeseriesPoint = (timeSeriesPoint) => {
+  const index = selectedTimeseriesPoints.value.indexOf(timeSeriesPoint)
   if (index > -1) {
-    selectedTimes.value.splice(index, 1)
+    selectedTimeseriesPoints.value.splice(index, 1)
   }
 
-  if (selectedTimes.value.length === 0) {
+  if (selectedTimeseriesPoints.value.length === 0) {
     panel.value = ["plotOptions"]
   }
 }
