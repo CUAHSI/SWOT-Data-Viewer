@@ -6,9 +6,14 @@
           min-width="500px">
           <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor, zoomPlugin]" />
         </v-sheet>
+        <v-sheet class="pa-2" color="input">
+          <TimeRangeSlider @update="resetData" />
+        </v-sheet>
       </v-col>
       <v-col lg="2">
         <v-sheet>
+          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
+            @update:modelValue="updateChartLine()"></v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
             Download Chart
@@ -24,6 +29,10 @@
           <v-btn @click="resetZoom()" color="input" class="ma-1">
             <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
             Reset Zoom
+          </v-btn>
+          <v-btn @click="resetData()" color="input" class="ma-1">
+            <v-icon :icon="mdiEraser"></v-icon>
+            Refresh Data
           </v-btn>
         </v-sheet>
       </v-col>
@@ -46,17 +55,25 @@ import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { ref } from 'vue'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline } from '@mdi/js'
+import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiEraser } from '@mdi/js'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
+import { useChartsStore } from '../stores/charts';
+import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 
 const { lgAndUp } = useDisplay()
 
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const downloading = ref({ csv: false, json: false, chart: false })
+const chartStore = useChartsStore()
+
+const plotStyle = ref('Connected')
+
+// const timeStamps = ref(chartStore.getNodeTimeStamps())
+const timeStamps = ref(['2021-01-01T00:00:00Z', '2021-01-01T00:00:00Z'])
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
@@ -80,7 +97,7 @@ const options = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false,
+      display: true,
       position: 'bottom',
     },
     title: {
@@ -126,6 +143,7 @@ const options = {
             label += context.parsed.y
           }
           label += ` ${selectedVariable.unit}`
+          // add the timestamp as well
           return label;
         },
         title: function (context) {
@@ -186,5 +204,22 @@ const downJson = async () => {
   downloading.value.json = true
   await downloadMultiNodesJson()
   downloading.value.json = false
+}
+
+const updateChartLine = () => {
+  let showLine = false
+  if (plotStyle.value === 'Connected') {
+    showLine = true
+  }
+  line.value.chart.data.datasets.forEach((dataset) => {
+    dataset.showLine = showLine
+    setParsing(line.value.chart.data.datasets)
+  })
+  line.value.chart.update()
+}
+
+const resetData = () => {
+  line.value.chart.data.datasets = chartData.value.datasets
+  line.value.chart.update()
 }
 </script>

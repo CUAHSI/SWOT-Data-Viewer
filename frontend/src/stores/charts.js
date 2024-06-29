@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
+import { NODE_DATETIME_VARIATION } from '@/constants'
+import { addMinutes, subMinutes } from 'date-fns'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   let nodeChartData = ref({})
   const showChart = ref(false)
   const hasNodeData = ref(false)
+  const chartTab = ref('timeseries')
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
@@ -69,6 +72,12 @@ export const useChartsStore = defineStore('charts', () => {
     return data
   }
 
+  const setDatasetVisibility = (datasets, visible) => {
+    datasets.forEach((dataset) => {
+      dataset.hidden = !visible
+    })
+  }
+
   const filterDataQuality = (dataQualityFlags, datasets) => {
     console.log('Filtering data quality', dataQualityFlags)
     console.log('Starting Datasets', datasets)
@@ -89,6 +98,117 @@ export const useChartsStore = defineStore('charts', () => {
       dataset.pointStyle = pointStyles
       console.log('Ending pointstyle', dataset.pointStyle)
     })
+  }
+
+  const filterDatasetsToTimeRange = (datasets, start, end, tolerance) => {
+    // if end is null, use now
+    if (end == null) {
+      end = new Date()
+    }
+    if (start == null) {
+      start = new Date(0)
+    }
+    if (start > end) {
+      console.error('Invalid time range')
+      return
+    }
+    if (tolerance == null) {
+      tolerance = NODE_DATETIME_VARIATION
+    }
+
+    start = subMinutes(start, tolerance)
+    end = addMinutes(end, tolerance)
+
+    if (datasets == null) {
+      console.log('Filtering using all datasets')
+      datasets = nodeChartData.value.datasets
+    }
+    console.log('Filtering time range', start, end)
+    console.log('Starting Datasets', datasets)
+
+    datasets.forEach((dataset) => {
+      // determine whether the dataset is within the time range
+      // https://github.com/chartjs/Chart.js/issues/689
+      if (dataset.minDateTime > end || dataset.maxDateTime < start) {
+        dataset.hidden = true
+      } else {
+        dataset.hidden = false
+      }
+    })
+    console.log('Ending Datasets', datasets)
+  }
+
+  const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {
+    console.log('Filtering datasets by set of dates', datasets, selectedTimeseriesPoints)
+    if (tolerance == null) {
+      tolerance = NODE_DATETIME_VARIATION
+    }
+    if (selectedTimeseriesPoints == null) {
+      console.error('No dateTimeGroups provided')
+      return
+    }
+    if (datasets == null) {
+      console.log('Filtering using all datasets')
+      datasets = nodeChartData.value.datasets
+    }
+    console.log('Starting Datasets', datasets)
+
+    datasets.forEach((dataset) => {
+      // determine whether the dataset matches with the dateTimeGroups
+      if (
+        selectedTimeseriesPoints.some((timeSeriesPoint) => {
+          const startCuttoff = subMinutes(timeSeriesPoint.datetime, tolerance)
+          const endCuttoff = addMinutes(timeSeriesPoint.datetime, tolerance)
+          if (dataset.minDateTime > endCuttoff || dataset.maxDateTime < startCuttoff) {
+            return false
+          }
+          return true
+        })
+      ) {
+        dataset.hidden = false
+      } else {
+        dataset.hidden = true
+      }
+    })
+    console.log('Ending Datasets', datasets)
+  }
+
+  const getNodeTimeStamps = (measurements) => {
+    // group the data by time range close enough to be considered the same
+    // takes an array of measurements and returns an array of arrays of measurements
+    // each array of measurements is considered to be the same time stamp
+    // this is useful for plotting multiple datasets with the same time stamp
+
+    // first sort all the data by timestamp
+    measurements.sort((a, b) => {
+      return new Date(a.datetime) - new Date(b.datetime)
+    })
+
+    const timeStampGroups = []
+    let currentGroup = []
+    let lastTime = null
+    measurements.forEach((m) => {
+      const datetime = new Date(m.datetime)
+      if (lastTime == null) {
+        lastTime = datetime
+      }
+      if (Math.abs(datetime - lastTime) <= NODE_DATETIME_VARIATION * 60 * 1000) {
+        currentGroup.push(m)
+      } else {
+        timeStampGroups.push(currentGroup)
+        currentGroup = [m]
+      }
+      lastTime = datetime
+    })
+    timeStampGroups.push(currentGroup)
+
+    // now sort each group by node_dist
+    timeStampGroups.forEach((group) => {
+      group.sort((a, b) => {
+        return a.node_dist - b.node_dist
+      })
+    })
+    return timeStampGroups
   }
 
   const filterMeasurements = (measurements, dataQualityFlags) => {
@@ -162,17 +282,39 @@ export const useChartsStore = defineStore('charts', () => {
     measurements = measurements.flat()
     measurements = filterMeasurements(measurements)
     console.log('Node measurements parsed', measurements)
+
+    // instead of creating a single dataset, create a dataset for each timestamp
+    // now create a separate dataset for each timestamp
+    const timeStampGroups = getNodeTimeStamps(measurements)
+    console.log('Time Stamp Groups', timeStampGroups)
+
     console.log('using reach from ', nodes[0])
-    const dataSet = {
-      label: `${featureStore.getFeatureName(nodes[0])} | ${nodes[0]?.properties?.reach_id}`,
-      data: measurements,
-      parsing: {
-        xAxisKey: 'p_dist_out',
-        yAxisKey: 'wse'
-      },
-      ...getDataSetStyle(measurements)
+    const datasets = timeStampGroups.map((timeStampGroup) => {
+      console.log('Time Stamp Group', timeStampGroup)
+      return {
+        label: `${featureStore.getFeatureName(nodes[0])} | ${nodes[0]?.properties?.reach_id} @ ${
+          timeStampGroup[0].time_str
+        }`,
+        data: timeStampGroup,
+        parsing: {
+          xAxisKey: 'p_dist_out',
+          yAxisKey: 'wse'
+        },
+        ...getNodeDataSetStyle(timeStampGroup),
+        ...getMinMaxDateTimes(timeStampGroup)
+      }
+    })
+    return datasets
+  }
+
+  const getMinMaxDateTimes = (timeStampGroup) => {
+    const minDateTime = Math.min(...timeStampGroup.map((m) => m.datetime))
+    const maxDateTime = Math.max(...timeStampGroup.map((m) => m.datetime))
+    return {
+      minDateTime,
+      maxDateTime,
+      hidden: false
     }
-    return [dataSet]
   }
 
   const showVis = () => {
@@ -238,12 +380,41 @@ export const useChartsStore = defineStore('charts', () => {
     return {
       showLine: false,
       pointStyle: styles.pointStyles,
-      pointRadius: 7,
+      pointRadius: 5,
       pointHoverRadius: 15,
       fill: styles.fills,
       color: styles.colors,
       borderColor: styles.colors,
       backgroundColor: 'rgb(75, 192, 192)'
+      // borderWidth: 1,
+    }
+  }
+  const getNodeDataSetStyle = (dataSet) => {
+    console.log('Getting node data set style', dataSet)
+    const styles = {
+      pointColors: [],
+      pointStyles: [],
+      dynamicColors: []
+    }
+    dataSet.forEach((m) => {
+      const { pointStyle, color } = getPointStyle(m.node_q)
+      styles.pointColors.push(color)
+      styles.pointStyles.push(pointStyle)
+      styles.dynamicColors.push(dynamicColors())
+    })
+    console.log('Styles', styles)
+    return {
+      showLine: true,
+      pointStyle: styles.pointStyles,
+      pointRadius: 5,
+      pointHoverRadius: 15,
+      fill: styles.dynamicColors,
+      // color: styles.colors,
+      borderColor: styles.dynamicColors, // The line fill color.
+      backgroundColor: styles.dynamicColors, // The line color.
+      spanGaps: false,
+      pointBackgroundColor: styles.pointColors,
+      pointBorderColor: styles.pointColors
       // borderWidth: 1,
     }
   }
@@ -259,6 +430,11 @@ export const useChartsStore = defineStore('charts', () => {
     showChart,
     hasNodeData,
     dynamicColors,
-    filterDataQuality
+    filterDataQuality,
+    filterDatasetsToTimeRange,
+    filterDatasetsBySetOfDates,
+    setDatasetVisibility,
+    getNodeTimeStamps,
+    chartTab
   }
 })

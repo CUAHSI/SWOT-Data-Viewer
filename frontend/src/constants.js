@@ -12,3 +12,5 @@ export const ENDPOINTS = {
   authenticatedRoute: `${APP_API_URL}/authenticated-route`,
   userInfo: `${APP_API_URL}/users/me`,
 };
+
+export const NODE_DATETIME_VARIATION = 1; // minutes
