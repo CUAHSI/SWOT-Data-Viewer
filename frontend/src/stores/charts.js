@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
+import chroma from 'chroma-js'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
@@ -183,7 +184,7 @@ export const useChartsStore = defineStore('charts', () => {
 
   const getNodeTimeStamps = (measurements) => {
     // group the data by time range close enough to be considered the same
-    // takes an array of measurements and returns an array of arrays of measurements
+    // takes an array of measurements and returns an object of arrays of measurements
     // each array of measurements is considered to be the same time stamp
     // this is useful for plotting multiple datasets with the same time stamp
 
@@ -192,7 +193,7 @@ export const useChartsStore = defineStore('charts', () => {
       return new Date(a.datetime) - new Date(b.datetime)
     })
 
-    const timeStampGroups = []
+    const timeStampGroups = {}
     let currentGroup = []
     let lastTime = null
     measurements.forEach((m) => {
@@ -203,19 +204,20 @@ export const useChartsStore = defineStore('charts', () => {
       if (Math.abs(datetime - lastTime) <= NODE_DATETIME_VARIATION * 60 * 1000) {
         currentGroup.push(m)
       } else {
-        timeStampGroups.push(currentGroup)
+        // save the current group and start a new one
+        timeStampGroups[lastTime.getTime()] = currentGroup
         currentGroup = [m]
       }
       lastTime = datetime
     })
-    timeStampGroups.push(currentGroup)
+    timeStampGroups[lastTime.getTime()] = currentGroup
 
     // now sort each group by node_dist
-    timeStampGroups.forEach((group) => {
-      group.sort((a, b) => {
+    for (const date in timeStampGroups) {
+      timeStampGroups[date].sort((a, b) => {
         return a.node_dist - b.node_dist
       })
-    })
+    }
     return timeStampGroups
   }
 
@@ -279,7 +281,6 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getNodeChartDatasets = (nodes) => {
-    const featureStore = useFeaturesStore()
     console.log('getting node chart datasets for nodes', nodes)
     let measurements = nodes.map((node) => {
       console.log('Parsing node', node)
@@ -292,35 +293,65 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Node measurements parsed', measurements)
 
     // instead of creating a single dataset, create a dataset for each timestamp
-    // now create a separate dataset for each timestamp
     const timeStampGroups = getNodeTimeStamps(measurements)
     console.log('Time Stamp Groups', timeStampGroups)
 
+    // get the min and max dates and define a chroma scale
+    const chartDates = getChartMinMaxDateTimes(timeStampGroups)
+    const colorScale = chroma
+      .scale(['yellow', 'red', 'black'])
+      .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
+
     console.log('using reach from ', nodes[0])
-    const datasets = timeStampGroups.map((timeStampGroup) => {
+    const datasets = []
+    for (const date in timeStampGroups) {
+      const timeStampGroup = timeStampGroups[date]
       console.log('Time Stamp Group', timeStampGroup)
-      return {
+      datasets.push({
         label: timeStampGroup[0].datetime.toDateString(),
         data: timeStampGroup,
         parsing: {
           xAxisKey: 'p_dist_out',
           yAxisKey: 'wse'
         },
-        ...getNodeDataSetStyle(timeStampGroup),
-        ...getMinMaxDateTimes(timeStampGroup)
-      }
-    })
+        ...getNodeDataSetStyle(timeStampGroup, colorScale),
+        ...getDatasetMinMaxDateTimes(timeStampGroup)
+      })
+    }
     return datasets
   }
 
-  const getMinMaxDateTimes = (timeStampGroup) => {
+  const getDatasetMinMaxDateTimes = (timeStampGroup) => {
+    // we actually expect very little or no variation in the time stamps
+    // TODO: perhaps we can use the first and last time stamps to define the min and max
     const minDateTime = Math.min(...timeStampGroup.map((m) => m.datetime))
     const maxDateTime = Math.max(...timeStampGroup.map((m) => m.datetime))
-    return {
+    const medianDateTime = timeStampGroup[Math.floor(timeStampGroup.length / 2)].datetime.getTime()
+    const dateStats = {
       minDateTime,
       maxDateTime,
+      medianDateTime,
       hidden: false
     }
+    return dateStats
+  }
+
+  const getChartMinMaxDateTimes = (timeStampGroups) => {
+    console.log('Getting chart min max date times', timeStampGroups)
+    const allMeasurements = Object.values(timeStampGroups).flat()
+    const minDateTime = Math.min(...allMeasurements.map((m) => m.datetime))
+    const maxDateTime = Math.max(...allMeasurements.map((m) => m.datetime))
+    const medianDateTime =
+      allMeasurements[Math.floor(allMeasurements.length / 2)].datetime.getTime()
+    const dateStats = {
+      minDateTime,
+      maxDateTime,
+      medianDateTime,
+      hidden: false
+    }
+    console.log('Date Stats', dateStats)
+    console.log('Time Stamp Groups', timeStampGroups)
+    return dateStats
   }
 
   const showVis = () => {
@@ -332,6 +363,12 @@ export const useChartsStore = defineStore('charts', () => {
     var g = Math.floor(Math.random() * 255)
     var b = Math.floor(Math.random() * 255)
     return 'rgb(' + r + ',' + g + ',' + b + ')'
+  }
+
+  const dateGradientColors = function (date, colorScale) {
+    // https://www.chartjs.org/docs/latest/general/colors.html
+    // https://github.com/kurkle/chartjs-plugin-gradient
+    return colorScale(date)
   }
 
   const getPointStyle = (dataQuality) => {
@@ -395,7 +432,7 @@ export const useChartsStore = defineStore('charts', () => {
       // borderWidth: 1,
     }
   }
-  const getNodeDataSetStyle = (dataSet) => {
+  const getNodeDataSetStyle = (dataSet, colorScale) => {
     console.log('Getting node data set style', dataSet)
     const styles = {
       pointColors: [],
@@ -406,7 +443,7 @@ export const useChartsStore = defineStore('charts', () => {
       const { pointStyle, color } = getPointStyle(m.node_q)
       styles.pointColors.push(color)
       styles.pointStyles.push(pointStyle)
-      styles.dynamicColors.push(dynamicColors())
+      styles.dynamicColors.push(dateGradientColors(m.datetime, colorScale))
     })
     console.log('Styles', styles)
     return {
