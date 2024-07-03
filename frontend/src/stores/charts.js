@@ -37,6 +37,12 @@ export const useChartsStore = defineStore('charts', () => {
     return labels.filter((l) => l != undefined)
   }
 
+  const getTitle = () => {
+    const featureStore = useFeaturesStore()
+    const feature = featureStore.selectedFeatures[0]
+    return `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`
+  }
+
   const getNodeLabels = (nodes) => {
     const labels = nodes.map((node) => {
       // TODO:nodes this will only grab the first p_dist_out value -- there is variation among the hits
@@ -52,7 +58,8 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Datasets', datasets)
     const data = {
       labels: getLabels(selectedFeatures),
-      datasets: datasets
+      datasets: datasets,
+      title: getTitle()
     }
     updateChartData(data)
     return data
@@ -64,7 +71,8 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Datasets', datasets)
     const data = {
       labels: getNodeLabels(nodes),
-      datasets: datasets
+      datasets: datasets,
+      title: getTitle()
     }
     console.log('Node Chart Data', data)
     nodeChartData.value = data
@@ -292,9 +300,7 @@ export const useChartsStore = defineStore('charts', () => {
     const datasets = timeStampGroups.map((timeStampGroup) => {
       console.log('Time Stamp Group', timeStampGroup)
       return {
-        label: `${featureStore.getFeatureName(nodes[0])} | ${nodes[0]?.properties?.reach_id} @ ${
-          timeStampGroup[0].time_str
-        }`,
+        label: timeStampGroup[0].datetime.toDateString(),
         data: timeStampGroup,
         parsing: {
           xAxisKey: 'p_dist_out',

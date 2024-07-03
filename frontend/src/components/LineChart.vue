@@ -116,7 +116,7 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
 }
 
 const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.name} vs Time`
+const title = `${props.data.title} - ${props.chosenVariable?.name}`
 
 
 const options = {
