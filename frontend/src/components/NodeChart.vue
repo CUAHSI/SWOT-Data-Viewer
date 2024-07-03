@@ -60,7 +60,6 @@ import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydro
 import { useDisplay } from 'vuetify'
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
-import { useChartsStore } from '../stores/charts';
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 
 const { lgAndUp } = useDisplay()
@@ -68,12 +67,9 @@ const { lgAndUp } = useDisplay()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const downloading = ref({ csv: false, json: false, chart: false })
-const chartStore = useChartsStore()
 
 const plotStyle = ref('Connected')
 
-// const timeStamps = ref(chartStore.getNodeTimeStamps())
-const timeStamps = ref(['2021-01-01T00:00:00Z', '2021-01-01T00:00:00Z'])
 
 ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
@@ -90,7 +86,7 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
 }
 
 const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.name} vs Distance`
+const title = `${props.data.title}: ${props.chosenVariable?.name} vs Distance`
 
 const options = {
   responsive: true,
