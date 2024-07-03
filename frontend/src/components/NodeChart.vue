@@ -155,7 +155,8 @@ const options = {
       title: {
         display: true,
         text: 'Distance from outlet (m)'
-      }
+      },
+      reverse: true,
     },
     y: {
       title: {
