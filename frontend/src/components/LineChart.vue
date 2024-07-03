@@ -44,8 +44,8 @@
                       @click="removeSelectedTimeseriesPoint(timeSeriesPoint)"></v-icon>
                   </template>
                   <v-list-item-content>
-                    <v-list-item-title>{{ timeSeriesPoint.datetime }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ timeSeriesPoint.time_str }}</v-list-item-subtitle>
+                    <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
+                    <v-list-item-subtitle>Average {{ props.chosenVariable?.abbreviation }}: {{ timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
