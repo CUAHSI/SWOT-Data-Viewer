@@ -34,6 +34,10 @@
             <v-icon :icon="mdiEraser"></v-icon>
             Refresh Data
           </v-btn>
+          <v-btn @click="computeStatisics()" color="input" class="ma-1">
+            <v-icon :icon="mdiEraser"></v-icon>
+            Patch
+          </v-btn>
         </v-sheet>
       </v-col>
     </v-row>
@@ -49,7 +53,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  TimeScale
+  TimeScale,
+  Filler,
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
@@ -75,6 +80,7 @@ ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Toolt
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
+let minMaxData = JSON.parse(JSON.stringify(chartData.value.datasets.slice(0, 2)));
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
@@ -219,4 +225,99 @@ const resetData = () => {
   line.value.chart.data.datasets = chartData.value.datasets
   line.value.chart.update()
 }
+
+const computeStatisics = () => {
+  // --------------------------------------------------------------------------------
+  // Description: Computes node-level statistics for the SWOT series that are 
+  //              currently displayed in the graph interface.
+  //  
+  //  Returns
+  //  =======
+  //  Object { minimum: Object,
+  //           maximum: Object,
+  //           mean:    Object }
+  //  - minimum = the minimum value for each node along the reach, for each variable
+  //  - maximum = the maximum value for each node along the reach, for each variable
+  //  - mean    = the mean value for each node along the reach, for each variable
+  // --------------------------------------------------------------------------------
+
+
+  // convert the chartData into an array structure that's easier to work with
+  let dat = [];
+  for (let j = 0; j <= chartData.value.datasets.length - 1; j++) {
+    dat[j] = [... chartData.value.datasets[j].data];
+  }
+  
+  // Create arrays to store statistic outputs, base these off existing arrays.
+  // Perform this operation above the node_dist alignment to ensure that
+  // NaN's are not set as initial values.
+  let datMin  = {... dat[0][0]};
+  let datMax  = {... dat[0][0]};
+  let datMean = {... dat[0][0]};
+  
+  // Get all keys that contain variables that we would want to plot on the y axis.
+  // These are the only variables for which statistics will be computed.
+  let keys = Object.keys(dat[0][0])
+              .filter((key) => !key.includes('_units'))
+              .filter((key) => !['time_str', 'p_dist_out', 'datetime'].includes(key));
+
+  // Get a list of all unique node distances in the dataset. We need to align all of the datasets
+  // such that they all have the same number of nodes. Insert NaN values where a node is missing
+  // from a dataset.
+  let node_dists = [... new Set([... new Set(dat.map(d=>d.map(x=>x.p_dist_out)))].flat())]
+
+  // Loop over node_dists. Check if node_dist exists in array, set n/a if not and exclude from min/max calculation
+  for (let i = 0; i <= node_dists.length - 1; i++) {
+    let nd = node_dists[i];
+    for (let j = 0; j <= dat.length-1; j++) {
+      // Check to see if the node distance is found in the current array
+      // if not, insert a new object with NaN values here.
+      let res = dat[j].filter(res => res.p_dist_out == nd);
+      if (res.length == 0) {
+        // Create a new object based off the previous record (or next record)
+        // in the case that this is the first element of the array
+        let newNode;
+        if (i > 0) {
+          newNode = {... dat[j][i]};
+        }
+        else {
+          newNode = {... dat[j][i]};
+        }
+        newNode['p_dist_out'] == nd;
+        for (let key of keys) {
+          newNode[key] = Number.NaN;
+        }
+        // Insert the new object using the previous index
+        dat[j].splice(i, 0, newNode);
+      }
+    }
+  }
+
+  // Compute statistics by iterating along the nodes of each data series
+  for (let i = 0; i <= node_dists.length - 1; i++) {
+    for (let j = 0; j <= dat.length - 1; j++ ) {
+      // Loop over keys and get the min and max values
+      for (let key of keys) {
+        // Compute minimum
+        if (parseFloat(dat[j][i][key]) < parseFloat(datMin[key])) {
+          datMin[key] = dat[j][i][key];
+        }
+        // Compute maximum
+        if (parseFloat(dat[j][i][key]) > parseFloat(datMax[key])) {
+          datMax[key] = dat[j][i][key];
+        }
+        // Compute mean
+        if (!isNaN(parseFloat(dat[j][i][key]))) {
+          datMean[key] = (parseFloat(datMean[key]) + parseFloat(dat[j][i][key])) / 2;
+        }
+      }
+    }
+  }
+
+  // Return the computed statistics
+  return {minimum: datMin,
+          maximum: datMax,
+          mean: datMean}
+}
+
 </script>
