@@ -299,8 +299,9 @@ export const useChartsStore = defineStore('charts', () => {
     // get the min and max dates and define a chroma scale
     const chartDates = getChartMinMaxDateTimes(timeStampGroups)
     const colorScale = chroma
-      .scale(['yellow', 'red', 'black'])
-      .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
+      .scale(['#fafa6e', '#2A4858'])
+      .mode('lch')
+      .domain([chartDates.minDateTime, chartDates.maxDateTime])
 
     console.log('using reach from ', nodes[0])
     const datasets = []
