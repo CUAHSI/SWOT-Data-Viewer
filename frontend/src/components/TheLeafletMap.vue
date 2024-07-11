@@ -70,26 +70,10 @@ onMounted(() => {
         maxZoom: 20
     });
 
-    const Stadia_StamenTonerLite = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.{ext}', {
-        minZoom: 0,
-        maxZoom: 20,
-        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        ext: 'png'
-    });
-
-    const Stadia_StamenTonerBackground = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_background/{z}/{x}/{y}{r}.{ext}', {
-        minZoom: 0,
-        maxZoom: 20,
-        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        ext: 'png'
-    });
-
     const baselayers = {
         CartoDB,
         CartoDB_PositronNoLabels,
         CartoDB_DarkMatterNoLabels,
-        Stadia_StamenTonerLite,
-        Stadia_StamenTonerBackground
     };
 
     CartoDB.addTo(leaflet);
@@ -640,7 +624,7 @@ function validate_bbox_size() {
 }
 
 #zoomIndicator {
-    position:fixed;
+    position: fixed;
     bottom: 10%;
     left: 10px;
     /* background-color: white; */
