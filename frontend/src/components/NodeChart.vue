@@ -248,18 +248,11 @@ const computeStatisics = () => {
     dat[j] = [... chartData.value.datasets[j].data];
   }
   
-  // Create arrays to store statistic outputs, base these off existing arrays.
-  // Perform this operation above the node_dist alignment to ensure that
-  // NaN's are not set as initial values.
-  let datMin  = {... dat[0][0]};
-  let datMax  = {... dat[0][0]};
-  let datMean = {... dat[0][0]};
-  
   // Get all keys that contain variables that we would want to plot on the y axis.
   // These are the only variables for which statistics will be computed.
   let keys = Object.keys(dat[0][0])
               .filter((key) => !key.includes('_units'))
-              .filter((key) => !['time_str', 'p_dist_out', 'datetime'].includes(key));
+              .filter((key) => !['time_str', 'p_dist_out', 'datetime', 'node_q'].includes(key));
 
   // Get a list of all unique node distances in the dataset. We need to align all of the datasets
   // such that they all have the same number of nodes. Insert NaN values where a node is missing
@@ -293,26 +286,44 @@ const computeStatisics = () => {
     }
   }
 
-  // Compute statistics by iterating along the nodes of each data series
+  // create arrays of the variables for which statistics will be computed
+  let datStats = {};
+  for (let key of keys) {
+    if (!(key in datStats)) {
+      datStats[key] = [];
+    }
+  }
   for (let i = 0; i <= node_dists.length - 1; i++) {
-    for (let j = 0; j <= dat.length - 1; j++ ) {
-      // Loop over keys and get the min and max values
-      for (let key of keys) {
-        // Compute minimum
-        if (parseFloat(dat[j][i][key]) < parseFloat(datMin[key])) {
-          datMin[key] = dat[j][i][key];
-        }
-        // Compute maximum
-        if (parseFloat(dat[j][i][key]) > parseFloat(datMax[key])) {
-          datMax[key] = dat[j][i][key];
-        }
-        // Compute mean
+    for (let key of keys) {
+      datStats[key][i] = [];
+      for (let j = 0; j <= dat.length - 1; j++ ) {
+      // Loop over keys and put their values into the datStats object, ignoring NaNs
         if (!isNaN(parseFloat(dat[j][i][key]))) {
-          datMean[key] = (parseFloat(datMean[key]) + parseFloat(dat[j][i][key])) / 2;
+          datStats[key][i].push(parseFloat(dat[j][i][key]));
         }
       }
     }
   }
+
+  // initialize objects to store the computed statistics
+  let datMin  = {};
+  let datMax  = {};
+  let datMean = {};
+  for (let key of keys) {
+    datMin[key]  = [];
+    datMax[key]  = [];
+    datMean[key] = [];
+  }
+
+  // compute statistics
+  for (let i = 0; i <= node_dists.length - 1; i++) {
+    for (let key of keys) {
+      datMin[key].push(datStats[key][i].reduce((a, b) => Math.min(a, b)));
+      datMax[key].push(datStats[key][i].reduce((a, b) => Math.max(a, b)));
+      datMean[key].push(datStats[key][i].reduce((a, b) => a + b) / datStats[key][i].length);
+    }
+  }
+
 
   // Return the computed statistics
   return {minimum: datMin,
