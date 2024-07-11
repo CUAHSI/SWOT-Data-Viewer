@@ -34,7 +34,7 @@
             <v-icon :icon="mdiEraser"></v-icon>
             Refresh Data
           </v-btn>
-          <v-btn @click="computeStatisics()" color="input" class="ma-1">
+          <v-btn @click="plotStatisics()" color="input" class="ma-1">
             <v-icon :icon="mdiEraser"></v-icon>
             Patch
           </v-btn>
@@ -226,7 +226,7 @@ const resetData = () => {
   line.value.chart.update()
 }
 
-const computeStatisics = () => {
+const computeStatisics = (chartDataSets) => {
   // --------------------------------------------------------------------------------
   // Description: Computes node-level statistics for the SWOT series that are 
   //              currently displayed in the graph interface.
@@ -244,8 +244,9 @@ const computeStatisics = () => {
 
   // convert the chartData into an array structure that's easier to work with
   let dat = [];
-  for (let j = 0; j <= chartData.value.datasets.length - 1; j++) {
-    dat[j] = [... chartData.value.datasets[j].data];
+//  for (let j = 0; j <= chartData.value.datasets.length - 1; j++) {
+  for (let j = 0; j <= chartDataSets.length - 1; j++) {
+    dat[j] = [... chartDataSets[j].data];
   }
   
   // Get all keys that contain variables that we would want to plot on the y axis.
@@ -324,12 +325,80 @@ const computeStatisics = () => {
     }
   }
 
-
   // Return the computed statistics
   return {minimum: datMin,
           maximum: datMax,
           mean: datMean,
-          node_dist: node_dists,
+          node_dist: node_dists}
+}
+
+const plotStatisics = () => {
+
+  // determine which series should be used to compute the statistics
+  // only pass those that don't include the min, max, or mean in their label
+  let chartDatasets = chartData.value.datasets
+                    .filter(dataset => !['min', 'max', 'mean']
+                    .some(word => dataset.label.includes(word)));
+  
+  // set chartData.datasets to the chartDatasets
+  chartData.value.datasets = chartDatasets
+
+  // compute the statistics
+  let stats = computeStatisics(chartDatasets)
+
+  // turn off all other lines in the chart
+  chartData.value.datasets.forEach((dataset) => {
+    dataset.showLine = false
+  })
+
+  // add datMin, datMax, and datMean to the chart
+  let key = 'wse';
+  let minData = {
+    label: `min_${key}`,
+    data: stats.minimum[key],
+    parsing: {
+      yAxisKey: key
+    },
+    fill: false,
+    showLine: true,
+    borderColor: 'red',
+    borderWidth: 1,
+    pointRadius: 0,
+  }
+  chartData.value.datasets.push(minData)
+  
+  let maxData = {
+    label: `max_${key}`,
+    data: stats.maximum[key],
+    parsing: {
+      yAxisKey: key
+    },
+    fill: false,
+    showLine: true,
+    borderColor: 'green',
+    borderWidth: 1,
+    pointRadius: 0,
+  }
+  chartData.value.datasets.push(maxData)
+  
+  let meanData = {
+    label: `mean_${key}`,
+    data: stats.mean[key],
+    parsing: {
+      yAxisKey: key
+    },
+    fill: false,
+    showLine: true,
+    borderColor: 'blue',
+    borderWidth: 1,
+    pointRadius: 0,
+  }
+  chartData.value.datasets.push(meanData)
+
+  // update the chart
+  line.value.chart.data.datasets = chartData.value.datasets
+  line.value.chart.update()
+
 }
 
 </script>
