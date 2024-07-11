@@ -106,6 +106,25 @@ const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
 const title = `${props.data.title} - ${props.chosenVariable?.name}`
 
 
+// function lookup(context) {
+//   var dataset = context.datasetIndex;
+//   var index = context.dataIndex;
+//   var i, ilen;
+
+//   for (i = 0, ilen = selection.length; i < ilen; ++i) {
+//     if (selection[i].dataset === dataset && selection[i].index === index) {
+//       return i;
+//     }
+//   }
+
+//   return -1;
+// }
+
+function isSelected(context) {
+  // return lookup(context) !== -1;
+  return true
+}
+
 const options = {
   responsive: true,
   maintainAspectRatio: false,
@@ -161,6 +180,22 @@ const options = {
         }
       },
       displayColors: false,
+    },
+    datalabels: {
+      backgroundColor: function (context) {
+        return isSelected(context)
+          ? context.dataset.backgroundColor
+          : 'white';
+      },
+      borderColor: function (context) {
+        return context.dataset.backgroundColor;
+      },
+      borderWidth: 2,
+      color: function (context) {
+        return isSelected(context)
+          ? 'white'
+          : context.dataset.backgroundColor;
+      },
     }
   },
   scales: {
