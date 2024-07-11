@@ -4,7 +4,7 @@
       <v-col xs="12" lg="9">
         <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
           min-width="500px">
-          <Line :data="chartData" :options="options" ref="line" :plugins="[zoomPlugin]" />
+          <Line :data="chartData" :options="options" ref="line" />
         </v-sheet>
       </v-col>
       <v-col xs="12" lg="3">
@@ -64,16 +64,6 @@
 </template>
 
 <script setup>
-import {
-  Chart as ChartJS,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale
-} from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
@@ -81,11 +71,9 @@ import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { ref } from 'vue'
-import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiChartBellCurveCumulative, mdiCloseBox } from '@mdi/js'
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
-import zoomPlugin from 'chartjs-plugin-zoom';
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 
 const { lgAndUp } = useDisplay()
@@ -101,7 +89,6 @@ const plotStyle = ref('Scatter')
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
-ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)

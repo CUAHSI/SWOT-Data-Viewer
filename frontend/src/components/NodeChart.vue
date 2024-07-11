@@ -4,7 +4,7 @@
       <v-col lg="10">
         <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
           min-width="500px">
-          <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor, zoomPlugin]" />
+          <Line :data="chartData" :options="options" ref="line" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
           <TimeRangeSlider @update="resetData" />
@@ -41,25 +41,13 @@
 </template>
 
 <script setup>
-import {
-  Chart as ChartJS,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale
-} from 'chart.js'
+import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { ref } from 'vue'
-import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiEraser } from '@mdi/js'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
-import zoomPlugin from 'chartjs-plugin-zoom';
-import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 
 const { lgAndUp } = useDisplay()
@@ -71,7 +59,6 @@ const downloading = ref({ csv: false, json: false, chart: false })
 const plotStyle = ref('Connected')
 
 
-ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
