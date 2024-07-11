@@ -55,11 +55,9 @@ export const useChartsStore = defineStore('charts', () => {
   const buildChart = (selectedFeatures) => {
     // https://www.chartjs.org/docs/latest/general/data-structures.html#parsing
     console.log('Building vis for selected features', selectedFeatures)
-    const datasets = getChartDatasets(selectedFeatures)
-    console.log('Datasets', datasets)
     const data = {
       labels: getLabels(selectedFeatures),
-      datasets: datasets,
+      datasets: getChartDatasets(selectedFeatures),
       title: getTitle()
     }
     updateChartData(data)
@@ -68,11 +66,9 @@ export const useChartsStore = defineStore('charts', () => {
 
   const buildDistanceChart = (nodes) => {
     console.log('Building chart for node-level swot data', nodes)
-    const datasets = getNodeChartDatasets(nodes)
-    console.log('Datasets', datasets)
     const data = {
       labels: getNodeLabels(nodes),
-      datasets: datasets,
+      datasets: getNodeChartDatasets(nodes),
       title: getTitle()
     }
     console.log('Node Chart Data', data)
@@ -92,14 +88,14 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Starting Datasets', datasets)
     datasets.forEach((dataset) => {
       console.log('Starting pointstyle', dataset.pointStyle)
-      const pointStyles = dataset.data.map((m, i) => {
+      const pointStyles = dataset.data.map((dataPoint, i) => {
         let pointStyle = dataset.pointStyle[i]
         if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
           // TODO: need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
           pointStyle = false
         } else {
-          const styles = getPointStyle(m.reach_q)
+          const styles = getPointStyle(dataPoint)
           pointStyle = styles.pointStyle
         }
         return pointStyle
@@ -371,10 +367,12 @@ export const useChartsStore = defineStore('charts', () => {
     return colorScale(date)
   }
 
-  const getPointStyle = (dataQuality) => {
+  const getPointStyle = (dataPoint) => {
+    const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
     let pointStyle = 'circle'
     let color = 'black'
     let fill = true
+    let borderWidth = 1
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
     console.log('Data Quality', dataQuality)
     switch (parseInt(dataQuality)) {
@@ -399,10 +397,16 @@ export const useChartsStore = defineStore('charts', () => {
         fill = false
         break
     }
+
+    // handle static point selection
+    if (dataPoint.selected) {
+      borderWidth = 10
+    }
     return {
       pointStyle,
       color,
-      fill
+      fill,
+      borderWidth
     }
   }
 
@@ -413,8 +417,8 @@ export const useChartsStore = defineStore('charts', () => {
       pointStyles: [],
       fills: []
     }
-    dataSet.forEach((m) => {
-      const { pointStyle, color, fill } = getPointStyle(m.reach_q ? m.reach_q : m.node_q)
+    dataSet.forEach((dataPoint) => {
+      const { pointStyle, color, fill } = getPointStyle(dataPoint)
       styles.colors.push(color)
       styles.pointStyles.push(pointStyle)
       styles.fills.push(fill)
@@ -428,10 +432,24 @@ export const useChartsStore = defineStore('charts', () => {
       fill: styles.fills,
       color: styles.colors,
       borderColor: styles.colors,
-      backgroundColor: 'rgb(75, 192, 192)'
-      // borderWidth: 1,
+      backgroundColor: 'rgb(75, 192, 192)',
+      borderWidth: getBorderWidth
     }
   }
+
+  function getBorderWidth(context) {
+    // if the data point is selected, make the border width larger
+    const index = context.dataIndex
+    if (index == null) {
+      return 1
+    }
+    const dataPoint = context.dataset.data[index]
+    if (dataPoint.selected) {
+      return 10
+    }
+    return 1
+  }
+
   const getNodeDataSetStyle = (dataSet, colorScale) => {
     console.log('Getting node data set style', dataSet)
     const styles = {
@@ -439,11 +457,11 @@ export const useChartsStore = defineStore('charts', () => {
       pointStyles: [],
       dynamicColors: []
     }
-    dataSet.forEach((m) => {
-      const { pointStyle, color } = getPointStyle(m.node_q)
+    dataSet.forEach((dataPoint) => {
+      const { pointStyle, color } = getPointStyle(dataPoint.node_q)
       styles.pointColors.push(color)
       styles.pointStyles.push(pointStyle)
-      styles.dynamicColors.push(dateGradientColors(m.datetime, colorScale))
+      styles.dynamicColors.push(dateGradientColors(dataPoint.datetime, colorScale))
     })
     console.log('Styles', styles)
     return {

@@ -45,7 +45,8 @@
                   </template>
                   <v-list-item-content>
                     <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-                    <v-list-item-subtitle>Average {{ props.chosenVariable?.abbreviation }}: {{ timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>Average {{ props.chosenVariable?.abbreviation }}: {{
+                      timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -192,12 +193,6 @@ const options = {
 const dataQualityOptions = [{ label: 'good', value: 0 }, { label: 'suspect', value: 1 }, { label: 'degraded', value: 2 }, { label: 'bad', value: 3 }]
 
 const handleTimeseriesPointClick = (e) => {
-  // TODO: right click context menu
-  // e.native.preventDefault()
-  // if (e.native.button !== 2) {
-  //   console.log("not right click")
-  //   return
-  // }
   const elems = line.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
@@ -205,22 +200,9 @@ const handleTimeseriesPointClick = (e) => {
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
   const dataset = line.value.chart.data.datasets[datasetIndex]
-  const data = dataset.data[index]
-  // console.log("clicked data:", data)
-  // console.log("clicked dataset:", dataset)
-  // // TODO: y axis variable is not being set correctly
-  // console.log("y axis variable:", dataset.parsing.yAxisKey)
-  // console.log("datetime:", data.datetime)
+  const timeSeriesPoint = dataset.data[index]
 
-  // const datetime = data.datetime
-  // const allDatasets = line.value.chart.data.datasets
-  // const dataForDatetime = allDatasets.map((dataset) => {
-  //   const data = dataset.data.find((data) => data.datetime === datetime)
-  //   return data
-  // })
-  // console.log("average data for datetime:", dataForDatetime)
-
-  addSelectedTimeseriesPoint(data)
+  addSelectedTimeseriesPoint(timeSeriesPoint)
 }
 
 const viewLongProfileByDates = () => {
@@ -235,36 +217,38 @@ const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
   // first make sure the node is not already selected
   if (selectedTimeseriesPoints.value.includes(timeSeriesPoint)) {
     alertStore.displayAlert({
-      title: 'Point already selected',
-      text: `The point at ${timeSeriesPoint.datetime} has already been selected.`,
-      type: 'warning',
+      title: 'Timstamp deselected',
+      text: `The point at ${timeSeriesPoint.datetime} deselected.`,
+      type: 'success',
       closable: true,
       duration: 3
     })
+    removeSelectedTimeseriesPoint(timeSeriesPoint)
     return
   }
+
+  // set the point as selected
+  timeSeriesPoint.selected = true
+
   // instead of push, make sure the points are in order by datetime
   const newPoints = [...selectedTimeseriesPoints.value, timeSeriesPoint]
   newPoints.sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
   selectedTimeseriesPoints.value = newPoints
 
   panel.value = ["selectedTimeseriesPoints"]
-  // TODO use datalabels to show selection?
-  // https://chartjs-plugin-datalabels.netlify.app/samples/events/selection.html
 }
 
 const removeSelectedTimeseriesPoint = (timeSeriesPoint) => {
   const index = selectedTimeseriesPoints.value.indexOf(timeSeriesPoint)
-  if (index > -1) {
+  if (timeSeriesPoint.selected) {
     selectedTimeseriesPoints.value.splice(index, 1)
   }
+  timeSeriesPoint.selected = false
 
   if (selectedTimeseriesPoints.value.length === 0) {
     panel.value = ["plotOptions"]
   }
 }
-
-
 
 const resetZoom = () => {
   line.value.chart.resetZoom()
