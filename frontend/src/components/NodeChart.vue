@@ -76,11 +76,22 @@ const downloading = ref({ csv: false, json: false, chart: false })
 const plotStyle = ref('Connected')
 
 
-ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
+ChartJS.register(
+  LinearScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  customCanvasBackgroundColor,
+  zoomPlugin,
+  Filler
+);
+
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
-let minMaxData = JSON.parse(JSON.stringify(chartData.value.datasets.slice(0, 2)));
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
@@ -101,6 +112,23 @@ const options = {
     legend: {
       display: true,
       position: 'bottom',
+      onClick: function(e, legendItem, legend) {
+        const index = legendItem.datasetIndex;
+        const ci = legend.chart;
+        if (ci.isDatasetVisible(index)) {
+          ci.hide(index);
+          legendItem.hidden = true;
+
+          // set item as hidden in chartData so we can use this in our other functions
+          chartData.value.datasets[index].hidden = true;
+        } else {
+          ci.show(index);
+          legendItem.hidden = false;
+          
+          // set item as hidden in chartData so we can use this in our other functions
+          chartData.value.datasets[index].hidden = false;
+        }
+      },
     },
     title: {
       display: true,
@@ -228,6 +256,13 @@ const resetData = () => {
   let chartDatasets = chartData.value.datasets
                     .filter(dataset => !['min', 'max', 'mean']
                     .some(word => dataset.label.includes(word)));
+
+  // make all chartDatasets visible
+  chartDatasets = chartDatasets.map(dataset => {
+    dataset.hidden = false
+    return dataset
+  });
+
   line.value.chart.data.datasets = chartDatasets
   line.value.chart.update()
 }
@@ -265,6 +300,15 @@ const computeStatisics = (chartDataSets) => {
   // such that they all have the same number of nodes. Insert NaN values where a node is missing
   // from a dataset.
   let node_dists = [... new Set([... new Set(dat.map(d=>d.map(x=>x.p_dist_out)))].flat())]
+  node_dists.sort(function(a,b) { return a - b;});
+
+  // save a dataset from chartDataSets to use as a placeholder for when adding nodes that don't exist.
+  // set NaN for the variables since we don't have data at these locations.
+  let dummy = {... chartDataSets[0].data[0]};
+  for (let key of keys) {
+    dummy[key] = Number.NaN;
+  }
+  dummy['node_q'] = Number.NaN;
 
   // Loop over node_dists. Check if node_dist exists in array, set n/a if not and exclude from min/max calculation
   for (let i = 0; i <= node_dists.length - 1; i++) {
@@ -274,23 +318,20 @@ const computeStatisics = (chartDataSets) => {
       // if not, insert a new object with NaN values here.
       let res = dat[j].filter(res => res.p_dist_out == nd);
       if (res.length == 0) {
-        // Create a new object based off the previous record (or next record)
-        // in the case that this is the first element of the array
-        let newNode;
-        if (i > 0) {
-          newNode = {... dat[j][i]};
-        }
-        else {
-          newNode = {... dat[j][i]};
-        }
-        newNode['p_dist_out'] == nd;
-        for (let key of keys) {
-          newNode[key] = Number.NaN;
-        }
+        // Create a new object based off the dummy record
+        let newNode = {... dummy};
+        newNode['p_dist_out'] = nd;
+
         // Insert the new object using the previous index
-        dat[j].splice(i, 0, newNode);
+        //dat[j].splice(i+1, 0, newNode);
+        dat[j].push(newNode); //no need to insert at index if we're going to sort after.
       }
     }
+  }
+  
+  // Sort by p_dist_out. These should exactly match now.
+  for (let j = 0; j <= dat.length-1; j++) {
+    dat[j].sort(function(a,b) { return a.p_dist_out - b.p_dist_out; });
   }
 
   // create arrays of the variables for which statistics will be computed
@@ -325,11 +366,19 @@ const computeStatisics = (chartDataSets) => {
   // compute statistics
   for (let i = 0; i <= node_dists.length - 1; i++) {
     for (let key of keys) {
+      if (key == 'wse') {
+        let m = datStats[key][i].reduce((a, b) => Math.min(a, b));
+        console.log("i: "+i+"; 0: "+dat[0][i].wse+"; 1: "+dat[1][i].wse+"; datStats:"+datStats[key][i]+"; min:"+m);
+      }
       datMin[key].push(datStats[key][i].reduce((a, b) => Math.min(a, b)));
       datMax[key].push(datStats[key][i].reduce((a, b) => Math.max(a, b)));
       datMean[key].push(datStats[key][i].reduce((a, b) => a + b) / datStats[key][i].length);
     }
   }
+  // add node_dist to these arrays as well
+  datMin['p_dist_out'] = node_dists;
+  datMax['p_dist_out'] = node_dists;
+  datMean['p_dist_out'] = node_dists;
 
   // Return the computed statistics
   return {minimum: datMin,
@@ -339,35 +388,84 @@ const computeStatisics = (chartDataSets) => {
 }
 
 const plotStatisics = () => {
+  // --------------------------------------------------------------------------------
+  // Description: Plot the min, max, and mean across all node-level timeseries. 
+  //  
+  //  Returns
+  //  =======
+  //  Null
+  //
+  // --------------------------------------------------------------------------------
 
   // determine which series should be used to compute the statistics
   // only pass those that don't include the min, max, or mean in their label
   let chartDatasets = chartData.value.datasets
                     .filter(dataset => !['min', 'max', 'mean']
                     .some(word => dataset.label.includes(word)));
-  
+
   // set chartData.datasets to the chartDatasets
   chartData.value.datasets = chartDatasets
+  
+  // filter out all series that are hidden
+  chartDatasets = chartDatasets.filter(dataset => !dataset.hidden)
+  
 
   // compute the statistics
   let stats = computeStatisics(chartDatasets)
 
   // turn off all other lines in the chart
   chartData.value.datasets.forEach((dataset) => {
-    dataset.showLine = false
+    dataset.showLine = false;
   })
+
+  // turn off markers for all lines in chartData
+  chartData.value.datasets.forEach((dataset) => {
+    dataset.pointRadius = 0;
+  })
+
+  // merge stats data into something that will work well with chartjs
+
+  function reorganize_arrays_for_plotting(dat, num_items) {
+    let res = [];
+    for (let i = 0; i <= num_items - 1; i++) {
+      let obj = {}
+      for (let key of Object.keys(dat)) {
+        obj[key] = dat[key][i];
+      }
+      res.push(obj);
+    }
+    return res;
+  }
 
   // add datMin, datMax, and datMean to the chart
   let key = 'wse';
-  let minData = {
-    label: `min_${key}`,
-    data: stats.minimum[key],
+  
+  let meanData = {
+    label: `mean_${key}`,
+    //data: stats.mean[key],
+    data: reorganize_arrays_for_plotting(stats.mean, stats.node_dist.length),
     parsing: {
-      yAxisKey: key
+      yAxisKey: key,
+      xAxisKey: 'p_dist_out'
     },
     fill: false,
     showLine: true,
-    borderColor: 'red',
+    borderColor: 'blue',
+    borderWidth: 1,
+    pointRadius: 1,
+  }
+  chartData.value.datasets.push(meanData)
+ 
+  let minData = {
+    label: `min_${key}`,
+    data: reorganize_arrays_for_plotting(stats.minimum, stats.node_dist.length),
+    parsing: {
+      yAxisKey: key,
+      xAxisKey: 'p_dist_out'
+    },
+    fill: false,
+    showLine: true,
+    borderColor: 'gray',
     borderWidth: 1,
     pointRadius: 0,
   }
@@ -375,31 +473,21 @@ const plotStatisics = () => {
   
   let maxData = {
     label: `max_${key}`,
-    data: stats.maximum[key],
+    //data: stats.maximum[key],
+    data: reorganize_arrays_for_plotting(stats.maximum, stats.node_dist.length),
     parsing: {
-      yAxisKey: key
+      yAxisKey: key,
+      xAxisKey: 'p_dist_out'
     },
-    fill: false,
+    fill: "-1",
     showLine: true,
-    borderColor: 'green',
+    borderColor: 'gray',
+    backgroundColor: 'lightgray',
     borderWidth: 1,
     pointRadius: 0,
   }
   chartData.value.datasets.push(maxData)
   
-  let meanData = {
-    label: `mean_${key}`,
-    data: stats.mean[key],
-    parsing: {
-      yAxisKey: key
-    },
-    fill: false,
-    showLine: true,
-    borderColor: 'blue',
-    borderWidth: 1,
-    pointRadius: 0,
-  }
-  chartData.value.datasets.push(meanData)
 
   // update the chart
   line.value.chart.data.datasets = chartData.value.datasets
