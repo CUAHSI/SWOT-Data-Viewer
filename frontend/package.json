@@ -18,7 +18,6 @@
     "@vueuse/core": "^10.5.0",
     "chart.js": "^4.4.1",
     "chartjs-adapter-date-fns": "^3.0.0",
-    "chartjs-plugin-datalabels": "^2.2.0",
     "chartjs-plugin-zoom": "^2.0.1",
     "chroma-js": "^2.4.2",
     "date-fns": "^3.6.0",
