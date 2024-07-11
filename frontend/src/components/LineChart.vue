@@ -4,7 +4,7 @@
       <v-col xs="12" lg="9">
         <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
           min-width="500px">
-          <Line :data="chartData" :options="options" ref="line" :plugins="[zoomPlugin]" />
+          <Line :data="chartData" :options="options" ref="line" />
         </v-sheet>
       </v-col>
       <v-col xs="12" lg="3">
@@ -41,11 +41,12 @@
                 <v-list-item v-for="timeSeriesPoint in selectedTimeseriesPoints" :key="timeSeriesPoint.datetime">
                   <template v-slot:append>
                     <v-icon :icon="mdiCloseBox" color="error"
-                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint)"></v-icon>
+                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"></v-icon>
                   </template>
                   <v-list-item-content>
                     <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-                    <v-list-item-subtitle>Average {{ props.chosenVariable?.abbreviation }}: {{ timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>Average {{ props.chosenVariable?.abbreviation }}: {{
+                      timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -64,16 +65,6 @@
 </template>
 
 <script setup>
-import {
-  Chart as ChartJS,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale
-} from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { enUS } from 'date-fns/locale';
@@ -81,11 +72,9 @@ import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { ref } from 'vue'
-import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
 import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiChartBellCurveCumulative, mdiCloseBox } from '@mdi/js'
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
-import zoomPlugin from 'chartjs-plugin-zoom';
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 
 const { lgAndUp } = useDisplay()
@@ -101,7 +90,6 @@ const plotStyle = ref('Scatter')
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
-ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
@@ -205,12 +193,6 @@ const options = {
 const dataQualityOptions = [{ label: 'good', value: 0 }, { label: 'suspect', value: 1 }, { label: 'degraded', value: 2 }, { label: 'bad', value: 3 }]
 
 const handleTimeseriesPointClick = (e) => {
-  // TODO: right click context menu
-  // e.native.preventDefault()
-  // if (e.native.button !== 2) {
-  //   console.log("not right click")
-  //   return
-  // }
   const elems = line.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
@@ -218,22 +200,9 @@ const handleTimeseriesPointClick = (e) => {
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
   const dataset = line.value.chart.data.datasets[datasetIndex]
-  const data = dataset.data[index]
-  // console.log("clicked data:", data)
-  // console.log("clicked dataset:", dataset)
-  // // TODO: y axis variable is not being set correctly
-  // console.log("y axis variable:", dataset.parsing.yAxisKey)
-  // console.log("datetime:", data.datetime)
+  const timeSeriesPoint = dataset.data[index]
 
-  // const datetime = data.datetime
-  // const allDatasets = line.value.chart.data.datasets
-  // const dataForDatetime = allDatasets.map((dataset) => {
-  //   const data = dataset.data.find((data) => data.datetime === datetime)
-  //   return data
-  // })
-  // console.log("average data for datetime:", dataForDatetime)
-
-  addSelectedTimeseriesPoint(data)
+  addSelectedTimeseriesPoint(timeSeriesPoint)
 }
 
 const viewLongProfileByDates = () => {
@@ -248,36 +217,43 @@ const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
   // first make sure the node is not already selected
   if (selectedTimeseriesPoints.value.includes(timeSeriesPoint)) {
     alertStore.displayAlert({
-      title: 'Point already selected',
-      text: `The point at ${timeSeriesPoint.datetime} has already been selected.`,
-      type: 'warning',
+      title: 'Timstamp deselected',
+      text: `The point at ${timeSeriesPoint.datetime} deselected.`,
+      type: 'success',
       closable: true,
       duration: 3
     })
+    removeSelectedTimeseriesPoint(timeSeriesPoint)
     return
   }
+
+  // set the point as selected
+  timeSeriesPoint.selected = true
+
   // instead of push, make sure the points are in order by datetime
   const newPoints = [...selectedTimeseriesPoints.value, timeSeriesPoint]
   newPoints.sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
   selectedTimeseriesPoints.value = newPoints
 
   panel.value = ["selectedTimeseriesPoints"]
-  // TODO use datalabels to show selection?
-  // https://chartjs-plugin-datalabels.netlify.app/samples/events/selection.html
 }
 
-const removeSelectedTimeseriesPoint = (timeSeriesPoint) => {
-  const index = selectedTimeseriesPoints.value.indexOf(timeSeriesPoint)
-  if (index > -1) {
+const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
+  if (timeSeriesPoint.selected) {
+    timeSeriesPoint.selected = false
+    const index = selectedTimeseriesPoints.value.indexOf(timeSeriesPoint)
     selectedTimeseriesPoints.value.splice(index, 1)
+
+    // in the case that the point was removed from the selected list, make sure to remove the selected state
+    if (ref) {
+      line.value.chart.update()
+    }
   }
 
   if (selectedTimeseriesPoints.value.length === 0) {
     panel.value = ["plotOptions"]
   }
 }
-
-
 
 const resetZoom = () => {
   line.value.chart.resetZoom()
