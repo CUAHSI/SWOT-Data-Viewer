@@ -222,7 +222,13 @@ const updateChartLine = () => {
 }
 
 const resetData = () => {
-  line.value.chart.data.datasets = chartData.value.datasets
+  // remove all datasets except the ones returned by HydroChron. 
+  // TODO: This is done by explicitly removing min, max, and mean however
+  // this should instead match series based on datetime string instead.
+  let chartDatasets = chartData.value.datasets
+                    .filter(dataset => !['min', 'max', 'mean']
+                    .some(word => dataset.label.includes(word)));
+  line.value.chart.data.datasets = chartDatasets
   line.value.chart.update()
 }
 
