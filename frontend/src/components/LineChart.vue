@@ -41,7 +41,7 @@
                 <v-list-item v-for="timeSeriesPoint in selectedTimeseriesPoints" :key="timeSeriesPoint.datetime">
                   <template v-slot:append>
                     <v-icon :icon="mdiCloseBox" color="error"
-                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint)"></v-icon>
+                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"></v-icon>
                   </template>
                   <v-list-item-content>
                     <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
@@ -238,12 +238,17 @@ const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
   panel.value = ["selectedTimeseriesPoints"]
 }
 
-const removeSelectedTimeseriesPoint = (timeSeriesPoint) => {
-  const index = selectedTimeseriesPoints.value.indexOf(timeSeriesPoint)
+const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
   if (timeSeriesPoint.selected) {
+    timeSeriesPoint.selected = false
+    const index = selectedTimeseriesPoints.value.indexOf(timeSeriesPoint)
     selectedTimeseriesPoints.value.splice(index, 1)
+
+    // in the case that the point was removed from the selected list, make sure to remove the selected state
+    if (ref) {
+      line.value.chart.update()
+    }
   }
-  timeSeriesPoint.selected = false
 
   if (selectedTimeseriesPoints.value.length === 0) {
     panel.value = ["plotOptions"]

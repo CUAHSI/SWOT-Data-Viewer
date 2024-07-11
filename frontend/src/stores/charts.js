@@ -372,7 +372,6 @@ export const useChartsStore = defineStore('charts', () => {
     let pointStyle = 'circle'
     let color = 'black'
     let fill = true
-    let borderWidth = 1
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
     console.log('Data Quality', dataQuality)
     switch (parseInt(dataQuality)) {
@@ -397,16 +396,10 @@ export const useChartsStore = defineStore('charts', () => {
         fill = false
         break
     }
-
-    // handle static point selection
-    if (dataPoint.selected) {
-      borderWidth = 10
-    }
     return {
       pointStyle,
       color,
       fill,
-      borderWidth
     }
   }
 
@@ -427,14 +420,27 @@ export const useChartsStore = defineStore('charts', () => {
     return {
       showLine: false,
       pointStyle: styles.pointStyles,
-      pointRadius: 5,
+      pointRadius: getPointRadius,
       pointHoverRadius: 15,
       fill: styles.fills,
       color: styles.colors,
       borderColor: styles.colors,
       backgroundColor: 'rgb(75, 192, 192)',
-      borderWidth: getBorderWidth
+      borderWidth: getBorderWidth,
     }
+  }
+
+  function getPointRadius(context) {
+    // if the data point is selected, increase the radius
+    const index = context.dataIndex
+    if (index == null) {
+      return 1
+    }
+    const dataPoint = context.dataset.data[index]
+    if (dataPoint.selected) {
+      return 10
+    }
+    return 5
   }
 
   function getBorderWidth(context) {
@@ -445,7 +451,7 @@ export const useChartsStore = defineStore('charts', () => {
     }
     const dataPoint = context.dataset.data[index]
     if (dataPoint.selected) {
-      return 10
+      return 5
     }
     return 1
   }
