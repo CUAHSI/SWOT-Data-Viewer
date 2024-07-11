@@ -328,7 +328,8 @@ const computeStatisics = () => {
   // Return the computed statistics
   return {minimum: datMin,
           maximum: datMax,
-          mean: datMean}
+          mean: datMean,
+          node_dist: node_dists,
 }
 
 </script>
