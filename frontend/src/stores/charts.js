@@ -4,6 +4,7 @@ import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
 import chroma from 'chroma-js'
+import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
@@ -11,6 +12,13 @@ export const useChartsStore = defineStore('charts', () => {
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
+
+  const dataQualityOptions = [
+    { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle }, 
+    { value: 1, label: 'suspect', pointStyle: 'rectRounded', pointBorderColor: 'yellow', icon: mdiSquareRounded }, 
+    { value: 2, label: 'degraded', pointStyle: 'rect', pointBorderColor: 'orange', icon: mdiRectangle }, 
+    { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus },
+  ]
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
@@ -375,23 +383,10 @@ export const useChartsStore = defineStore('charts', () => {
     let pointBorderColor = 'white'
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
     console.log('Data Quality', dataQuality)
-    switch (parseInt(dataQuality)) {
-      case 0:
-        pointStyle = 'circle'
-        pointBorderColor = 'white'
-        break
-      case 1:
-        pointStyle = 'rectRounded'
-        pointBorderColor = 'yellow'
-        break
-      case 2:
-        pointStyle = 'rect'
-        pointBorderColor = 'orange'
-        break
-      case 3:
-        pointStyle = 'rectRot'
-        pointBorderColor = 'red'
-        break
+    const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
+    if (dataQualityOption) {
+      pointStyle = dataQualityOption.pointStyle
+      pointBorderColor = dataQualityOption.pointBorderColor
     }
     return {
       pointStyle,
@@ -499,6 +494,7 @@ export const useChartsStore = defineStore('charts', () => {
     filterDataQuality,
     filterDatasetsToTimeRange,
     filterDatasetsBySetOfDates,
+    dataQualityOptions,
     setDatasetVisibility,
     getNodeTimeStamps,
     chartTab

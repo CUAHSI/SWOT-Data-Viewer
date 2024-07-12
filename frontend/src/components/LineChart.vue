@@ -12,8 +12,19 @@
           <v-expansion-panel value="plotOptions">
             <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
             <v-expansion-panel-text>
-              <v-select label="Data Quality" v-model="dataQuality" :items="dataQualityOptions" item-title="label"
-                item-value="value" @update:modelValue="filterAllDatasets()" multiple chips></v-select>
+              <v-select label="Data Quality" v-model="dataQuality" :items="chartStore.dataQualityOptions"
+                item-title="label" item-value="value" @update:modelValue="filterAllDatasets()" multiple chips clearable>
+                <template #item="{ item, props }">
+                  <v-list-item v-bind="props">
+                    <template #prepend>
+                      <v-icon :icon="item.raw.icon"></v-icon>
+                    </template>
+                    <template #title>
+                      {{ item.title }}
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
               <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
                 @update:modelValue="updateChartLine()"></v-select>
               <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
@@ -189,8 +200,6 @@ const options = {
   onClick: (e) => handleTimeseriesPointClick(e),
   // events: ["click", "contextmenu"],
 }
-
-const dataQualityOptions = [{ label: 'good', value: 0 }, { label: 'suspect', value: 1 }, { label: 'degraded', value: 2 }, { label: 'bad', value: 3 }]
 
 const handleTimeseriesPointClick = (e) => {
   const elems = line.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
