@@ -17,10 +17,20 @@
                 <template #item="{ item, props }">
                   <v-list-item v-bind="props">
                     <template #prepend>
-                      <v-icon :icon="item.raw.icon"></v-icon>
+                      <v-icon :icon="item.raw.icon" :color="item.raw.pointBorderColor" size="x-small"></v-icon>
                     </template>
                     <template #title>
-                      {{ item.title }}
+                      {{ item.raw.label }}
+                    </template>
+                  </v-list-item>
+                </template>
+                <template #chip="{ item, props }">
+                  <v-list-item v-bind="props">
+                    <template #prepend>
+                      <v-icon :icon="item.raw.icon" :color="item.raw.pointBorderColor" size="x-small"></v-icon>
+                    </template>
+                    <template #title>
+                      {{ item.raw.label }}
                     </template>
                   </v-list-item>
                 </template>
