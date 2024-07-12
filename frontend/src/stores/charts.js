@@ -4,6 +4,7 @@ import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
 import chroma from 'chroma-js'
+import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
@@ -11,6 +12,13 @@ export const useChartsStore = defineStore('charts', () => {
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
+
+  const dataQualityOptions = [
+    { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle }, 
+    { value: 1, label: 'suspect', pointStyle: 'rectRounded', pointBorderColor: 'yellow', icon: mdiSquareRounded }, 
+    { value: 2, label: 'degraded', pointStyle: 'rect', pointBorderColor: 'orange', icon: mdiRectangle }, 
+    { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus },
+  ]
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
@@ -90,7 +98,7 @@ export const useChartsStore = defineStore('charts', () => {
       console.log('Starting pointstyle', dataset.pointStyle)
       const pointStyles = dataset.data.map((dataPoint, i) => {
         let pointStyle = dataset.pointStyle[i]
-        if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
+        if (!dataQualityFlags.includes(parseInt(dataPoint.reach_q))) {
           // TODO: need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
           pointStyle = false
@@ -295,9 +303,9 @@ export const useChartsStore = defineStore('charts', () => {
     // get the min and max dates and define a chroma scale
     const chartDates = getChartMinMaxDateTimes(timeStampGroups)
     const colorScale = chroma
-      .scale(['#fafa6e', '#2A4858'])
+      .scale(['blue', 'purple', 'black'])
       .mode('lch')
-      .domain([chartDates.minDateTime, chartDates.maxDateTime])
+      .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
 
     console.log('using reach from ', nodes[0])
     const datasets = []
@@ -369,38 +377,20 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getPointStyle = (dataPoint) => {
+    // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
     const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
     let pointStyle = 'circle'
-    let color = 'black'
-    let fill = true
+    let pointBorderColor = 'white'
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
     console.log('Data Quality', dataQuality)
-    switch (parseInt(dataQuality)) {
-      case 0:
-        pointStyle = 'circle'
-        color = 'black'
-        fill = true
-        break
-      case 1:
-        pointStyle = 'star'
-        color = 'black'
-        fill = false
-        break
-      case 2:
-        pointStyle = 'crossRot'
-        color = 'orange'
-        fill = false
-        break
-      case 3:
-        pointStyle = 'cross'
-        color = 'red'
-        fill = false
-        break
+    const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
+    if (dataQualityOption) {
+      pointStyle = dataQualityOption.pointStyle
+      pointBorderColor = dataQualityOption.pointBorderColor
     }
     return {
       pointStyle,
-      color,
-      fill,
+      pointBorderColor
     }
   }
 
@@ -409,25 +399,27 @@ export const useChartsStore = defineStore('charts', () => {
     const styles = {
       colors: [],
       pointStyles: [],
-      fills: []
+      fills: [],
+      pointBorderColors: []
     }
     dataSet.forEach((dataPoint) => {
-      const { pointStyle, color, fill } = getPointStyle(dataPoint)
-      styles.colors.push(color)
+      const { pointStyle, pointBorderColor } = getPointStyle(dataPoint)
+      styles.pointBorderColors.push(pointBorderColor)
       styles.pointStyles.push(pointStyle)
-      styles.fills.push(fill)
     })
     console.log('Styles', styles)
     return {
       showLine: false,
       pointStyle: styles.pointStyles,
-      pointRadius: getPointRadius,
+      fill: true,
+      pointBorderColor: styles.pointBorderColors,
+      pointBorderWidth: 2,
+      borderColor: 'black', // The line fill color.
+      backgroundColor: 'black', // The line color
       pointHoverRadius: 15,
-      fill: styles.fills,
-      color: styles.colors,
-      borderColor: styles.colors,
-      backgroundColor: 'rgb(75, 192, 192)',
-      borderWidth: getBorderWidth,
+      pointHoverBorderWidth: 5,
+      pointRadius: getPointRadius,
+      borderWidth: getBorderWidth
     }
   }
 
@@ -460,13 +452,13 @@ export const useChartsStore = defineStore('charts', () => {
   const getNodeDataSetStyle = (dataSet, colorScale) => {
     console.log('Getting node data set style', dataSet)
     const styles = {
-      pointColors: [],
+      pointBorderColor: [],
       pointStyles: [],
       dynamicColors: []
     }
     dataSet.forEach((dataPoint) => {
-      const { pointStyle, color } = getPointStyle(dataPoint.node_q)
-      styles.pointColors.push(color)
+      const { pointStyle, pointBorderColor } = getPointStyle(dataPoint)
+      styles.pointBorderColor.push(pointBorderColor)
       styles.pointStyles.push(pointStyle)
       styles.dynamicColors.push(dateGradientColors(dataPoint.datetime, colorScale))
     })
@@ -477,13 +469,14 @@ export const useChartsStore = defineStore('charts', () => {
       pointRadius: 5,
       pointHoverRadius: 15,
       fill: styles.dynamicColors,
-      // color: styles.colors,
       borderColor: styles.dynamicColors, // The line fill color.
       backgroundColor: styles.dynamicColors, // The line color.
       spanGaps: false,
       pointBackgroundColor: styles.pointColors,
-      pointBorderColor: styles.pointColors
+      pointBorderColor: styles.pointBorderColor,
       // borderWidth: 1,
+      pointBorderWidth: 1,
+      pointHoverBorderWidth: 5
     }
   }
 
@@ -501,6 +494,7 @@ export const useChartsStore = defineStore('charts', () => {
     filterDataQuality,
     filterDatasetsToTimeRange,
     filterDatasetsBySetOfDates,
+    dataQualityOptions,
     setDatasetVisibility,
     getNodeTimeStamps,
     chartTab
