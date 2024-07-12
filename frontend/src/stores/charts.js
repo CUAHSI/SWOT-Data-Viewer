@@ -90,7 +90,7 @@ export const useChartsStore = defineStore('charts', () => {
       console.log('Starting pointstyle', dataset.pointStyle)
       const pointStyles = dataset.data.map((dataPoint, i) => {
         let pointStyle = dataset.pointStyle[i]
-        if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
+        if (!dataQualityFlags.includes(parseInt(dataPoint.reach_q))) {
           // TODO: need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
           pointStyle = false
@@ -465,7 +465,7 @@ export const useChartsStore = defineStore('charts', () => {
       dynamicColors: []
     }
     dataSet.forEach((dataPoint) => {
-      const { pointStyle, color } = getPointStyle(dataPoint.node_q)
+      const { pointStyle, color } = getPointStyle(dataPoint)
       styles.pointColors.push(color)
       styles.pointStyles.push(pointStyle)
       styles.dynamicColors.push(dateGradientColors(dataPoint.datetime, colorScale))
