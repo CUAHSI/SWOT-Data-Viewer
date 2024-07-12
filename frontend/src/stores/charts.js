@@ -295,9 +295,9 @@ export const useChartsStore = defineStore('charts', () => {
     // get the min and max dates and define a chroma scale
     const chartDates = getChartMinMaxDateTimes(timeStampGroups)
     const colorScale = chroma
-      .scale(['#fafa6e', '#2A4858'])
+      .scale(['blue', 'purple', 'black'])
       .mode('lch')
-      .domain([chartDates.minDateTime, chartDates.maxDateTime])
+      .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
 
     console.log('using reach from ', nodes[0])
     const datasets = []
@@ -369,38 +369,33 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getPointStyle = (dataPoint) => {
+    // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
     const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
     let pointStyle = 'circle'
-    let color = 'black'
-    let fill = true
+    let pointBorderColor = 'white'
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
     console.log('Data Quality', dataQuality)
     switch (parseInt(dataQuality)) {
       case 0:
         pointStyle = 'circle'
-        color = 'black'
-        fill = true
+        pointBorderColor = 'white'
         break
       case 1:
-        pointStyle = 'star'
-        color = 'black'
-        fill = false
+        pointStyle = 'rectRounded'
+        pointBorderColor = 'yellow'
         break
       case 2:
-        pointStyle = 'crossRot'
-        color = 'orange'
-        fill = false
+        pointStyle = 'rect'
+        pointBorderColor = 'orange'
         break
       case 3:
-        pointStyle = 'cross'
-        color = 'red'
-        fill = false
+        pointStyle = 'rectRot'
+        pointBorderColor = 'red'
         break
     }
     return {
       pointStyle,
-      color,
-      fill,
+      pointBorderColor
     }
   }
 
@@ -409,25 +404,27 @@ export const useChartsStore = defineStore('charts', () => {
     const styles = {
       colors: [],
       pointStyles: [],
-      fills: []
+      fills: [],
+      pointBorderColors: []
     }
     dataSet.forEach((dataPoint) => {
-      const { pointStyle, color, fill } = getPointStyle(dataPoint)
-      styles.colors.push(color)
+      const { pointStyle, pointBorderColor } = getPointStyle(dataPoint)
+      styles.pointBorderColors.push(pointBorderColor)
       styles.pointStyles.push(pointStyle)
-      styles.fills.push(fill)
     })
     console.log('Styles', styles)
     return {
       showLine: false,
       pointStyle: styles.pointStyles,
-      pointRadius: getPointRadius,
+      fill: true,
+      pointBorderColor: styles.pointBorderColors,
+      pointBorderWidth: 2,
+      borderColor: 'black', // The line fill color.
+      backgroundColor: 'black', // The line color
       pointHoverRadius: 15,
-      fill: styles.fills,
-      color: styles.colors,
-      borderColor: styles.colors,
-      backgroundColor: 'rgb(75, 192, 192)',
-      borderWidth: getBorderWidth,
+      pointHoverBorderWidth: 5,
+      pointRadius: getPointRadius,
+      borderWidth: getBorderWidth
     }
   }
 
@@ -460,13 +457,13 @@ export const useChartsStore = defineStore('charts', () => {
   const getNodeDataSetStyle = (dataSet, colorScale) => {
     console.log('Getting node data set style', dataSet)
     const styles = {
-      pointColors: [],
+      pointBorderColor: [],
       pointStyles: [],
       dynamicColors: []
     }
     dataSet.forEach((dataPoint) => {
-      const { pointStyle, color } = getPointStyle(dataPoint)
-      styles.pointColors.push(color)
+      const { pointStyle, pointBorderColor } = getPointStyle(dataPoint)
+      styles.pointBorderColor.push(pointBorderColor)
       styles.pointStyles.push(pointStyle)
       styles.dynamicColors.push(dateGradientColors(dataPoint.datetime, colorScale))
     })
@@ -477,13 +474,14 @@ export const useChartsStore = defineStore('charts', () => {
       pointRadius: 5,
       pointHoverRadius: 15,
       fill: styles.dynamicColors,
-      // color: styles.colors,
       borderColor: styles.dynamicColors, // The line fill color.
       backgroundColor: styles.dynamicColors, // The line color.
       spanGaps: false,
       pointBackgroundColor: styles.pointColors,
-      pointBorderColor: styles.pointColors
+      pointBorderColor: styles.pointBorderColor,
       // borderWidth: 1,
+      pointBorderWidth: 1,
+      pointHoverBorderWidth: 5
     }
   }
 
