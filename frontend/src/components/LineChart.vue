@@ -180,7 +180,14 @@ const options = {
           }
           label += ` ${selectedVariable.unit}`
           return label;
-        }
+        },
+        footer: function (context) {
+          const dataQualityOption = chartStore.dataQualityOptions.find((option) => option.value == context[0]?.raw?.reach_q)
+          if (dataQualityOption) {
+            return `\n Data Quality: ${dataQualityOption.label}`
+          }
+          return ''
+        },
       },
       displayColors: false,
     }
