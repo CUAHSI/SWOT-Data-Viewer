@@ -49,8 +49,11 @@ import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, 
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
+import { useChartsStore } from '@/stores/charts';
 
 const { lgAndUp } = useDisplay()
+
+const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
@@ -114,6 +117,9 @@ const options = {
     tooltip: {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
+        title: function (context) {
+          return `Distance: ${context[0].parsed.x} m`
+        },
         label: function (context) {
           // var label = context.dataset.label || '';
           let selectedVariable = props.chosenVariable
@@ -129,9 +135,13 @@ const options = {
           // add the timestamp as well
           return label;
         },
-        title: function (context) {
-          return `Distance: ${context[0].parsed.x} m`
-        },
+        footer: function (context) {
+          const dataQualityOption = chartStore.dataQualityOptions.find((option) => option.value == context[0]?.raw?.node_q)
+          if (dataQualityOption) {
+            return `\n Data Quality: ${dataQualityOption.label}`
+          }
+          return ''
+        }
       },
       displayColors: false,
     },
