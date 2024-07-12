@@ -123,14 +123,14 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     },
     {
       abbreviation: 'node_dist',
-      name: 'Node Delta',
+      name: 'Node Dispersion',
       unit: 'm',
       definition: 'Mean distance between observed and prior river database node locations.',
       default: false,
       always: false,
       selectable: false,
       fileType: 'node',
-      plottable: true,
+      plottable: false,
     },
     {
       abbreviation: 'p_dist_out',

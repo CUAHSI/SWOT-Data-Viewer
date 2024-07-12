@@ -4,11 +4,16 @@
       <v-col lg="10">
         <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
           min-width="500px">
-          <Line :data="chartData" :options="options" ref="line" :plugins="[customCanvasBackgroundColor, zoomPlugin]" />
+          <Line :data="chartData" :options="options" ref="line" />
+        </v-sheet>
+        <v-sheet class="pa-2" color="input">
+          <TimeRangeSlider @update="resetData" />
         </v-sheet>
       </v-col>
       <v-col lg="2">
         <v-sheet>
+          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
+            @update:modelValue="updateChartLine()"></v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
             Download Chart
@@ -25,6 +30,10 @@
             <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
             Reset Zoom
           </v-btn>
+          <v-btn @click="resetData()" color="input" class="ma-1">
+            <v-icon :icon="mdiEraser"></v-icon>
+            Refresh Data
+          </v-btn>
         </v-sheet>
       </v-col>
     </v-row>
@@ -32,33 +41,27 @@
 </template>
 
 <script setup>
-import {
-  Chart as ChartJS,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale
-} from 'chart.js'
+import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns';
 import { ref } from 'vue'
-import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline } from '@mdi/js'
+import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiEraser } from '@mdi/js'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
-import zoomPlugin from 'chartjs-plugin-zoom';
-import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
+import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
+import { useChartsStore } from '@/stores/charts';
 
 const { lgAndUp } = useDisplay()
+
+const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const downloading = ref({ csv: false, json: false, chart: false })
 
-ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
+const plotStyle = ref('Connected')
+
+
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
 let chartData = ref(props.data)
@@ -73,14 +76,14 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
 }
 
 const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.datasets[0].label}: ${props.chosenVariable?.name} vs Distance`
+const title = `${props.data.title}: ${props.chosenVariable?.name} vs Distance`
 
 const options = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false,
+      display: true,
       position: 'bottom',
     },
     title: {
@@ -114,6 +117,9 @@ const options = {
     tooltip: {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
+        title: function (context) {
+          return `Distance: ${context[0].parsed.x} m`
+        },
         label: function (context) {
           // var label = context.dataset.label || '';
           let selectedVariable = props.chosenVariable
@@ -126,11 +132,16 @@ const options = {
             label += context.parsed.y
           }
           label += ` ${selectedVariable.unit}`
+          // add the timestamp as well
           return label;
         },
-        title: function (context) {
-          return `Distance: ${context[0].parsed.x} m`
-        },
+        footer: function (context) {
+          const dataQualityOption = chartStore.dataQualityOptions.find((option) => option.value == context[0]?.raw?.node_q)
+          if (dataQualityOption) {
+            return `\n Data Quality: ${dataQualityOption.label}`
+          }
+          return ''
+        }
       },
       displayColors: false,
     },
@@ -141,7 +152,8 @@ const options = {
       title: {
         display: true,
         text: 'Distance from outlet (m)'
-      }
+      },
+      reverse: true,
     },
     y: {
       title: {
@@ -186,5 +198,22 @@ const downJson = async () => {
   downloading.value.json = true
   await downloadMultiNodesJson()
   downloading.value.json = false
+}
+
+const updateChartLine = () => {
+  let showLine = false
+  if (plotStyle.value === 'Connected') {
+    showLine = true
+  }
+  line.value.chart.data.datasets.forEach((dataset) => {
+    dataset.showLine = showLine
+    setParsing(line.value.chart.data.datasets)
+  })
+  line.value.chart.update()
+}
+
+const resetData = () => {
+  line.value.chart.data.datasets = chartData.value.datasets
+  line.value.chart.update()
 }
 </script>
