@@ -40,3 +40,68 @@ class UserSubmissionsResponseModel(BaseModel):
 
 class SubmissionResponseModel(Submission):
     workflow_id: str
+
+
+class SwotDataModel(BaseModel):
+    """
+    SWOT data is stored in the following format (for example):
+    {
+        "status": "200 OK",
+        "time": 2185.644,
+        "hits": 2,
+        "results": {
+            "csv": "",
+            "geojson": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "id": "0",
+                        "type": "Feature",
+                        "properties": {
+                            "wse": "155.40462",
+                            "width": "-999999999999.0",
+                            "area_total": "-999999999999.0",
+                            "time_str": "2024-01-15T20:04:41Z",
+                            "node_q": "3",
+                            "p_dist_out": "2180371.0",
+                            "wse_units": "m",
+                            "width_units": "m",
+                            "area_total_units": "m^2",
+                            "p_dist_out_units": "m"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-113.827873, 61.748777]
+                        }
+                    },
+                    {
+                        "id": "1",
+                        "type": "Feature",
+                        "properties": {
+                            "wse": "154.9736",
+                            "width": "-999999999999.0",
+                            "area_total": "-999999999999.0",
+                            "time_str": "2024-01-26T09:38:18Z",
+                            "node_q": "3",
+                            "p_dist_out": "2180371.0",
+                            "wse_units": "m",
+                            "width_units": "m",
+                            "area_total_units": "m^2",
+                            "p_dist_out_units": "m"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-113.827873, 61.748777]
+                        }
+                    },
+                ]
+            }
+        }
+    }
+    """
+    status: str
+    time: float
+    hits: int
+    params: dict
+    # TODO: add more specific types for the results
+    results: dict
