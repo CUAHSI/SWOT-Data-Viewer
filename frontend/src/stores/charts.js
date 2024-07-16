@@ -468,7 +468,9 @@ export const useChartsStore = defineStore('charts', () => {
       pointStyle: styles.pointStyles,
       pointRadius: 5,
       pointHoverRadius: 15,
-      fill: styles.dynamicColors,
+      //fill: styles.dynamicColors,
+      fill: false,
+      // color: styles.colors,
       borderColor: styles.dynamicColors, // The line fill color.
       backgroundColor: styles.dynamicColors, // The line color.
       spanGaps: false,
