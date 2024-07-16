@@ -10,8 +10,8 @@ from fastapi_users.db import BeanieUserDatabase, ObjectIDIDMixin
 from httpx_oauth.exceptions import GetIdEmailError
 from httpx_oauth.oauth2 import OAuth2
 
-from subsetter.app.db import User, get_user_db
-from subsetter.config import get_settings, get_minio_client
+from swotvis.app.db import User, get_user_db
+from swotvis.config import get_settings, get_minio_client
 
 SECRET = "SECRET"
 

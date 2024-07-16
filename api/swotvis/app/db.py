@@ -7,7 +7,7 @@ from beanie import Document
 from fastapi_users.db import BaseOAuthAccount, BeanieBaseUser, BeanieUserDatabase
 from pydantic import BaseModel, Field
 
-from subsetter.config import get_settings
+from swotvis.config import get_settings
 
 DATABASE_URL = get_settings().mongo_url
 client = motor.motor_asyncio.AsyncIOMotorClient(DATABASE_URL, uuidRepresentation="standard")

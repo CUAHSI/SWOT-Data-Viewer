@@ -6,9 +6,9 @@ import tempfile
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from subsetter.app.db import Submission, User
-from subsetter.app.routers.access_control.policy_generation import minio_policy
-from subsetter.app.users import current_active_user
+from swotvis.app.db import Submission, User
+from swotvis.app.routers.access_control.policy_generation import minio_policy
+from swotvis.app.users import current_active_user
 
 router = APIRouter()
 
