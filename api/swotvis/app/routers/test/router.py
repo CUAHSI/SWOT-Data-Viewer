@@ -1,25 +1,20 @@
 from fastapi import APIRouter
 import pandas as pd
 from app.models import (
-    SwotDataModel,
+    SwotNodeDataModel,
 )
+from typing import List
 router = APIRouter()
 
 
-@router.get('/', description="Test endpoint")
-async def test_endpoint():
-    return {"message": "Hello, world!"}
-
-
-@router.post('/convert', description="Convert SWOT response")
-async def convert_swot_data(data: SwotDataModel):
-    """Convert SWOT response
+@router.post('/convert', description="Convert some SWOT data")
+async def convert_swot_data(data: List[List[SwotNodeDataModel]]):
+    """Convert SWOT data
 
     """
     # TODO: further parse the data
-    features = data.results
 
-    # create a new pandas dataframe
-    df = pd.DataFrame(features)
+    # for now as exmple we will just convert the data to a pandas dataframe
+    df = pd.DataFrame(data)
 
     return df.to_html()

@@ -38,6 +38,7 @@
             <v-icon :icon="mdiEraser"></v-icon>
             Patch
           </v-btn>
+          <TheTestButton/>
         </v-sheet>
       </v-col>
     </v-row>
@@ -56,6 +57,7 @@ import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, 
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
+import TheTestButton from '@/components/TheTestButton.vue';
 import { useChartsStore } from '@/stores/charts';
 
 const { lgAndUp } = useDisplay()
