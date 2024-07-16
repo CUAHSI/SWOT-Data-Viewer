@@ -1,1 +1,1 @@
-from swotvis.app.routers.storage.router import router
+from app.routers.storage.router import router

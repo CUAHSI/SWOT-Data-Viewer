@@ -1,1 +1,1 @@
-from swotvis.app.routers.argo.router import router
+from app.routers.argo.router import router
