@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     def revoke_token_endpoint(self):
         return self.OIDC_BASE_URL + "revoke"
 
+    @property
+    def revocation_endpoint_auth_method(self):
+        return "client_secret_post"
+
 
 @lru_cache()
 def get_settings() -> Settings:
