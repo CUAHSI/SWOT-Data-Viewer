@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from swotvis.app.models import WorkflowDep
-from swotvis.config import get_minio_client
+from app.models import WorkflowDep
+from config import get_minio_client
 
 router = APIRouter()
 

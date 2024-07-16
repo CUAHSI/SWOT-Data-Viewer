@@ -1,1 +1,1 @@
-from swotvis.app.routers.test.router import router
+from app.routers.test.router import router
