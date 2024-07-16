@@ -1,3 +1,4 @@
+export const TEST_MODE = import.meta.env.VITE_TEST_MODE || "VITE_TEST_MODE_PLACEHOLDER";
 export const APP_BASE = import.meta.env.VITE_APP_BASE || "VITE_APP_BASE_PLACEHOLDER";
 
 let APP_FULL_URL_IN = import.meta.env.VITE_APP_FULL_URL || "VITE_APP_FULL_URL_PLACEHOLDER";

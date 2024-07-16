@@ -49,7 +49,7 @@ import copy
 def bucket_name(resource_id: str):
     # raccess = ResourceAccess.objects.filter(resource__short_id=resource_id).first()
     # return raccess.owners.first().username
-    return "subsetter-outputs"
+    return "swotvis-outputs"
 
 
 def create_view_statements(owner, submissions) -> list:

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from subsetter.app.models import WorkflowDep
-from subsetter.config import get_minio_client
+from swotvis.app.models import WorkflowDep
+from swotvis.config import get_minio_client
 
 router = APIRouter()
 
@@ -46,7 +46,7 @@ async def share_workflow_with_user(
 # @router.post('/extract/{workflow_id}')
 # async def extract_workflow_artifact(workflow_params: WorkflowDep) -> SubmissionResponseModel:
 #    workflow_id = str(uuid.uuid4())
-#    bucket = "subsetter-outputs"
+#    bucket = "swotvis-outputs"
 #    submission = workflow_params.user.get_submission(workflow_params.workflow_id)
 #    path_key = f'{submission.workflow_name}/{submission.workflow_id}/subset.gz'
 #    api_instance.submit_workflow(
