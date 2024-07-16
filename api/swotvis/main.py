@@ -1,15 +1,14 @@
 import subprocess
-import httpx
 
 from beanie import init_beanie
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from swotvis.app.db import User, db
 from swotvis.app.routers.access_control import router as access_control_router
 from swotvis.app.routers.argo import router as argo_router
 from swotvis.app.routers.storage import router as storage_router
+from swotvis.app.routers.test import router as test_router
 from swotvis.app.schemas import UserRead, UserUpdate
 from swotvis.app.users import SECRET, auth_backend, cuahsi_oauth_client, fastapi_users
 from swotvis.config import get_settings
@@ -79,6 +78,12 @@ app.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/users",
     tags=["users"],
+)
+
+app.include_router(
+    test_router,
+    prefix="/test",
+    tags=["test"],
 )
 
 

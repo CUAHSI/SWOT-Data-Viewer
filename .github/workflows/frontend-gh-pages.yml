@@ -40,6 +40,7 @@ jobs:
       - name: create env file
         run: |
           touch .env
+          echo VITE_TEST_MODE=${{ secrets.VITE_TEST_MODE }} >> .env
           echo VITE_APP_API_URL=${{ secrets.VITE_APP_API_URL }} >> .env
           echo VITE_APP_FULL_URL=${{ secrets.VITE_APP_FULL_URL }} >> .env
           echo VITE_OAUTH2_REDIRECT_URL=${{ secrets.VITE_OAUTH2_REDIRECT_URL }} >> .env
