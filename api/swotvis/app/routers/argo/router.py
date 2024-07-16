@@ -8,16 +8,16 @@ import google.cloud.logging as logging
 from argo_workflows.api import workflow_service_api
 from fastapi import APIRouter, Depends, Query
 
-from swotvis.app.db import Submission, User
-from swotvis.app.models import (
+from app.db import Submission, User
+from app.models import (
     LogsResponseModel,
     SubmissionResponseModel,
     UrlResponseModel,
     UserSubmissionsResponseModel,
     WorkflowDep,
 )
-from swotvis.app.users import current_active_user
-from swotvis.config import get_minio_client, get_settings
+from app.users import current_active_user
+from config import get_minio_client, get_settings
 from .transformer import transform_latlon
 
 if get_settings().cloud_run:

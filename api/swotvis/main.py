@@ -4,14 +4,14 @@ from beanie import init_beanie
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from swotvis.app.db import User, db
-from swotvis.app.routers.access_control import router as access_control_router
-from swotvis.app.routers.argo import router as argo_router
-from swotvis.app.routers.storage import router as storage_router
-from swotvis.app.routers.test import router as test_router
-from swotvis.app.schemas import UserRead, UserUpdate
-from swotvis.app.users import SECRET, auth_backend, cuahsi_oauth_client, fastapi_users
-from swotvis.config import get_settings
+from app.db import User, db
+from app.routers.access_control import router as access_control_router
+from app.routers.argo import router as argo_router
+from app.routers.storage import router as storage_router
+from app.routers.test import router as test_router
+from app.schemas import UserRead, UserUpdate
+from app.users import SECRET, auth_backend, cuahsi_oauth_client, fastapi_users
+from config import get_settings
 
 # TODO: get oauth working with swagger/redoc
 # Setting the base url for swagger docs
