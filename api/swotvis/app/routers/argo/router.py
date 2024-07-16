@@ -8,16 +8,16 @@ import google.cloud.logging as logging
 from argo_workflows.api import workflow_service_api
 from fastapi import APIRouter, Depends, Query
 
-from subsetter.app.db import Submission, User
-from subsetter.app.models import (
+from swotvis.app.db import Submission, User
+from swotvis.app.models import (
     LogsResponseModel,
     SubmissionResponseModel,
     UrlResponseModel,
     UserSubmissionsResponseModel,
     WorkflowDep,
 )
-from subsetter.app.users import current_active_user
-from subsetter.config import get_minio_client, get_settings
+from swotvis.app.users import current_active_user
+from swotvis.config import get_minio_client, get_settings
 from .transformer import transform_latlon
 
 if get_settings().cloud_run:
@@ -220,7 +220,7 @@ async def logs(workflow_params: WorkflowDep) -> LogsResponseModel:
 async def signed_url_minio(workflow_params: WorkflowDep) -> UrlResponseModel:
     submission = workflow_params.user.get_submission(workflow_params.workflow_id)
     url = get_minio_client().presigned_get_object(
-        "subsetter-outputs",
+        "swotvis-outputs",
         f"{workflow_params.user.username}/{submission.workflow_name}/{submission.workflow_id}/all.gz",
     )
     return {'url': url}

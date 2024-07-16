@@ -36,7 +36,7 @@ services:
       #- 5678:5678
     restart: unless-stopped
     volumes:
-      - ./api/subsetter:/subsetter
+      - ./api/swotvis:/swotvis
     build:
       context: ./api/
       dockerfile: Dockerfile

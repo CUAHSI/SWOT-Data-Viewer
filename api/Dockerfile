@@ -11,10 +11,10 @@ RUN python -m wget https://dl.min.io/client/mc/release/linux-amd64/mc
 RUN chmod +x mc
 RUN mv mc /usr/local/bin/mc
 
-COPY ./subsetter /subsetter
+COPY ./swotvis /swotvis
 
-ENV PYTHONPATH "/subsetter/:${PYTHONPATH}"
+ENV PYTHONPATH "/swotvis/:${PYTHONPATH}"
 
 EXPOSE 8000
 
-CMD uvicorn --host 0.0.0.0 --port 8000 --proxy-headers subsetter.main:app
+CMD uvicorn --host 0.0.0.0 --port 8000 --proxy-headers swotvis.main:app
