@@ -1,7 +1,9 @@
 <template>
-    <v-btn v-if="test_mode()" id="test" @click="test()">
-        <span>Test API Endpoint</span>
-    </v-btn>
+    <v-card class="nav-items mr-2 d-flex mr-4" :elevation="2" color="test">
+        <v-btn v-if="test_mode()" id="test" @click="test()">
+            Test API Endpoint
+        </v-btn>
+    </v-card>
 </template>
 
 <script setup>
@@ -12,8 +14,8 @@ const test_mode = () => {
 }
 const test = () => {
     fetch(`${APP_API_URL}/test`)
-    .then(response => response.json())
-    .then(data => alert(JSON.stringify(data)))
-    .catch(error => console.error(error))
+        .then(response => response.json())
+        .then(data => alert(JSON.stringify(data)))
+        .catch(error => console.error(error))
 }
 </script>
