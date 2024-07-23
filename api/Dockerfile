@@ -13,6 +13,9 @@ RUN mv mc /usr/local/bin/mc
 
 COPY ./swotvis /swotvis
 
+# TODO: remove debugpy from production -- only for debugging
+RUN pip install debugpy -t /tmp
+
 ENV PYTHONPATH "/swotvis/:${PYTHONPATH}"
 
 EXPOSE 8000
