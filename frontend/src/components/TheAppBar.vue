@@ -17,8 +17,9 @@
         </nav>
       </v-card>
       <v-spacer></v-spacer>
-      <!-- <UserLogin @logged-in="login" v-if="!mdAndDown" :mobile="false" /> -->
+      <UserLogin @logged-in="login" v-if="!smAndDown" :mobile="false" />
       <TheTestButton v-if="!mdAndDown" :mobile="false" />
+
       <v-app-bar-nav-icon @click="$emit('toggleMobileNav')" v-if="smAndDown" />
     </div>
   </v-app-bar>
@@ -26,7 +27,7 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { useDisplay } from 'vuetify'
-// import UserLogin from "@/components/UserLogin.vue";
+import UserLogin from "@/components/UserLogin.vue";
 import imgUrl from '@/assets/swotviz-high-quality-transparent-v10.png'
 import { useAuthStore } from '../stores/auth';
 import TheTestButton from '@/components/TheTestButton.vue';
