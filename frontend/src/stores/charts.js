@@ -319,6 +319,7 @@ export const useChartsStore = defineStore('charts', () => {
           xAxisKey: 'p_dist_out',
           yAxisKey: 'wse'
         },
+        seriesType: 'swot_node_series',
         ...getNodeDataSetStyle(timeStampGroup, colorScale),
         ...getDatasetMinMaxDateTimes(timeStampGroup)
       })
