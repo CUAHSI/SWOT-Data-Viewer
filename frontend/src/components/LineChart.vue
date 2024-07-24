@@ -12,29 +12,13 @@
           <v-expansion-panel value="plotOptions">
             <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
             <v-expansion-panel-text>
-              <v-select label="Data Quality" v-model="dataQuality" :items="chartStore.dataQualityOptions"
-                item-title="label" item-value="value" @update:modelValue="filterAllDatasets()" multiple chips clearable>
-                <template #item="{ item, props }">
-                  <v-list-item v-bind="props">
-                    <template #prepend>
-                      <v-icon :icon="item.raw.icon" :color="item.raw.pointBorderColor" size="x-small"></v-icon>
-                    </template>
-                    <template #title>
-                      {{ item.raw.label }}
-                    </template>
-                  </v-list-item>
-                </template>
-                <template #chip="{ item, props }">
-                  <v-list-item v-bind="props">
-                    <template #prepend>
-                      <v-icon :icon="item.raw.icon" :color="item.raw.pointBorderColor" size="x-small"></v-icon>
-                    </template>
-                    <template #title>
-                      {{ item.raw.label }}
-                    </template>
-                  </v-list-item>
-                </template>
-              </v-select>
+
+            <DataQuality
+              v-model="dataQuality"
+              id="dataQuality"
+              :data="chartStore.chartData"
+              @qualityUpdated="filterAllDatasets" />
+
               <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
                 @update:modelValue="updateChartLine()"></v-select>
               <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
@@ -97,6 +81,7 @@ import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, 
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
 import { useDisplay } from 'vuetify'
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
+import DataQuality from '@/components/DataQuality.vue'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(["plotOptions"])
@@ -329,8 +314,7 @@ const updateChartLine = () => {
   line.value.chart.update()
 }
 
-const filterAllDatasets = () => {
-  let dataQualityValues = dataQuality.value
+const filterAllDatasets = (dataQualityValues) => {
   chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets)
   setParsing(line.value.chart.data.datasets)
   line.value.chart.update()
