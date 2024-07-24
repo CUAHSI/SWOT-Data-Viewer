@@ -91,14 +91,23 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const filterDataQuality = (dataQualityFlags, datasets) => {
+  const filterDataQuality = (dataQualityFlags, datasets, qualityLabel='reach_q') => {
     console.log('Filtering data quality', dataQualityFlags)
     console.log('Starting Datasets', datasets)
     datasets.forEach((dataset) => {
       console.log('Starting pointstyle', dataset.pointStyle)
       const pointStyles = dataset.data.map((dataPoint, i) => {
+
+        // check if the data quality exists in the pointStyle. If not,
+        // skip this point because it belongs to a series that does not have
+        // a quality flag. This is the case for computed series such as IQR.
+        if (dataPoint[qualityLabel] == null) {
+          return true;
+        }
+
         let pointStyle = dataset.pointStyle[i]
-        if (!dataQualityFlags.includes(parseInt(dataPoint.reach_q))) {
+        
+        if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
           // TODO: need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
           pointStyle = false
@@ -108,6 +117,7 @@ export const useChartsStore = defineStore('charts', () => {
         }
         return pointStyle
       })
+      
       dataset.pointStyle = pointStyles
       console.log('Ending pointstyle', dataset.pointStyle)
     })

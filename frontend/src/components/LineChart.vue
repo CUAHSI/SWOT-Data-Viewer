@@ -315,7 +315,7 @@ const updateChartLine = () => {
 }
 
 const filterAllDatasets = (dataQualityValues) => {
-  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets)
+  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets, 'reach_q')
   setParsing(line.value.chart.data.datasets)
   line.value.chart.update()
 }
