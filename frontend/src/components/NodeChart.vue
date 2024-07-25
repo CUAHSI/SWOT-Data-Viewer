@@ -57,11 +57,11 @@
           </v-btn>
           <v-btn @click="resetZoom()" color="input" class="ma-1">
             <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
-            Reset Zoom
+            Zoom to Exent
           </v-btn>
           <v-btn @click="resetData()" color="input" class="ma-1">
             <v-icon :icon="mdiEraser"></v-icon>
-            Refresh Data
+            Reset Data
           </v-btn>
 <!--
           <v-btn @click="toggleStatistics()" color="input" class="ma-1">
@@ -307,19 +307,27 @@ const updateChartLine = () => {
 }
 
 const resetData = () => {
+  // Resets the node chart to its initial state. This requires
+  // making all swot_node_series visible, removing any additional
+  // series that have been added to the chart (e.g. statistics), 
+  // and setting page components to their initial state.
 
   let chart = line.value.chart;
-  chart.data.datasets.filter(s => s.seriesType == 'swot_node_series').forEach(function(s) {
+
+  // remove all non-swot series from the chart. This is necessary to reset the chart
+  // to its initial state.
+  let datasets = chart.data.datasets.filter(s => s.seriesType == 'swot_node_series');
+
+  // turn on all hidden swot node series datasets
+  datasets.filter(s => s.seriesType == 'swot_node_series').forEach(function(s) {
     s.hidden = false;
   });
-  chart.data.datasets.filter(s => s.seriesType != 'swot_node_series').forEach(function(s) {
-    s.hidden = true;
-  });
 
-  // reset page components to default
+  // reset page components to their default state
   setDefaults(); 
 
   // update the chart
+  chart.data.datasets = datasets;
   chart.update();
   
 }
