@@ -92,19 +92,17 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const filterDataQuality = (dataQualityFlags, datasets, qualityLabel='reach_q') => {
-    console.log('Filtering data quality', dataQualityFlags)
-    console.log('Starting Datasets', datasets)
-    datasets.forEach((dataset) => {
-      console.log('Starting pointstyle', dataset.pointStyle)
+    // Alters series point styles between their default style (dataset.pointStyle) and
+    // Null. This is used to toggle them on/off using the data quality flag selection 
+    // from the DataQuality.vue component.
+    
+    // filter datasets to only include SWOT series. These are the
+    // only series that have a quality flag
+    let swotDatasets = datasets.filter(d => ['swot_node_series', 'swot_reach_series'].includes(d.seriesType))
+
+    // loop over each point in the swot datasets and update the point style
+    swotDatasets.forEach((dataset) => {
       const pointStyles = dataset.data.map((dataPoint, i) => {
-
-        // check if the data quality exists in the pointStyle. If not,
-        // skip this point because it belongs to a series that does not have
-        // a quality flag. This is the case for computed series such as IQR.
-        if (dataPoint[qualityLabel] == null) {
-          return true;
-        }
-
         let pointStyle = dataset.pointStyle[i]
         
         if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
@@ -119,7 +117,6 @@ export const useChartsStore = defineStore('charts', () => {
       })
       
       dataset.pointStyle = pointStyles
-      console.log('Ending pointstyle', dataset.pointStyle)
     })
   }
 
@@ -269,6 +266,10 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
+    // builds the datasets for the time series chart. These are labeled
+    // using seriesType='swot_reach_series' to differentiate them from
+    // node-level data.
+
     const featureStore = useFeaturesStore()
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     console.log('Getting chart datasets for selected features', selectedFeatures)
@@ -289,12 +290,16 @@ export const useChartsStore = defineStore('charts', () => {
           // TODO: this should be dynamic based on the selected variable
           yAxisKey: 'wse'
         },
+        seriesType: 'swot_reach_series',
         ...getDataSetStyle(measurements)
       }
     })
   }
 
   const getNodeChartDatasets = (nodes) => {
+    // builds the datasets for the long-profile chart. These are labeled
+    // using seriesType='swot_node_series' to differentiate them from
+    // reach-level data.
     console.log('getting node chart datasets for nodes', nodes)
     let measurements = nodes.map((node) => {
       console.log('Parsing node', node)
@@ -393,7 +398,6 @@ export const useChartsStore = defineStore('charts', () => {
     let pointStyle = 'circle'
     let pointBorderColor = 'white'
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
-    console.log('Data Quality', dataQuality)
     const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
     if (dataQualityOption) {
       pointStyle = dataQualityOption.pointStyle
