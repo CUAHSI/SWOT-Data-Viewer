@@ -33,7 +33,8 @@ services:
     image: api
     ports:
       - 8001:8000
-      - 5678:5678
+#      - 5678:5678
+#      - 8181:8181
     restart: unless-stopped
     volumes:
       - ./api/swotvis:/swotvis
@@ -41,7 +42,8 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     working_dir: /swotvis
-    command: python -m debugpy --listen 0.0.0.0:5678 -m uvicorn --host 0.0.0.0 --port 8000 --proxy-headers main:app --reload
+#    command: python -m debugpy --listen 0.0.0.0:5678 -m uvicorn --host 0.0.0.0 --port 8000 --proxy-headers main:app --reload
+    command: uvicorn --host 0.0.0.0 --port 8000 --proxy-headers main:app --reload
     env_file:
       - .env
     depends_on:
