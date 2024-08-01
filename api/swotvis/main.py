@@ -8,6 +8,7 @@ from app.db import User, db
 from app.routers.access_control import router as access_control_router
 from app.routers.argo import router as argo_router
 from app.routers.storage import router as storage_router
+from app.routers.data import router as data_router
 from app.schemas import UserRead, UserUpdate
 from app.users import SECRET, auth_backend, cuahsi_oauth_client, fastapi_users
 from config import get_settings
@@ -24,7 +25,10 @@ swagger_params = {
     "swagger_ui_client_id": cuahsi_oauth_client.client_id,
 }
 
-app = FastAPI(servers=[{"url": get_settings().vite_app_api_url}], swagger_ui_parameters=swagger_params)
+app = FastAPI(
+    servers=[{"url": get_settings().vite_app_api_url}],
+    swagger_ui_parameters=swagger_params,
+)
 
 origins = [get_settings().allow_origins]
 
@@ -56,7 +60,10 @@ app.include_router(
 
 app.include_router(
     fastapi_users.get_oauth_router(
-        cuahsi_oauth_client, auth_backend, SECRET, redirect_url=get_settings().oauth2_redirect_url
+        cuahsi_oauth_client,
+        auth_backend,
+        SECRET,
+        redirect_url=get_settings().oauth2_redirect_url,
     ),
     prefix="/auth/cuahsi",
     tags=["auth"],
@@ -67,7 +74,7 @@ app.include_router(
         cuahsi_oauth_client,
         auth_backend,
         SECRET,
-        redirect_url=get_settings().vite_oauth2_redirect_url
+        redirect_url=get_settings().vite_oauth2_redirect_url,
     ),
     prefix="/auth/front",
     tags=["auth"],
@@ -77,6 +84,12 @@ app.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/users",
     tags=["users"],
+)
+
+app.include_router(
+    data_router,
+    prefix="/data",
+    tags=["data"],
 )
 
 
@@ -89,10 +102,10 @@ async def on_startup():
         ],
     )
     arguments = [
-        'mc',
-        'alias',
-        'set',
-        'cuahsi',
+        "mc",
+        "alias",
+        "set",
+        "cuahsi",
         f"https://{get_settings().minio_api_url}",
         get_settings().minio_access_key,
         get_settings().minio_secret_key,
