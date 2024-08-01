@@ -11,10 +11,6 @@ RUN python -m wget https://dl.min.io/client/mc/release/linux-amd64/mc
 RUN chmod +x mc
 RUN mv mc /usr/local/bin/mc
 
-## Debugging tools (Optional)
-#RUN pip install debugpy -t /tmp
-#RUN pip install epdb
-
 COPY ./swotvis /swotvis
 
 ENV PYTHONPATH "/swotvis/:${PYTHONPATH}"
