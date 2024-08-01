@@ -68,7 +68,6 @@
             <v-icon :icon="mdiEraser"></v-icon>
             Toggle Statistics
           </v-btn>
-          <TheTestButton/>
 -->
         </v-sheet>
       </v-col>
@@ -92,7 +91,7 @@ import { useDisplay } from 'vuetify'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 import DataQuality from '@/components/DataQuality.vue'
 import { useChartsStore } from '@/stores/charts';
-import { APP_API_URL, TEST_MODE } from '@/constants'
+import { APP_API_URL } from '@/constants'
 
 const { lgAndUp } = useDisplay()
 

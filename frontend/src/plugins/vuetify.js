@@ -16,7 +16,6 @@ const dark = {
     success: colors.teal.accent4,
     info: colors.blueGrey.lighten1,
     navbar: colors.blueGrey.darken4,
-    test: colors.red.base
   }
 }
 
@@ -31,7 +30,6 @@ const light = {
     success: colors.teal.accent4,
     info: colors.blueGrey.base,
     navbar: colors.blueGrey.lighten1,
-    test: colors.red.base
   }
 }
 
