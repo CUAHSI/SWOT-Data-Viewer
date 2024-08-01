@@ -63,12 +63,6 @@
             <v-icon :icon="mdiEraser"></v-icon>
             Reset Data
           </v-btn>
-<!--
-          <v-btn @click="toggleStatistics()" color="input" class="ma-1">
-            <v-icon :icon="mdiEraser"></v-icon>
-            Toggle Statistics
-          </v-btn>
--->
         </v-sheet>
       </v-col>
     </v-row>

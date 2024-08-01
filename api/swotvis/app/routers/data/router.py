@@ -47,11 +47,7 @@ async def compute_node_series(data: List[List[SwotNodeDataModel]]):
     # is not JSON serializable. Convert all pandas dataframes to dictionaries
     # so they can be serialized to JSON.
     dat = {}
-    # dat["min"] = grouped.min().replace([np.nan], [None]).reset_index()
-    # dat["max"] = grouped.max().replace([np.nan], [None]).reset_index()
-    # dat["mean"] = grouped.mean().replace([np.nan], [None]).reset_index()
     dat["median"] = grouped.median().replace([np.nan], [None]).reset_index()
-    # dat["std"] = grouped.std().replace([np.nan], [None]).reset_index()
 
     # compute quantiles for each node variable
     for q in [0.25, 0.75]:
