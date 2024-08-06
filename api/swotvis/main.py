@@ -13,6 +13,10 @@ from app.schemas import UserRead, UserUpdate
 from app.users import SECRET, auth_backend, cuahsi_oauth_client, fastapi_users
 from config import get_settings
 
+## Remote debugging connection
+# import epdb
+# epdb.serve(8181)
+
 # TODO: get oauth working with swagger/redoc
 # Setting the base url for swagger docs
 # https://github.com/tiangolo/fastapi/pull/1547
