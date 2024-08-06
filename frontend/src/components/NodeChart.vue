@@ -7,7 +7,7 @@
           <Line :data="chartData" :options="options" ref="line" :plugins="[Filler]"/>
         </v-sheet>
         <v-sheet class="pa-2" color="input">
-          <TimeRangeSlider @update="resetData" />
+          <TimeRangeSlider ref="timeRef" @update="timeSliderUpdated" />
         </v-sheet>
       </v-col>
       <v-col>
@@ -100,10 +100,12 @@ const plotStyle = ref('Connected')
 
 const chartStatistics = ref(null);
 
+const timeRef = ref();
+
 // TODO: might need a more efficient way of doing this instead of re-mapping the data
 // Ideally use the store directly instead of passing it as a prop
-let chartData = ref(props.data)
-
+//let chartData = ref(props.data)
+let chartData = ref(chartStore.nodeChartData);
 
 const setDefaults = () => {
   // sets page elements back to their default values.
@@ -305,23 +307,44 @@ const resetData = () => {
   // series that have been added to the chart (e.g. statistics), 
   // and setting page components to their initial state.
 
-  let chart = line.value.chart;
+  //let chart = line.value.chart;
 
   // remove all non-swot series from the chart. This is necessary to reset the chart
   // to its initial state.
-  let datasets = chart.data.datasets.filter(s => s.seriesType == 'swot_node_series');
+  //let datasets = chart.data.datasets.filter(s => s.seriesType == 'swot_node_series');
+  let datasets = chartData.value.datasets.filter(s => s.seriesType == 'swot_node_series');
 
   // turn on all hidden swot node series datasets
   datasets.filter(s => s.seriesType == 'swot_node_series').forEach(function(s) {
     s.hidden = false;
   });
-
-  // reset page components to their default state
-  setDefaults(); 
-
+  
+  // set these datasets in the chart store
+  chartStore.updateNodeChartData(datasets);
+  
   // update the chart
-  chart.data.datasets = datasets;
-  chart.update();
+  line.value.chart.data.datasets = chartData.value.datasets
+  line.value.chart.update();
+
+  // Reset timeslider extents to the full range of the data
+  timeRef.value.updateDateRangeFromVisible();
+  timeRef.value.updateSliderRange();
+  
+  // reset page components to their default state, e.g. statistics switch
+  setDefaults(); 
+  
+}
+
+const timeSliderUpdated = () => {
+  // This function is called when the time slider is updated.
+  // It filters the chart data to the data that are active in the time slider range.
+
+  // TODO: re-compute statistics if they have been enabled
+  
+   line.value.chart.data.datasets = chartData.value.datasets
+  //let data = line.value.chart.data.datasets;
+  //line.value.chart.data.datasets = data;
+  line.value.chart.update()
   
 }
 
@@ -413,9 +436,14 @@ const toggleSeriesStatistics = async (visible=true) => {
     // remove the computed statistics from the chart
     updatedDatasets =  updatedDatasets.filter(s => s.seriesType != "computed_series");
   }
-    
+  
+  // TODO: make sure that these series are not added multiple times
+  // save these data to the chartStore
+  chartStore.updateNodeChartData(updatedDatasets);
+
   // update the chart
-  line.value.chart.data.datasets = updatedDatasets;
+  line.value.chart.data.datasets = chartData.value.datasets;
+  // line.value.chart.data.datasets = updatedDatasets;
   line.value.chart.update();
 }
 
