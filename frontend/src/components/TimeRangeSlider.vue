@@ -35,29 +35,6 @@ const convertDateStringToSeconds = (dateString) => {
   return new Date(dateString).getTime() / 1000
 }
 
-const updateDateRangeFromVisible = () => {
-  // Updates the dateRange object with the range defined 
-  // by the series visible in the chart.
-
-  let dateSeconds = chartStore.nodeChartData.datasets
-                     .filter(series => series.hidden == false)
-                     .map(series => series.label)
-                     .map(label => convertDateStringToSeconds(label))
-  let minDate = convertSecondsToDateString(Math.min(...dateSeconds))
-  let maxDate = convertSecondsToDateString(Math.max(...dateSeconds))
-  
-  // set the new date range values in the dateRange variable
-  dateRange.value = [minDate, maxDate];
-}
-
-// There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
-const sliderRange = ref(featuresStore.timeRange)
-const dateRange = ref(featuresStore.timeRange.map((t) => convertSecondsToDateString(t)))
-
-// update the date range to match the series that
-// are visible in the chart
-updateDateRangeFromVisible();
-
 // When the date range changes, update the slider range.
 const updateSliderRange = () => {
   sliderRange.value = dateRange.value.map((dateString) => {
@@ -78,6 +55,45 @@ async function filterDatasetsToTimeRange() {
   chartStore.filterDatasetsToTimeRange(chartStore.nodeChartData.datasets, dateRange.value[0], dateRange.value[1])
   emit('update', sliderRange.value)
 }
+
+const setInitialState = () => {
+  // Updates the dateRange object with the range defined 
+  // by the series visible in the chart.
+
+  // set the initial state for the time ranges based
+  // off available data.
+  let offset = 2 * 86400; // 2 days in seconds
+  let minDateSec = Math.min(...chartStore.nodeChartData.datasets
+                       .map(series => series.minDateTime)) / 1000 - offset;
+  let maxDateSec = Math.max(...chartStore.nodeChartData.datasets
+                       .map(series => series.maxDateTime)) / 1000 + offset;
+  featuresStore.timeRange = [minDateSec, maxDateSec];
+  featuresStore.minTime = minDateSec;
+  featuresStore.maxTime = maxDateSec;
+
+  
+
+  sliderRange.value = featuresStore.timeRange   
+  dateRange.value = featuresStore.timeRange.map((seconds) => {
+    return convertSecondsToDateString(seconds)
+  })
+}
+
+
+// There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
+const sliderRange = ref(featuresStore.timeRange)
+
+//sliderRange.min = minDate;
+//sliderRange.max = maxDate;
+const dateRange = ref(featuresStore.timeRange.map((t) => convertSecondsToDateString(t)))
+
+// set the min/max time range for the time slider component
+setInitialState();
+
+// update the date range to match the series that
+// are visible in the chart
+//updateDateWidgetsToSeriesRange();
+
 
 const rules = {
   min: (v) => {
@@ -109,8 +125,9 @@ const rules = {
 }
 
 defineExpose({
+  setInitialState,
   updateSliderRange,
-  updateDateRangeFromVisible,
+  updateDateRange,
 })
 
 </script>

@@ -322,16 +322,21 @@ const resetData = () => {
   // set these datasets in the chart store
   chartStore.updateNodeChartData(datasets);
   
+  // Reset timeslider extents to the full range of the data
+  timeRef.value.setInitialState();
+ // timeRef.value.updateSliderRange();
+ // timeRef.value.updateDateRange();
+  
+  // reset page components to their default state, e.g. statistics switch
+  setDefaults(); 
+
   // update the chart
   line.value.chart.data.datasets = chartData.value.datasets
   line.value.chart.update();
 
-  // Reset timeslider extents to the full range of the data
-  timeRef.value.updateDateRangeFromVisible();
-  timeRef.value.updateSliderRange();
+
+//  timeRef.value.updateDateRangeFromVisible();
   
-  // reset page components to their default state, e.g. statistics switch
-  setDefaults(); 
   
 }
 

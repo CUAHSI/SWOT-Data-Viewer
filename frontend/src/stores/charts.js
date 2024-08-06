@@ -26,6 +26,13 @@ export const useChartsStore = defineStore('charts', () => {
     chartData.value = data
     console.log('Updated chart data', chartData.value)
   }
+  
+  const updateNodeChartData = (data) => {
+    // This function is used to update the nodeChartData object
+    // data = the new data series to set in the object.
+    nodeChartData.value.datasets = data
+    console.log('Updated Node Chart Data', nodeChartData.value)
+  }
 
   const clearChartData = () => {
     chartData.value = {}
@@ -136,15 +143,17 @@ export const useChartsStore = defineStore('charts', () => {
       tolerance = NODE_DATETIME_VARIATION
     }
 
+    // Buffer start and end times by the tolerance
+    // Convert into a Date object and save as epoch time
+    // for comparision later.
     start = subMinutes(start, tolerance)
     end = addMinutes(end, tolerance)
+    console.log('Filtering time range', start, end)
 
     if (datasets == null) {
       console.log('Filtering using all datasets')
       datasets = nodeChartData.value.datasets
     }
-    console.log('Filtering time range', start, end)
-    console.log('Starting Datasets', datasets)
 
     datasets.forEach((dataset) => {
       // determine whether the dataset is within the time range
@@ -155,7 +164,6 @@ export const useChartsStore = defineStore('charts', () => {
         dataset.hidden = false
       }
     })
-    console.log('Ending Datasets', datasets)
   }
 
   const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {
@@ -499,6 +507,7 @@ export const useChartsStore = defineStore('charts', () => {
 
   return {
     updateChartData,
+    updateNodeChartData,
     chartData,
     nodeChartData,
     clearChartData,
