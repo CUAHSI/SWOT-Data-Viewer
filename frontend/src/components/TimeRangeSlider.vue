@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, defineExpose } from 'vue'
 import { useFeaturesStore } from '../stores/features';
 import { useChartsStore } from '@/stores/charts'
 
@@ -35,9 +35,28 @@ const convertDateStringToSeconds = (dateString) => {
   return new Date(dateString).getTime() / 1000
 }
 
+const updateDateRangeFromVisible = () => {
+  // Updates the dateRange object with the range defined 
+  // by the series visible in the chart.
+
+  let dateSeconds = chartStore.nodeChartData.datasets
+                     .filter(series => series.hidden == false)
+                     .map(series => series.label)
+                     .map(label => convertDateStringToSeconds(label))
+  let minDate = convertSecondsToDateString(Math.min(...dateSeconds))
+  let maxDate = convertSecondsToDateString(Math.max(...dateSeconds))
+  
+  // set the new date range values in the dateRange variable
+  dateRange.value = [minDate, maxDate];
+}
+
 // There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
 const sliderRange = ref(featuresStore.timeRange)
 const dateRange = ref(featuresStore.timeRange.map((t) => convertSecondsToDateString(t)))
+
+// update the date range to match the series that
+// are visible in the chart
+updateDateRangeFromVisible();
 
 // When the date range changes, update the slider range.
 const updateSliderRange = () => {
@@ -88,5 +107,10 @@ const rules = {
     return true
   },
 }
+
+defineExpose({
+  updateSliderRange,
+  updateDateRangeFromVisible,
+})
 
 </script>
