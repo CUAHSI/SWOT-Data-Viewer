@@ -329,10 +329,9 @@ const timeSliderUpdated = () => {
 
   line.value.chart.data.datasets = chartData.value.datasets
   line.value.chart.update()
-  
 }
 
-const timeRangeUpdateComplete = () => {
+const timeRangeUpdateComplete = async () => {
   // This function is called when the time slider update is complete,
   // and is used to update the chart with series that need to be
   // recomputed.
@@ -343,42 +342,47 @@ const timeRangeUpdateComplete = () => {
    
     // remove statistics from the chart
     let datasets = chartStore.nodeChartData.datasets.filter(s => s.seriesType != "computed_series");
+
+    // recompute statistics
+    let statisticSeries = await generateStatisticsSeries();
+    
+    // push statisticSeries elements into the datasets array
+    datasets = datasets.concat(statisticSeries);
+
+    // save these data to the chartStore
     chartStore.updateNodeChartData(datasets);
 
-
-
-//    // update the chart
-//    line.value.chart.data.datasets = chartData.value.datasets;
-//  
-//    // line.value.chart.data.datasets = updatedDatasets;
-//    line.value.chart.update();
-//    
-//    // get the data from the chart
-//    let datasets = line.value.chart.data.datasets;
-//
-//    getStatistics();
+    // update the chart
+    line.value.chart.data.datasets = chartData.value.datasets;
+    line.value.chart.update();
   }
-
 }
 
 async function getStatistics () {
-    let datasets = chartStore.nodeChartData.datasets
-    // upate datasets so that is just an array arrays of the datasets.data objects
-    datasets = datasets.map(dataset => {
-        return dataset.data
-    })
+  // compute statistics based on the node series that are visible
+  // in the chart.
 
-    let stats = await fetch(`${APP_API_URL}/data/compute_node_series`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(datasets)})
-        .then(response => response.json())
-        .then(data => {
-          return data;     
-        });
+  //let datasets = chartStore.nodeChartData.datasets
+  let datasets = chartStore.nodeChartData.datasets
+                  .filter(s => s.seriesType == 'swot_node_series')
+                  .filter(s => s.hidden == false);
 
-    // save computed statistics to a reactive variable
-    chartStatistics.value = stats;
+  // upate datasets so that is just an array arrays of the datasets.data objects
+  datasets = datasets.map(dataset => {
+      return dataset.data
+  })
+
+  let stats = await fetch(`${APP_API_URL}/data/compute_node_series`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(datasets)})
+      .then(response => response.json())
+      .then(data => {
+        return data;
+      });
+
+  // save computed statistics to a reactive variable
+  chartStatistics.value = stats;
 }
 
 function buildChartSeries (data, xkey='p_dist_out', ykey, series_label, props={}) {
@@ -395,12 +399,10 @@ function buildChartSeries (data, xkey='p_dist_out', ykey, series_label, props={}
     showLine: props.showLine || true,
     borderColor: props.borderColor || 'blue',
     borderWidth: props.borderWidth || 1,
-    pointRadius: props.pointRadius || 1,
+    pointRadius: props.pointRadius || 0,
     seriesType: props.seriesType || 'computed_series',
   }
-
   return dat;
-
 }
 
 const generateStatisticsSeries = async () => {
@@ -420,7 +422,7 @@ const generateStatisticsSeries = async () => {
                                      'p_dist_out',
                                      props.chosenVariable.abbreviation,
                                      stat,
-                                     {fill:false, hidden:true});
+                                     {fill:false, hidden:false});
        statisticSeries.push(series);
       }
       if (stat == 'q0.25') {
