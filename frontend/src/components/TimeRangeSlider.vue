@@ -2,7 +2,7 @@
   <v-form>
     <v-container>
       <v-range-slider v-model="sliderRange" :min="featuresStore.minTime" :max="featuresStore.maxTime"
-        class="align-center" hide-details @update:modelValue="updateDateRange">
+        class="align-center" hide-details @update:modelValue="updateDateRange" @end="updateDateRangeComplete">
         <template v-slot:prepend>
           <v-text-field v-model="dateRange[0]" density="compact" type="date" variant="outlined" hide-details single-line
             @update:modelValue="updateSliderRange" :rules="[rules.min,]"></v-text-field>
@@ -22,7 +22,7 @@ import { useFeaturesStore } from '../stores/features';
 import { useChartsStore } from '@/stores/charts'
 
 // define an update event that emits the new range
-const emit = defineEmits(['update'])
+const emit = defineEmits(['update', 'updateComplete'])
 
 const featuresStore = useFeaturesStore()
 const chartStore = useChartsStore()
@@ -49,6 +49,11 @@ const updateDateRange = () => {
     return convertSecondsToDateString(seconds)
   })
   filterDatasetsToTimeRange()
+}
+
+// When the user is done changing the slider range, emit event.
+const updateDateRangeComplete = () => {
+  emit('updateComplete', sliderRange.value)
 }
 
 async function filterDatasetsToTimeRange() {

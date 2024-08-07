@@ -7,7 +7,7 @@
           <Line :data="chartData" :options="options" ref="line" :plugins="[Filler]"/>
         </v-sheet>
         <v-sheet class="pa-2" color="input">
-          <TimeRangeSlider ref="timeRef" @update="timeSliderUpdated" />
+          <TimeRangeSlider ref="timeRef" @update="timeSliderUpdated" @updateComplete="timeRangeUpdateComplete" />
         </v-sheet>
       </v-col>
       <v-col>
@@ -327,11 +327,38 @@ const timeSliderUpdated = () => {
   // This function is called when the time slider is updated.
   // It filters the chart data to the data that are active in the time slider range.
 
-  // TODO: re-compute statistics if they have been enabled
-  
   line.value.chart.data.datasets = chartData.value.datasets
   line.value.chart.update()
   
+}
+
+const timeRangeUpdateComplete = () => {
+  // This function is called when the time slider update is complete,
+  // and is used to update the chart with series that need to be
+  // recomputed.
+
+  console.log('Time range update complete');
+  // TODO: re-compute statistics if they have been enabled
+  if (showStatistics.value == true) {
+   
+    // remove statistics from the chart
+    let datasets = chartStore.nodeChartData.datasets.filter(s => s.seriesType != "computed_series");
+    chartStore.updateNodeChartData(datasets);
+
+
+
+//    // update the chart
+//    line.value.chart.data.datasets = chartData.value.datasets;
+//  
+//    // line.value.chart.data.datasets = updatedDatasets;
+//    line.value.chart.update();
+//    
+//    // get the data from the chart
+//    let datasets = line.value.chart.data.datasets;
+//
+//    getStatistics();
+  }
+
 }
 
 async function getStatistics () {
@@ -376,16 +403,12 @@ function buildChartSeries (data, xkey='p_dist_out', ykey, series_label, props={}
 
 }
 
-const toggleSeriesStatistics = async (visible=true) => {
-  // adds and removes computed statistics from the chart
+const generateStatisticsSeries = async () => {
+    // compute statistics and return them as chart series
 
-  // get the data from the chart
-  let updatedDatasets = line.value.chart.data.datasets;
-
-  if (visible) {
-
-    // compute statistics
     await getStatistics();
+
+    let statisticSeries = []
 
     // build chart series for each statistic and set it in chartData.
     // set each of these to hidden. 
@@ -398,7 +421,7 @@ const toggleSeriesStatistics = async (visible=true) => {
                                      props.chosenVariable.abbreviation,
                                      stat,
                                      {fill:false, hidden:true});
-       updatedDatasets.push(series);
+       statisticSeries.push(series);
       }
       if (stat == 'q0.25') {
        let series = buildChartSeries(chartStatistics.value[stat],
@@ -406,7 +429,7 @@ const toggleSeriesStatistics = async (visible=true) => {
                                      props.chosenVariable.abbreviation,
                                      'IQR',
                                      {showLine:true, borderColor:"gray", borderWidth:1, pointRadius:0});
-       updatedDatasets.push(series);
+       statisticSeries.push(series);
       }
       if (stat == 'q0.75') {
        let series = buildChartSeries(chartStatistics.value[stat],
@@ -414,16 +437,33 @@ const toggleSeriesStatistics = async (visible=true) => {
                                      props.chosenVariable.abbreviation,
                                      stat,
                                      {fill:"-1", showLine:true, borderColor:"gray", backgroundColor:"lightgray", borderWidth:1, pointRadius:0});
-       updatedDatasets.push(series);
+       statisticSeries.push(series);
       }
     }
+
+    return statisticSeries;
+}
+
+
+const toggleSeriesStatistics = async (visible=true) => {
+  // adds and removes computed statistics from the chart
+
+  // get the data from the chart
+  let updatedDatasets = line.value.chart.data.datasets;
+
+  if (visible) {
+
+    let statisticSeries = await generateStatisticsSeries();
+    
+    // push statisticSeries elements into the updatedDatasets array
+    updatedDatasets = updatedDatasets.concat(statisticSeries);
+
   }
   else {
     // remove the computed statistics from the chart
     updatedDatasets =  updatedDatasets.filter(s => s.seriesType != "computed_series");
   }
   
-  // TODO: make sure that these series are not added multiple times
   // save these data to the chartStore
   chartStore.updateNodeChartData(updatedDatasets);
 
