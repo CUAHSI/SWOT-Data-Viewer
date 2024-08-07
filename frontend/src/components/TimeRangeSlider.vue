@@ -62,7 +62,7 @@ const setInitialState = () => {
 
   // set the initial state for the time ranges based
   // off available data.
-  let offset = 2 * 86400; // 2 days in seconds
+  let offset = 2 * 86400; // 2 days in seconds. This is chosen arbitrarily
   let minDateSec = Math.min(...chartStore.nodeChartData.datasets
                        .map(series => series.minDateTime)) / 1000 - offset;
   let maxDateSec = Math.max(...chartStore.nodeChartData.datasets
@@ -70,8 +70,6 @@ const setInitialState = () => {
   featuresStore.timeRange = [minDateSec, maxDateSec];
   featuresStore.minTime = minDateSec;
   featuresStore.maxTime = maxDateSec;
-
-  
 
   sliderRange.value = featuresStore.timeRange   
   dateRange.value = featuresStore.timeRange.map((seconds) => {
@@ -82,17 +80,10 @@ const setInitialState = () => {
 
 // There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
 const sliderRange = ref(featuresStore.timeRange)
-
-//sliderRange.min = minDate;
-//sliderRange.max = maxDate;
 const dateRange = ref(featuresStore.timeRange.map((t) => convertSecondsToDateString(t)))
 
 // set the min/max time range for the time slider component
 setInitialState();
-
-// update the date range to match the series that
-// are visible in the chart
-//updateDateWidgetsToSeriesRange();
 
 
 const rules = {
@@ -126,8 +117,6 @@ const rules = {
 
 defineExpose({
   setInitialState,
-  updateSliderRange,
-  updateDateRange,
 })
 
 </script>

@@ -97,23 +97,16 @@ const downloading = ref({ csv: false, json: false, chart: false })
 const showStatistics = ref(false);
 const dataQuality = ref([0, 1, 2, 3])
 const plotStyle = ref('Connected')
-
 const chartStatistics = ref(null);
-
 const timeRef = ref();
-
-// TODO: might need a more efficient way of doing this instead of re-mapping the data
-// Ideally use the store directly instead of passing it as a prop
-//let chartData = ref(props.data)
 let chartData = ref(chartStore.nodeChartData);
 
 const setDefaults = () => {
   // sets page elements back to their default values.
 
-//  showSwot.value = true;
+  // set statistics switch to off
   showStatistics.value = false;
 }
-
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
@@ -307,11 +300,8 @@ const resetData = () => {
   // series that have been added to the chart (e.g. statistics), 
   // and setting page components to their initial state.
 
-  //let chart = line.value.chart;
-
-  // remove all non-swot series from the chart. This is necessary to reset the chart
-  // to its initial state.
-  //let datasets = chart.data.datasets.filter(s => s.seriesType == 'swot_node_series');
+  // remove all non-swot series from the chart. This is necessary 
+  // to reset the chart to its initial state.
   let datasets = chartData.value.datasets.filter(s => s.seriesType == 'swot_node_series');
 
   // turn on all hidden swot node series datasets
@@ -324,8 +314,6 @@ const resetData = () => {
   
   // Reset timeslider extents to the full range of the data
   timeRef.value.setInitialState();
- // timeRef.value.updateSliderRange();
- // timeRef.value.updateDateRange();
   
   // reset page components to their default state, e.g. statistics switch
   setDefaults(); 
@@ -333,11 +321,6 @@ const resetData = () => {
   // update the chart
   line.value.chart.data.datasets = chartData.value.datasets
   line.value.chart.update();
-
-
-//  timeRef.value.updateDateRangeFromVisible();
-  
-  
 }
 
 const timeSliderUpdated = () => {
@@ -346,9 +329,7 @@ const timeSliderUpdated = () => {
 
   // TODO: re-compute statistics if they have been enabled
   
-   line.value.chart.data.datasets = chartData.value.datasets
-  //let data = line.value.chart.data.datasets;
-  //line.value.chart.data.datasets = data;
+  line.value.chart.data.datasets = chartData.value.datasets
   line.value.chart.update()
   
 }
