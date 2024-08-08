@@ -17,8 +17,8 @@
   <v-container v-if="!hasData">
     <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
       <span>
-        You don't have any data to view yet.
-        Use the <router-link :to="{ path: `/` }">Map</router-link> to make selections.
+        You don't have any data to view yet. Use the
+        <router-link :to="{ path: `/` }">Map</router-link> to make selections.
       </span>
     </v-sheet>
   </v-container>
@@ -26,12 +26,10 @@
   <v-bottom-sheet v-model="sheetText" inset>
     <v-card class="text-center" height="100%">
       <v-card-text>
-        <v-btn @click="sheetText = null">
-          close
-        </v-btn>
+        <v-btn @click="sheetText = null"> close </v-btn>
 
-        <br>
-        <br>
+        <br />
+        <br />
 
         <div>
           {{ sheetText }}
@@ -42,13 +40,13 @@
 </template>
 
 <script setup>
-import { useChartsStore } from '../stores/charts';
-import { RouterLink } from 'vue-router';
+import { useChartsStore } from '../stores/charts'
+import { RouterLink } from 'vue-router'
 import { ref } from 'vue'
-import { computed } from 'vue';
+import { computed } from 'vue'
 import { mdiTimelineClock, mdiMapMarkerDistance } from '@mdi/js'
-import TimeSeriesCharts from './TimeSeriesCharts.vue';
-import DistanceCharts from './DistanceCharts.vue';
+import TimeSeriesCharts from './TimeSeriesCharts.vue'
+import DistanceCharts from './DistanceCharts.vue'
 
 import {
   Chart as ChartJS,
@@ -61,14 +59,23 @@ import {
   TimeScale
 } from 'chart.js'
 import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
-import zoomPlugin from 'chartjs-plugin-zoom';
+import zoomPlugin from 'chartjs-plugin-zoom'
 
-ChartJS.register(LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, Legend, customCanvasBackgroundColor, zoomPlugin)
+ChartJS.register(
+  LinearScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  customCanvasBackgroundColor,
+  zoomPlugin
+)
 
-const chartStore = useChartsStore();
+const chartStore = useChartsStore()
 
 let sheetText = ref(null)
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-
 </script>

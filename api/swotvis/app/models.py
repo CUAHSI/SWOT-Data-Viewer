@@ -1,13 +1,12 @@
+import datetime
 from typing import Annotated, List
 
+import pandas as pd
 from fastapi import Depends, HTTPException, Path, status
 from pydantic import BaseModel, Field
 
 from app.db import Submission, User
 from app.users import current_active_user
-
-import datetime
-import pandas as pd
 
 
 class WorkflowParams(BaseModel):
@@ -17,9 +16,7 @@ class WorkflowParams(BaseModel):
 
 
 async def workflow_params(
-    workflow_id: Annotated[
-        str, Path(title="Workflow ID", description="The id of the workflow")
-    ],
+    workflow_id: Annotated[str, Path(title="Workflow ID", description="The id of the workflow")],
     user: User = Depends(current_active_user),
 ):
     submission = user.get_submission(workflow_id)

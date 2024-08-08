@@ -14,10 +14,22 @@ export const useChartsStore = defineStore('charts', () => {
   const chartTab = ref('timeseries')
 
   const dataQualityOptions = [
-    { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle }, 
-    { value: 1, label: 'suspect', pointStyle: 'rectRounded', pointBorderColor: 'yellow', icon: mdiSquareRounded }, 
-    { value: 2, label: 'degraded', pointStyle: 'rect', pointBorderColor: 'orange', icon: mdiRectangle }, 
-    { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus },
+    { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
+    {
+      value: 1,
+      label: 'suspect',
+      pointStyle: 'rectRounded',
+      pointBorderColor: 'yellow',
+      icon: mdiSquareRounded
+    },
+    {
+      value: 2,
+      label: 'degraded',
+      pointStyle: 'rect',
+      pointBorderColor: 'orange',
+      icon: mdiRectangle
+    },
+    { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
   ]
 
   const updateChartData = (data) => {
@@ -26,7 +38,7 @@ export const useChartsStore = defineStore('charts', () => {
     chartData.value = data
     console.log('Updated chart data', chartData.value)
   }
-  
+
   const updateNodeChartData = (data) => {
     // This function is used to update the nodeChartData object
     // data = the new data series to set in the object.
@@ -98,20 +110,22 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const filterDataQuality = (dataQualityFlags, datasets, qualityLabel='reach_q') => {
+  const filterDataQuality = (dataQualityFlags, datasets, qualityLabel = 'reach_q') => {
     // Alters series point styles between their default style (dataset.pointStyle) and
-    // Null. This is used to toggle them on/off using the data quality flag selection 
+    // Null. This is used to toggle them on/off using the data quality flag selection
     // from the DataQuality.vue component.
-    
+
     // filter datasets to only include SWOT series. These are the
     // only series that have a quality flag
-    let swotDatasets = datasets.filter(d => ['swot_node_series', 'swot_reach_series'].includes(d.seriesType))
+    let swotDatasets = datasets.filter((d) =>
+      ['swot_node_series', 'swot_reach_series'].includes(d.seriesType)
+    )
 
     // loop over each point in the swot datasets and update the point style
     swotDatasets.forEach((dataset) => {
       const pointStyles = dataset.data.map((dataPoint, i) => {
         let pointStyle = dataset.pointStyle[i]
-        
+
         if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
           // TODO: need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
@@ -122,7 +136,7 @@ export const useChartsStore = defineStore('charts', () => {
         }
         return pointStyle
       })
-      
+
       dataset.pointStyle = pointStyles
     })
   }

@@ -7,13 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db import User, db
 from app.routers.access_control import router as access_control_router
 from app.routers.argo import router as argo_router
-from app.routers.storage import router as storage_router
 from app.routers.data import router as data_router
+from app.routers.storage import router as storage_router
 from app.schemas import UserRead, UserUpdate
 from app.users import SECRET, auth_backend, cuahsi_oauth_client, fastapi_users
 from config import get_settings
 
-## Remote debugging connection
+# Remote debugging connection
 # import epdb
 # epdb.serve(8181)
 
@@ -115,6 +115,6 @@ async def on_startup():
         get_settings().minio_secret_key,
     ]
     try:
-        _output = subprocess.check_output(arguments)
-    except subprocess.CalledProcessError as e:
+        _ = subprocess.check_output(arguments)
+    except subprocess.CalledProcessError:
         raise

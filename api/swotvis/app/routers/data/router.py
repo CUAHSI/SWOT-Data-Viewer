@@ -1,13 +1,11 @@
-from fastapi import APIRouter
-import pandas as pd
-from app.models import (
-    SwotNodeDataModel,
-    SwotNodeDataSeriesModel,
-)
-from app.enums import NodeVariables
 from typing import List
 
 import numpy as np
+import pandas as pd
+from fastapi import APIRouter
+
+from app.enums import NodeVariables
+from app.models import SwotNodeDataModel, SwotNodeDataSeriesModel
 
 router = APIRouter()
 

@@ -11,13 +11,26 @@
       <v-card-text>
         <v-container>
           <v-tabs v-model="varTab" align-tabs="center">
-            <v-tab v-for="variable in selectedVariables" :value="variable" :key="variable.abbreviation">
+            <v-tab
+              v-for="variable in selectedVariables"
+              :value="variable"
+              :key="variable.abbreviation"
+            >
               {{ variable.name }}
             </v-tab>
           </v-tabs>
           <v-window v-model="varTab">
-            <v-window-item v-for="variable in selectedVariables" :key="variable.abbreviation" :value="variable">
-              <LineChart v-if="variable" id="chart" :data="chartStore.chartData" :chosenVariable="variable" />
+            <v-window-item
+              v-for="variable in selectedVariables"
+              :key="variable.abbreviation"
+              :value="variable"
+            >
+              <LineChart
+                v-if="variable"
+                id="chart"
+                :data="chartStore.chartData"
+                :chosenVariable="variable"
+              />
             </v-window-item>
           </v-window>
         </v-container>
@@ -26,12 +39,12 @@
   </v-bottom-sheet>
 </template>
 <script setup>
-import LineChart from "@/components/LineChart.vue";
+import LineChart from '@/components/LineChart.vue'
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { storeToRefs } from "pinia";
+import { storeToRefs } from 'pinia'
 
 const featureStore = useFeaturesStore()
 const chartStore = useChartsStore()
@@ -39,7 +52,6 @@ const hydrologicStore = useHydrologicStore()
 
 const { selectedVariables } = storeToRefs(hydrologicStore)
 let varTab = ref(selectedVariables[0])
-
 </script>
 
 <style scoped>

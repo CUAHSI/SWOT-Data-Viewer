@@ -1,15 +1,38 @@
 <template>
   <v-form>
     <v-container>
-      <v-range-slider v-model="sliderRange" :min="featuresStore.minTime" :max="featuresStore.maxTime"
-        class="align-center" hide-details @update:modelValue="updateDateRange" @end="updateDateRangeComplete">
+      <v-range-slider
+        v-model="sliderRange"
+        :min="featuresStore.minTime"
+        :max="featuresStore.maxTime"
+        class="align-center"
+        hide-details
+        @update:modelValue="updateDateRange"
+        @end="updateDateRangeComplete"
+      >
         <template v-slot:prepend>
-          <v-text-field v-model="dateRange[0]" density="compact" type="date" variant="outlined" hide-details single-line
-            @update:modelValue="updateSliderRange" :rules="[rules.min,]"></v-text-field>
+          <v-text-field
+            v-model="dateRange[0]"
+            density="compact"
+            type="date"
+            variant="outlined"
+            hide-details
+            single-line
+            @update:modelValue="updateSliderRange"
+            :rules="[rules.min]"
+          ></v-text-field>
         </template>
         <template v-slot:append>
-          <v-text-field v-model="dateRange[1]" density="compact" type="date" variant="outlined" hide-details single-line
-            @update:modelValue="updateSliderRange" :rules="[rules.max,]"></v-text-field>
+          <v-text-field
+            v-model="dateRange[1]"
+            density="compact"
+            type="date"
+            variant="outlined"
+            hide-details
+            single-line
+            @update:modelValue="updateSliderRange"
+            :rules="[rules.max]"
+          ></v-text-field>
         </template>
       </v-range-slider>
     </v-container>
@@ -18,7 +41,7 @@
 
 <script setup>
 import { ref, defineExpose } from 'vue'
-import { useFeaturesStore } from '../stores/features';
+import { useFeaturesStore } from '../stores/features'
 import { useChartsStore } from '@/stores/charts'
 
 // define an update event that emits the new range
@@ -57,39 +80,43 @@ const updateDateRangeComplete = () => {
 }
 
 async function filterDatasetsToTimeRange() {
-  chartStore.filterDatasetsToTimeRange(chartStore.nodeChartData.datasets, dateRange.value[0], dateRange.value[1])
+  chartStore.filterDatasetsToTimeRange(
+    chartStore.nodeChartData.datasets,
+    dateRange.value[0],
+    dateRange.value[1]
+  )
   emit('update', sliderRange.value)
 }
 
 const setInitialState = () => {
-  // Updates the dateRange object with the range defined 
+  // Updates the dateRange object with the range defined
   // by the series visible in the chart.
 
   // set the initial state for the time ranges based
   // off available data.
-  let offset = 2 * 86400; // 2 days in seconds. This is chosen arbitrarily
-  let minDateSec = Math.min(...chartStore.nodeChartData.datasets
-                       .map(series => series.minDateTime)) / 1000 - offset;
-  let maxDateSec = Math.max(...chartStore.nodeChartData.datasets
-                       .map(series => series.maxDateTime)) / 1000 + offset;
-  featuresStore.timeRange = [minDateSec, maxDateSec];
-  featuresStore.minTime = minDateSec;
-  featuresStore.maxTime = maxDateSec;
+  let offset = 2 * 86400 // 2 days in seconds. This is chosen arbitrarily
+  let minDateSec =
+    Math.min(...chartStore.nodeChartData.datasets.map((series) => series.minDateTime)) / 1000 -
+    offset
+  let maxDateSec =
+    Math.max(...chartStore.nodeChartData.datasets.map((series) => series.maxDateTime)) / 1000 +
+    offset
+  featuresStore.timeRange = [minDateSec, maxDateSec]
+  featuresStore.minTime = minDateSec
+  featuresStore.maxTime = maxDateSec
 
-  sliderRange.value = featuresStore.timeRange   
+  sliderRange.value = featuresStore.timeRange
   dateRange.value = featuresStore.timeRange.map((seconds) => {
     return convertSecondsToDateString(seconds)
   })
 }
-
 
 // There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
 const sliderRange = ref(featuresStore.timeRange)
 const dateRange = ref(featuresStore.timeRange.map((t) => convertSecondsToDateString(t)))
 
 // set the min/max time range for the time slider component
-setInitialState();
-
+setInitialState()
 
 const rules = {
   min: (v) => {
@@ -117,11 +144,10 @@ const rules = {
       return 'End date must be before the last date in the dataset'
     }
     return true
-  },
+  }
 }
 
 defineExpose({
-  setInitialState,
+  setInitialState
 })
-
 </script>
