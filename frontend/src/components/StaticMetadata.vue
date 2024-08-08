@@ -10,21 +10,31 @@
       <v-card-text>
         <div v-for="metadataObject in defaultSwordMetadata()" :key="metadataObject.id">
           <v-divider />
-          <div><strong>{{ metadataObject.short_definition }}:</strong> {{ metadataObject.value }}</div>
+          <div>
+            <strong>{{ metadataObject.short_definition }}:</strong> {{ metadataObject.value }}
+          </div>
         </div>
         <template v-if="extended">
-          <div v-for="extendedMetadataObject in extendedMetadata()" :key="extendedMetadataObject.id">
+          <div
+            v-for="extendedMetadataObject in extendedMetadata()"
+            :key="extendedMetadataObject.id"
+          >
             <v-divider />
-            <div><strong>{{ extendedMetadataObject.short_definition }}:</strong> {{ extendedMetadataObject.value }}
+            <div>
+              <strong>{{ extendedMetadataObject.short_definition }}:</strong>
+              {{ extendedMetadataObject.value }}
             </div>
           </div>
         </template>
       </v-card-text>
     </v-card>
   </v-sheet>
-  <v-btn v-if="!extended" @click="extendMetadata" color="primary"><v-icon :icon="mdiSword"></v-icon>Metadata</v-btn>
-  <v-btn v-else @click="extended = false" color="primary"><v-icon :icon="mdiSword"></v-icon>Hide Extended
-    Metadata</v-btn>
+  <v-btn v-if="!extended" @click="extendMetadata" color="primary"
+    ><v-icon :icon="mdiSword"></v-icon>Metadata</v-btn
+  >
+  <v-btn v-else @click="extended = false" color="primary"
+    ><v-icon :icon="mdiSword"></v-icon>Hide Extended Metadata</v-btn
+  >
 </template>
 
 <script setup>
@@ -40,7 +50,11 @@ let extended = ref(false)
 
 const extendMetadata = () => {
   if (!featureStore.activeFeature) return
-  extendedMetadata.value = hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, false, 'reach')
+  extendedMetadata.value = hydrologicStore.getSwordDescriptions(
+    featureStore.activeFeature.properties,
+    false,
+    'reach'
+  )
   extended.value = true
 }
 
@@ -55,5 +69,4 @@ const defaultSwordMetadata = () => {
   // TODO:nodes assumes reach, won't work for nodes
   return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, true, 'reach')
 }
-
 </script>

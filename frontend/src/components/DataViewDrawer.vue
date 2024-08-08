@@ -1,13 +1,31 @@
 <template>
-  <v-navigation-drawer v-if="featureStore.activeFeature" location="right" width="auto" v-model="show" order="1">
+  <v-navigation-drawer
+    v-if="featureStore.activeFeature"
+    location="right"
+    width="auto"
+    v-model="show"
+    order="1"
+  >
     <v-container v-if="featureStore.activeFeature">
-      <v-btn v-if="featureStore.activeFeature" @click="show = !show" location="left" order="0" postition="absolute"
+      <v-btn
+        v-if="featureStore.activeFeature"
+        @click="show = !show"
+        location="left"
+        order="0"
+        postition="absolute"
         :style="{ bottom: '30%', transform: translate(), position: 'absolute' }"
-        :icon="show ? mdiChevronRight : mdiChevronLeft">
+        :icon="show ? mdiChevronRight : mdiChevronLeft"
+      >
       </v-btn>
       <StaticMetadata />
       <!-- <DynamicData /> -->
-      <v-btn v-if="!hasResults()" @click="query" color="primary" class="ma-2" :loading="querying.hydrocron">
+      <v-btn
+        v-if="!hasResults()"
+        @click="query"
+        color="primary"
+        class="ma-2"
+        :loading="querying.hydrocron"
+      >
         <v-icon :icon="mdiChartScatterPlot"></v-icon>Plot
       </v-btn>
       <!-- <v-btn @click="getNodesInActiveReach" color="primary" class="ma-2" :loading="querying.nodes">
@@ -22,7 +40,7 @@ import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot, mdiResistorNodes } from '@mdi/js'
 // import DynamicData from '@/components/DynamicData.vue'
-import { queryHydroCron, getNodesFromReach, getNodeDataForReach } from "../_helpers/hydroCron";
+import { queryHydroCron, getNodesFromReach, getNodeDataForReach } from '../_helpers/hydroCron'
 import StaticMetadata from './StaticMetadata.vue'
 import { useRouter } from 'vue-router'
 import { useChartsStore } from '@/stores/charts'
@@ -31,7 +49,6 @@ const featureStore = useFeaturesStore()
 const chartStore = useChartsStore()
 
 let show = ref(false)
-
 
 const translate = () => {
   if (show.value) {
@@ -58,9 +75,8 @@ const query = async () => {
 const getNodesInActiveReach = async () => {
   querying.value.nodes = true
   const nodes = await getNodesFromReach(featureStore.activeFeature)
-  console.log("Nodes", nodes)
+  console.log('Nodes', nodes)
   querying.value.nodes = false
-
 }
 
 const hasResults = () => {
@@ -73,9 +89,7 @@ featureStore.$subscribe((mutation, state) => {
     show.value = true
   }
 })
-
 </script>
-
 
 <style scoped>
 #chart {

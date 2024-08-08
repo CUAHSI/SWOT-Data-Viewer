@@ -14,14 +14,14 @@ export const useMapStore = defineStore('map', () => {
   const deselectFeature = (feature) => {
     mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
       color: featureOptions.value.defaultColor,
-      weight: featureOptions.value.defaultWeight,
+      weight: featureOptions.value.defaultWeight
     })
   }
 
   const selectFeature = (feature) => {
     mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
       color: featureOptions.value.selectedColor,
-      weight: featureOptions.value.selectedWeight,
+      weight: featureOptions.value.selectedWeight
     })
   }
 

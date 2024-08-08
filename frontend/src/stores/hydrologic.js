@@ -14,7 +14,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: true,
       selectable: false,
       fileType: 'all',
-      plottable: false,
+      plottable: false
     },
     {
       abbreviation: 'wse',
@@ -26,7 +26,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: true,
       fileType: 'all',
-      plottable: true,
+      plottable: true
     },
     {
       abbreviation: 'slope',
@@ -38,7 +38,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: true,
       fileType: 'reach',
-      plottable: true,
+      plottable: true
     },
     {
       abbreviation: 'width',
@@ -49,7 +49,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: true,
       fileType: 'all',
-      plottable: true,
+      plottable: true
     },
     {
       abbreviation: 'area_total',
@@ -61,7 +61,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: true,
       fileType: 'all',
-      plottable: true,
+      plottable: true
     },
     {
       abbreviation: 'd_x_area',
@@ -73,7 +73,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: false,
       fileType: 'reach',
-      plottable: true,
+      plottable: true
     },
     {
       abbreviation: 'dschg_c',
@@ -84,7 +84,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: false,
       fileType: 'reach',
-      plottable: true,
+      plottable: true
     },
     {
       abbreviation: 'geometry',
@@ -95,7 +95,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: false,
       fileType: 'all',
-      plottable: false,
+      plottable: false
     },
     {
       abbreviation: 'reach_q',
@@ -107,7 +107,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: true,
       selectable: false,
       fileType: 'reach',
-      plottable: false,
+      plottable: false
     },
     {
       abbreviation: 'node_q',
@@ -119,7 +119,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: true,
       selectable: false,
       fileType: 'node',
-      plottable: false,
+      plottable: false
     },
     {
       abbreviation: 'node_dist',
@@ -130,7 +130,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: false,
       fileType: 'node',
-      plottable: false,
+      plottable: false
     },
     {
       abbreviation: 'p_dist_out',
@@ -141,18 +141,18 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: true,
       selectable: false,
       fileType: 'node',
-      plottable: false,
-    },
+      plottable: false
+    }
   ])
 
   const defaultVariables = swotVariables.value.filter((variable) => variable.default)
-  const queryVariables = (fileType='reach', always=undefined) => {
-    return swotVariables.value.filter(
-      (variable) => {
-        return  (variable.fileType === fileType.toLowerCase() || variable.fileType === 'all') &&
+  const queryVariables = (fileType = 'reach', always = undefined) => {
+    return swotVariables.value.filter((variable) => {
+      return (
+        (variable.fileType === fileType.toLowerCase() || variable.fileType === 'all') &&
         (always === undefined || variable.always === always)
-      }
-    )
+      )
+    })
   }
   const selectedVariables = ref(defaultVariables)
 

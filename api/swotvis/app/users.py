@@ -11,7 +11,7 @@ from httpx_oauth.exceptions import GetIdEmailError
 from httpx_oauth.oauth2 import OAuth2
 
 from app.db import User, get_user_db
-from config import get_settings, get_minio_client
+from config import get_minio_client, get_settings
 
 SECRET = "SECRET"
 
@@ -65,6 +65,7 @@ class UserManager(ObjectIDIDMixin, BaseUserManager[User, PydanticObjectId]):
 
 async def get_user_manager(user_db: BeanieUserDatabase = Depends(get_user_db)):
     yield UserManager(user_db)
+
 
 bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 

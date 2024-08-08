@@ -4,12 +4,11 @@
   <v-container v-if="!hasFeatures">
     <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
       <span>
-        You don't have any selections yet.
-        Use the <router-link :to="{ path: `/` }">Map</router-link> to make selections.
+        You don't have any selections yet. Use the
+        <router-link :to="{ path: `/` }">Map</router-link> to make selections.
       </span>
     </v-sheet>
   </v-container>
-
 
   <v-container v-if="hasFeatures">
     <v-tabs v-model="tab" align-tabs="center">
@@ -19,31 +18,48 @@
     <v-window v-model="tab">
       <v-window-item :value="1" :key="1">
         <v-data-table :headers="headers" :items="featureStore.selectedFeatures" :sort-by="sortBy">
-
           <template v-slot:item.actions="{ item }">
             <v-tooltip text="Download SWOT JSON">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="mdiCodeJson" size="small" @click="downloadFeatureJson(item)"></v-btn>
+                <v-btn
+                  v-bind="props"
+                  :icon="mdiCodeJson"
+                  size="small"
+                  @click="downloadFeatureJson(item)"
+                ></v-btn>
               </template>
             </v-tooltip>
             <v-tooltip text="Download SWOT CSV">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="mdiFileDelimited" size="small" @click="downloadCsv(item)"></v-btn>
+                <v-btn
+                  v-bind="props"
+                  :icon="mdiFileDelimited"
+                  size="small"
+                  @click="downloadCsv(item)"
+                ></v-btn>
               </template>
             </v-tooltip>
             <v-tooltip text="HydroCron Result">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="mdiSatelliteVariant" size="small"
-                  @click="viewHydroCronResult(item)"></v-btn>
+                <v-btn
+                  v-bind="props"
+                  :icon="mdiSatelliteVariant"
+                  size="small"
+                  @click="viewHydroCronResult(item)"
+                ></v-btn>
               </template>
             </v-tooltip>
             <v-tooltip text="SWORD Info">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="mdiSword" size="small" @click="viewSwordInfo(item)"></v-btn>
+                <v-btn
+                  v-bind="props"
+                  :icon="mdiSword"
+                  size="small"
+                  @click="viewSwordInfo(item)"
+                ></v-btn>
               </template>
             </v-tooltip>
           </template>
-
         </v-data-table>
       </v-window-item>
       <v-window-item :value="2" :key="2">
@@ -104,23 +120,42 @@
               <v-card-actions>
                 <v-tooltip text="Download SWOT JSON">
                   <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" :icon="mdiCodeJson" size="small" @click="downloadFeatureJson(feature)"></v-btn>
+                    <v-btn
+                      v-bind="props"
+                      :icon="mdiCodeJson"
+                      size="small"
+                      @click="downloadFeatureJson(feature)"
+                    ></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="Download SWOT CSV">
                   <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" :icon="mdiFileDelimited" size="small" @click="downloadCsv(feature)"></v-btn>
+                    <v-btn
+                      v-bind="props"
+                      :icon="mdiFileDelimited"
+                      size="small"
+                      @click="downloadCsv(feature)"
+                    ></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="HydroCron Result">
                   <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" :icon="mdiSatelliteVariant" size="small"
-                      @click="viewHydroCronResult(feature)"></v-btn>
+                    <v-btn
+                      v-bind="props"
+                      :icon="mdiSatelliteVariant"
+                      size="small"
+                      @click="viewHydroCronResult(feature)"
+                    ></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="SWORD Info">
                   <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" :icon="mdiSword" size="small" @click="viewSwordInfo(feature)"></v-btn>
+                    <v-btn
+                      v-bind="props"
+                      :icon="mdiSword"
+                      size="small"
+                      @click="viewSwordInfo(feature)"
+                    ></v-btn>
                   </template>
                 </v-tooltip>
               </v-card-actions>
@@ -134,12 +169,10 @@
   <v-bottom-sheet v-model="sheetText" inset>
     <v-card class="text-center" height="100%">
       <v-card-text>
-        <v-btn @click="sheetText = null">
-          close
-        </v-btn>
+        <v-btn @click="sheetText = null"> close </v-btn>
 
-        <br>
-        <br>
+        <br />
+        <br />
 
         <div>
           {{ sheetText }}
@@ -150,14 +183,14 @@
 </template>
 
 <script setup>
-import { useFeaturesStore } from '../stores/features';
-import { RouterLink } from 'vue-router';
+import { useFeaturesStore } from '../stores/features'
+import { RouterLink } from 'vue-router'
 import { ref } from 'vue'
 import { mdiSatelliteVariant, mdiSword, mdiCodeJson, mdiFileDelimited } from '@mdi/js'
-import { computed } from 'vue';
-import { downloadFeatureJson, downloadCsv } from "../_helpers/hydroCron";
+import { computed } from 'vue'
+import { downloadFeatureJson, downloadCsv } from '../_helpers/hydroCron'
 
-const featureStore = useFeaturesStore();
+const featureStore = useFeaturesStore()
 
 let sheetText = ref(null)
 
@@ -165,14 +198,13 @@ let tab = ref(1)
 
 let hasFeatures = computed(() => featureStore.selectedFeatures.length > 0)
 
-
 const headers = [
-  { title: 'Feature type', key: 'feature_type', value: item => item.params.feature },
-  { title: 'Reach ID', key: 'reach_id', value: item => item.sword.reach_id },
-  { title: 'River name', key: 'river_name', value: item => item.sword.river_name },
-  { title: 'Start time', key: 'start_time', value: item => item.params.start_time },
-  { title: 'End time', key: 'end_time', value: item => item.params.end_time },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Feature type', key: 'feature_type', value: (item) => item.params.feature },
+  { title: 'Reach ID', key: 'reach_id', value: (item) => item.sword.reach_id },
+  { title: 'River name', key: 'river_name', value: (item) => item.sword.river_name },
+  { title: 'Start time', key: 'start_time', value: (item) => item.params.start_time },
+  { title: 'End time', key: 'end_time', value: (item) => item.params.end_time },
+  { title: 'Actions', key: 'actions', sortable: false }
   // { title: 'SWOT Time String', key: 'time_str', value: item => item.results.geojson }
 ]
 const sortBy = [{ key: 'startedAt', order: 'desc' }]
@@ -188,5 +220,4 @@ async function viewSwordInfo(feature) {
   console.log(info)
   sheetText.value = JSON.stringify(info)
 }
-
 </script>
