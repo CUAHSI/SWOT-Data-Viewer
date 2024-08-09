@@ -16,7 +16,10 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   // TODO: get the start and end time from the date range
   let feature_type = swordFeature?.properties?.node_id == undefined ? 'Reach' : 'Node'
   swordFeature.feature_type = feature_type
-  let feature_id = feature_type === 'Reach' ? swordFeature?.properties?.reach_id : swordFeature?.properties?.node_id
+  let feature_id =
+    feature_type === 'Reach'
+      ? swordFeature?.properties?.reach_id
+      : swordFeature?.properties?.node_id
   swordFeature.feature_id = feature_id
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation)

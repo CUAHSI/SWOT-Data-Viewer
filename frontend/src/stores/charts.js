@@ -14,10 +14,22 @@ export const useChartsStore = defineStore('charts', () => {
   const chartTab = ref('timeseries')
 
   const dataQualityOptions = [
-    { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle }, 
-    { value: 1, label: 'suspect', pointStyle: 'rectRounded', pointBorderColor: 'yellow', icon: mdiSquareRounded }, 
-    { value: 2, label: 'degraded', pointStyle: 'rect', pointBorderColor: 'orange', icon: mdiRectangle }, 
-    { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus },
+    { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
+    {
+      value: 1,
+      label: 'suspect',
+      pointStyle: 'rectRounded',
+      pointBorderColor: 'yellow',
+      icon: mdiSquareRounded
+    },
+    {
+      value: 2,
+      label: 'degraded',
+      pointStyle: 'rect',
+      pointBorderColor: 'orange',
+      icon: mdiRectangle
+    },
+    { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
   ]
 
   const updateChartData = (data) => {
@@ -25,6 +37,13 @@ export const useChartsStore = defineStore('charts', () => {
     // https://github.com/apertureless/vue-chartjs/issues/1040
     chartData.value = data
     console.log('Updated chart data', chartData.value)
+  }
+
+  const updateNodeChartData = (data) => {
+    // This function is used to update the nodeChartData object
+    // data = the new data series to set in the object.
+    nodeChartData.value.datasets = data
+    console.log('Updated Node Chart Data', nodeChartData.value)
   }
 
   const clearChartData = () => {
@@ -91,14 +110,23 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const filterDataQuality = (dataQualityFlags, datasets) => {
-    console.log('Filtering data quality', dataQualityFlags)
-    console.log('Starting Datasets', datasets)
-    datasets.forEach((dataset) => {
-      console.log('Starting pointstyle', dataset.pointStyle)
+  const filterDataQuality = (dataQualityFlags, datasets, qualityLabel = 'reach_q') => {
+    // Alters series point styles between their default style (dataset.pointStyle) and
+    // Null. This is used to toggle them on/off using the data quality flag selection
+    // from the DataQuality.vue component.
+
+    // filter datasets to only include SWOT series. These are the
+    // only series that have a quality flag
+    let swotDatasets = datasets.filter((d) =>
+      ['swot_node_series', 'swot_reach_series'].includes(d.seriesType)
+    )
+
+    // loop over each point in the swot datasets and update the point style
+    swotDatasets.forEach((dataset) => {
       const pointStyles = dataset.data.map((dataPoint, i) => {
         let pointStyle = dataset.pointStyle[i]
-        if (!dataQualityFlags.includes(parseInt(dataPoint.reach_q))) {
+
+        if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
           // TODO: need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
           pointStyle = false
@@ -108,8 +136,8 @@ export const useChartsStore = defineStore('charts', () => {
         }
         return pointStyle
       })
+
       dataset.pointStyle = pointStyles
-      console.log('Ending pointstyle', dataset.pointStyle)
     })
   }
 
@@ -129,15 +157,17 @@ export const useChartsStore = defineStore('charts', () => {
       tolerance = NODE_DATETIME_VARIATION
     }
 
+    // Buffer start and end times by the tolerance
+    // Convert into a Date object and save as epoch time
+    // for comparision later.
     start = subMinutes(start, tolerance)
     end = addMinutes(end, tolerance)
+    console.log('Filtering time range', start, end)
 
     if (datasets == null) {
       console.log('Filtering using all datasets')
       datasets = nodeChartData.value.datasets
     }
-    console.log('Filtering time range', start, end)
-    console.log('Starting Datasets', datasets)
 
     datasets.forEach((dataset) => {
       // determine whether the dataset is within the time range
@@ -148,7 +178,6 @@ export const useChartsStore = defineStore('charts', () => {
         dataset.hidden = false
       }
     })
-    console.log('Ending Datasets', datasets)
   }
 
   const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {
@@ -259,6 +288,10 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
+    // builds the datasets for the time series chart. These are labeled
+    // using seriesType='swot_reach_series' to differentiate them from
+    // node-level data.
+
     const featureStore = useFeaturesStore()
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     console.log('Getting chart datasets for selected features', selectedFeatures)
@@ -279,12 +312,16 @@ export const useChartsStore = defineStore('charts', () => {
           // TODO: this should be dynamic based on the selected variable
           yAxisKey: 'wse'
         },
+        seriesType: 'swot_reach_series',
         ...getDataSetStyle(measurements)
       }
     })
   }
 
   const getNodeChartDatasets = (nodes) => {
+    // builds the datasets for the long-profile chart. These are labeled
+    // using seriesType='swot_node_series' to differentiate them from
+    // reach-level data.
     console.log('getting node chart datasets for nodes', nodes)
     let measurements = nodes.map((node) => {
       console.log('Parsing node', node)
@@ -319,6 +356,7 @@ export const useChartsStore = defineStore('charts', () => {
           xAxisKey: 'p_dist_out',
           yAxisKey: 'wse'
         },
+        seriesType: 'swot_node_series',
         ...getNodeDataSetStyle(timeStampGroup, colorScale),
         ...getDatasetMinMaxDateTimes(timeStampGroup)
       })
@@ -382,7 +420,6 @@ export const useChartsStore = defineStore('charts', () => {
     let pointStyle = 'circle'
     let pointBorderColor = 'white'
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
-    console.log('Data Quality', dataQuality)
     const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
     if (dataQualityOption) {
       pointStyle = dataQualityOption.pointStyle
@@ -468,7 +505,9 @@ export const useChartsStore = defineStore('charts', () => {
       pointStyle: styles.pointStyles,
       pointRadius: 5,
       pointHoverRadius: 15,
-      fill: styles.dynamicColors,
+      //fill: styles.dynamicColors,
+      fill: false,
+      // color: styles.colors,
       borderColor: styles.dynamicColors, // The line fill color.
       backgroundColor: styles.dynamicColors, // The line color.
       spanGaps: false,
@@ -482,6 +521,7 @@ export const useChartsStore = defineStore('charts', () => {
 
   return {
     updateChartData,
+    updateNodeChartData,
     chartData,
     nodeChartData,
     clearChartData,

@@ -8,10 +8,10 @@ export const useFeaturesStore = defineStore('features', () => {
   const activeFeature = ref(null)
   const nodes = ref([])
   // set the mintime to date of first data, 2023-03-29, relative to ECMAScript epoch in decimal seconds
-  const minTime = new Date('2023-03-29').getTime() / 1000;
+  const minTime = new Date('2023-03-29').getTime() / 1000
   // set the maxtime to today in decimal seconds
-  const maxTime = Date.now() / 1000;
-  const timeRange = ref([minTime, maxTime]);
+  const maxTime = Date.now() / 1000
+  const timeRange = ref([minTime, maxTime])
 
   const mapStore = useMapStore()
   const chartStore = useChartsStore()

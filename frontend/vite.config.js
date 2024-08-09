@@ -8,18 +8,15 @@ import vuetify from 'vite-plugin-vuetify'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   return {
-  plugins: [
-    vue(),
-    vuetify(),
-  ],
-  root: "./",
-  // for GH pages deployment, set VITE_APP_BASE=/swot-data-viewer/ in .env
-  base: env.VITE_APP_BASE || "/",
-  envDir: "../",
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+    plugins: [vue(), vuetify()],
+    root: './',
+    // for GH pages deployment, set VITE_APP_BASE=/swot-data-viewer/ in .env
+    base: env.VITE_APP_BASE || '/',
+    envDir: '../',
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      }
     }
   }
-}
 })
