@@ -56,11 +56,13 @@ export const useChartsStore = defineStore('charts', () => {
 
   const getLabels = (selectedFeatures) => {
     // TODO: for now we just use the first query
-    const labels = selectedFeatures[0].queries[0].results.geojson.features.map((feature) => {
-      if (feature.properties.time_str == 'no_data') {
+    // when compact = true, there will only be a single feature
+    const propertyObject = selectedFeatures[0].queries[0].results.geojson.features[0].properties
+    const labels = propertyObject.time_str.map((time_str) => {
+      if (time_str == 'no_data') {
         return
       }
-      return feature.properties.time_str
+      return time_str
     })
     return labels.filter((l) => l != undefined)
   }
@@ -297,9 +299,24 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Getting chart datasets for selected features', selectedFeatures)
     return selectedFeatures.map((feature) => {
       // TODO: for now we just use the first query
-      let measurements = feature.queries[0].results.geojson.features.map((feature) => {
-        return feature.properties
-      })
+      // with compact = true, there will only be a single feature and properties is an object of arrays
+      let propertyObject = feature.queries[0].results.geojson.features[0].properties
+
+      // each property of the propertyObject contains an array of measurements.
+      // the key in the propertyObject is the variable abbreviation
+      // we need to convert this to a single array of objects
+      // https://www.chartjs.org/docs/latest/general/data-structures.html#object
+      let measurements = []
+      for (const key in propertyObject) {
+        let values = propertyObject[key]
+        values.forEach((value, i) => {
+          if (measurements[i] == null) {
+            measurements[i] = {}
+          }
+          measurements[i][key] = value
+        })
+      }
+
       measurements = filterMeasurements(measurements, dataQualityFlags)
       console.log('SWOT measurements', measurements)
       console.log('SWOT feature', feature)
@@ -325,9 +342,18 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('getting node chart datasets for nodes', nodes)
     let measurements = nodes.map((node) => {
       console.log('Parsing node', node)
-      return node.queries[0].results.geojson.features.map((feature) => {
-        return feature.properties
-      })
+      const propertiesObj =  node.queries[0].results.geojson.features[0].properties
+      let array = []
+      for (const key in propertiesObj) {
+        let values = propertiesObj[key]
+        values.forEach((value, i) => {
+          if (array[i] == null) {
+            array[i] = {}
+          }
+          array[i][key] = value
+        })
+      }
+      return array
     })
     measurements = measurements.flat()
     measurements = filterMeasurements(measurements)
