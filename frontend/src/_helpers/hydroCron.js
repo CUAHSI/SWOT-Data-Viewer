@@ -65,7 +65,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     output: output,
     fields: fields,
     // https://podaac.github.io/hydrocron/timeseries.html#compact-string-required-no
-    compact: 'false'
+    compact: 'true'
   }
   let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
   if (response == null) {
