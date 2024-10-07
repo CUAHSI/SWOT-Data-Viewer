@@ -92,6 +92,7 @@ import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 import DataQuality from '@/components/DataQuality.vue'
 import { useChartsStore } from '@/stores/charts'
 import { APP_API_URL } from '@/constants'
+import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
 
 const { lgAndUp } = useDisplay()
 
