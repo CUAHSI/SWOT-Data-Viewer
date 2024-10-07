@@ -39,6 +39,8 @@ defineProps({ data: Object, chosenVariable: Object })
 const dataQuality = ref([0, 1, 2, 3])
 const emit = defineEmits(['qualityUpdated'])
 
+const panel = ref('0')
+
 function qualityHasChanged() {
   // emit the qualityUpdated event when the ndataQuality value changes
   emit('qualityUpdated', dataQuality.value)
