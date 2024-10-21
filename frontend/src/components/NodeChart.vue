@@ -101,11 +101,11 @@ const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
 const downloading = ref({ csv: false, json: false, chart: false })
 const showStatistics = ref(false)
-const dataQuality = ref([0, 1, 2, 3])
 const plotStyle = ref('Connected')
 const chartStatistics = ref(null)
 const timeRef = ref()
 let chartData = ref(chartStore.nodeChartData)
+let dataQuality = ref(chartStore.activeQualityFlags) // START HERE: changed dataQuality to activeQualityFlags in store
 
 const setDefaults = () => {
   // sets page elements back to their default values.
@@ -247,7 +247,8 @@ const options = {
 }
 
 const filterAllDatasets = (dataQualityValues) => {
-  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets, 'node_q')
+  chartStore.updateActiveQualityFlags(dataQualityValues)
+  chartStore.filterDataQuality(line.value.chart.data.datasets, 'node_q')
   setParsing(line.value.chart.data.datasets)
   line.value.chart.update()
 }

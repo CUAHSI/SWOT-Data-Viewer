@@ -12,6 +12,7 @@ export const useChartsStore = defineStore('charts', () => {
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
+  const activeQualityFlags = ref([0, 1, 2, 3]) // initialize to all qualities active
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -52,6 +53,7 @@ export const useChartsStore = defineStore('charts', () => {
     nodeChartData.value = {}
     showChart.value = false
     hasNodeData.value = false
+    activeQualityFlags.value = [0, 1, 2, 3] // reset to all qualities active
   }
 
   const getLabels = (selectedFeatures) => {
@@ -112,10 +114,20 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const filterDataQuality = (dataQualityFlags, datasets, qualityLabel = 'reach_q') => {
+  const updateActiveQualityFlags = (dataQualityFlags) => {
+
+    // Update the active quality flags in the store
+    activeQualityFlags.value = dataQualityFlags
+
+  }
+
+  const filterDataQuality = (datasets, qualityLabel = 'reach_q') => {
     // Alters series point styles between their default style (dataset.pointStyle) and
     // Null. This is used to toggle them on/off using the data quality flag selection
     // from the DataQuality.vue component.
+
+    // set the data quality flags to the active flags
+    let dataQualityFlags = activeQualityFlags.value
 
     // filter datasets to only include SWOT series. These are the
     // only series that have a quality flag
@@ -557,6 +569,7 @@ export const useChartsStore = defineStore('charts', () => {
     showChart,
     hasNodeData,
     dynamicColors,
+    updateActiveQualityFlags,
     filterDataQuality,
     filterDatasetsToTimeRange,
     filterDatasetsBySetOfDates,
