@@ -126,25 +126,15 @@ const setDefaults = () => {
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
+//Proxy(Object) {abbreviation: 'wse_v_dist', xvar: Proxy(Object), yvar: Proxy(Object), name: 'Water Surface Elevation vs. Distance'}
 
-    if (props.chosenVariable.abbreviation == 'wse_vs_width') {
-      // change the x-axis key for wse vs width plots
-      dataset.parsing.xAxisKey = 'width'
-      dataset.parsing.yAxisKey = 'wse'
-      let xvar = swotVariables.value.find(v => v.abbreviation == dataset.parsing.xAxisKey)
-      let yvar = swotVariables.value.find(v => v.abbreviation == dataset.parsing.yAxisKey)
-      xLabel = `${xvar.name} (${xvar.unit})`
-      yLabel = `${yvar.name} (${yvar.unit})`
-      title = `${props.data.title}: ${props.chosenVariable?.name}`
-    } else {
-      // set x-axis key to p_dist_out for all other plots
-      dataset.parsing.xAxisKey = 'p_dist_out'
-      dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
-      let xvar = swotVariables.value.find(v => v.abbreviation == dataset.parsing.xAxisKey)
-      xLabel = `${xvar.name} (${xvar.unit})`
-      yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-      title = `${props.data.title}: ${props.chosenVariable?.name}`
-    }
+    // update the chart based on the selected plot 
+    var plt = props.chosenVariable
+    dataset.parsing.xAxisKey = plt.xvar.abbreviation
+    dataset.parsing.yAxisKey = plt.yvar.abbreviation
+    xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+    yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+    title = `${props.data.title}\n${plt.title}`
   })
 }
 if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
@@ -224,12 +214,12 @@ const options = {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
         title: function (context) {
-          return `Distance: ${context[0].parsed.x} m`
+          let plt = props.chosenVariable
+          return `${plt.xvar.name}: ${context[0].parsed.x} (${plt.xvar.unit})`
         },
         label: function (context) {
-          // var label = context.dataset.label || '';
-          let selectedVariable = props.chosenVariable
-          let label = `${capitalizeFirstLetter(selectedVariable.abbreviation)}`
+          let plt = props.chosenVariable
+          let label = `${plt.yvar.name}`
           if (label) {
             label += ': '
           }
@@ -237,7 +227,7 @@ const options = {
             // label += new Intl.NumberFormat('en-US', { style: 'decimal', maximumFractionDigits: 5 }).format(context.parsed.y);
             label += context.parsed.y
           }
-          label += ` ${selectedVariable.unit}`
+          label += ` ${plt.yvar.unit}`
           // add the timestamp as well
           return label
         },

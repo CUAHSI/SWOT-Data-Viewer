@@ -5,6 +5,9 @@ import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
 import chroma from 'chroma-js'
 import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
+import { useHydrologicStore } from '@/stores/hydrologic'
+
+
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
@@ -30,6 +33,44 @@ export const useChartsStore = defineStore('charts', () => {
       icon: mdiRectangle
     },
     { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
+  ]
+
+  const hydrologicStore = useHydrologicStore()
+  let swotVariables = ref(hydrologicStore.swotVariables)
+  // a collection of charts that can be created in the node view
+  const nodeCharts = [
+    {
+      abbreviation: 'wse/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation along Reach Length',
+      name: 'WSE vs Distance',
+      help: swotVariables.value.find((v) => v.abbreviation == 'wse').definition,
+    },
+    {
+      abbreviation: 'area/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+      title: 'Water Surface Area along Reach Length',
+      help: swotVariables.value.find((v) => v.abbreviation == 'area_total').definition,
+      name: 'WSA vs Distance',
+    },
+    {
+      abbreviation: 'width/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      title: 'Reach Width along Reach Length',
+      help: "Reach Width plotted against Reach Length for all nodes in the selected reach",
+      name: 'Width vs Distance',
+    },
+    {
+      abbreviation: 'wse/width',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation vs Reach Width',
+      help: "Water Surface Elevation plotted against Reach Width for all nodes in the selected reach",
+      name: 'WSE vs Width',
+    }
   ]
 
   const updateChartData = (data) => {
@@ -563,6 +604,7 @@ export const useChartsStore = defineStore('charts', () => {
     dataQualityOptions,
     setDatasetVisibility,
     getNodeTimeStamps,
-    chartTab
+    chartTab,
+    nodeCharts,
   }
 })

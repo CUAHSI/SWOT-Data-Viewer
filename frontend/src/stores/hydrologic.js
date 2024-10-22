@@ -16,7 +16,6 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       plottable: false
     },
-    // --- NODE CHART PLOTS ---
     {
       abbreviation: 'wse',
       name: 'Water Surface Elevation',
@@ -64,19 +63,6 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       plottable: true
     },
-    {
-      abbreviation: 'wse_vs_width',
-      name: 'Water Surface Elevation vs Width',
-      unit: 'm',
-      definition:
-        'TODO',
-      default: false,
-      always: false,
-      selectable: true,
-      fileType: 'node',
-      plottable: true
-    },
-    // ------------------------
     {
       abbreviation: 'd_x_area',
       name: 'Change in area',
