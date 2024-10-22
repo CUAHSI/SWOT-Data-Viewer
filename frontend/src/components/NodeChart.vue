@@ -108,6 +108,12 @@ const chartStatistics = ref(null)
 const timeRef = ref()
 let chartData = ref(chartStore.nodeChartData)
 
+
+// set the initial plot labels. This is overridden in the setParting function
+let xLabel = 'Distance from outlet (m)'
+let yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
+let title = `${props.data.title}: ${props.chosenVariable?.name} vs Distance`
+
 const setDefaults = () => {
   // sets page elements back to their default values.
 
@@ -117,15 +123,28 @@ const setDefaults = () => {
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
-    dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
+
+    if (props.chosenVariable.abbreviation == 'wse_vs_width') {
+      // change the x-axis key for wse vs width plots
+      dataset.parsing.xAxisKey = 'width'
+      dataset.parsing.yAxisKey = 'wse'
+      xLabel = 'Channel Width (m)'
+      yLabel = 'Water Surface Elevation (m)'
+      title = 'Channel WSE vs Width'
+    } else {
+      // set x-axis key to p_dist_out for all other plots
+      dataset.parsing.xAxisKey = 'p_dist_out'
+      dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
+      xLabel = 'Distance from outlet (m)'
+      yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
+      title = `${props.data.title}: ${props.chosenVariable?.name} vs Distance`
+    }
   })
 }
 if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
   setParsing(chartData.value.datasets)
 }
 
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.title}: ${props.chosenVariable?.name} vs Distance`
 
 const options = {
   responsive: true,
@@ -234,7 +253,7 @@ const options = {
       type: 'linear',
       title: {
         display: true,
-        text: 'Distance from outlet (m)'
+        text: xLabel
       },
       reverse: true
     },

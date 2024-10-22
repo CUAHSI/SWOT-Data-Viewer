@@ -142,7 +142,19 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       selectable: false,
       fileType: 'node',
       plottable: false
-    }
+    },
+    {
+      abbreviation: 'wse_vs_width',
+      name: 'Water Surface Elevation vs Width',
+      unit: 'm',
+      definition:
+        'TODO',
+      default: false,
+      always: false,
+      selectable: true,
+      fileType: 'node',
+      plottable: true
+    },
   ])
 
   const defaultVariables = swotVariables.value.filter((variable) => variable.default)
