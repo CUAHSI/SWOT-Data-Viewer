@@ -16,6 +16,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       plottable: false
     },
+    // --- NODE CHART PLOTS ---
     {
       abbreviation: 'wse',
       name: 'Water Surface Elevation',
@@ -30,7 +31,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     },
     {
       abbreviation: 'slope',
-      name: 'Slope',
+      name: 'Reach Slope',
       unit: 'm/m',
       definition:
         'Fitted water surface slope, relative to the provided model of the geoid(geoid_hght), and with the same corrections and tidal effects applied as for wse. The units are m/m. The downstream direction is defined by the PRD. A positive slope means that the downstream WSE is lower.',
@@ -42,7 +43,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     },
     {
       abbreviation: 'width',
-      name: 'Width',
+      name: 'Reach Width',
       unit: 'm',
       definition: 'Reach width',
       default: true,
@@ -63,6 +64,19 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       plottable: true
     },
+    {
+      abbreviation: 'wse_vs_width',
+      name: 'Water Surface Elevation vs Width',
+      unit: 'm',
+      definition:
+        'TODO',
+      default: false,
+      always: false,
+      selectable: true,
+      fileType: 'node',
+      plottable: true
+    },
+    // ------------------------
     {
       abbreviation: 'd_x_area',
       name: 'Change in area',
@@ -142,19 +156,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       selectable: false,
       fileType: 'node',
       plottable: false
-    },
-    {
-      abbreviation: 'wse_vs_width',
-      name: 'Water Surface Elevation vs Width',
-      unit: 'm',
-      definition:
-        'TODO',
-      default: false,
-      always: false,
-      selectable: true,
-      fileType: 'node',
-      plottable: true
-    },
+    }
   ])
 
   const defaultVariables = swotVariables.value.filter((variable) => variable.default)

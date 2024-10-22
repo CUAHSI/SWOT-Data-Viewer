@@ -93,9 +93,11 @@ import DataQuality from '@/components/DataQuality.vue'
 import { useChartsStore } from '@/stores/charts'
 import { APP_API_URL } from '@/constants'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
+import { useHydrologicStore } from '@/stores/hydrologic'
 
 const { lgAndUp } = useDisplay()
 
+const hydrologicStore = useHydrologicStore()
 const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenVariable: Object })
@@ -107,6 +109,7 @@ const plotStyle = ref('Connected')
 const chartStatistics = ref(null)
 const timeRef = ref()
 let chartData = ref(chartStore.nodeChartData)
+let swotVariables = ref(hydrologicStore.swotVariables)
 
 
 // set the initial plot labels. This is overridden in the setParting function
@@ -128,16 +131,19 @@ const setParsing = (datasets) => {
       // change the x-axis key for wse vs width plots
       dataset.parsing.xAxisKey = 'width'
       dataset.parsing.yAxisKey = 'wse'
-      xLabel = 'Channel Width (m)'
-      yLabel = 'Water Surface Elevation (m)'
-      title = 'Channel WSE vs Width'
+      let xvar = swotVariables.value.find(v => v.abbreviation == dataset.parsing.xAxisKey)
+      let yvar = swotVariables.value.find(v => v.abbreviation == dataset.parsing.yAxisKey)
+      xLabel = `${xvar.name} (${xvar.unit})`
+      yLabel = `${yvar.name} (${yvar.unit})`
+      title = `${props.data.title}: ${props.chosenVariable?.name}`
     } else {
       // set x-axis key to p_dist_out for all other plots
       dataset.parsing.xAxisKey = 'p_dist_out'
       dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
-      xLabel = 'Distance from outlet (m)'
+      let xvar = swotVariables.value.find(v => v.abbreviation == dataset.parsing.xAxisKey)
+      xLabel = `${xvar.name} (${xvar.unit})`
       yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-      title = `${props.data.title}: ${props.chosenVariable?.name} vs Distance`
+      title = `${props.data.title}: ${props.chosenVariable?.name}`
     }
   })
 }
