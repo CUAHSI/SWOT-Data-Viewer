@@ -35,7 +35,6 @@
             <LineChart
               v-if="variable"
               class="chart"
-              :data="chartStore.chartData"
               :chosenVariable="variable"
             />
           </v-window-item>

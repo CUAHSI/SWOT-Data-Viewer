@@ -8,7 +8,7 @@
           max-width="100%"
           min-width="500px"
         >
-          <Line :data="chartData" :options="options" ref="line" :plugins="[Filler]" />
+          <Line :data="chartData" :options="options" ref="lineChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
           <TimeRangeSlider
@@ -51,7 +51,7 @@
             label="Plot Style"
             v-model="plotStyle"
             :items="['Scatter', 'Connected']"
-            @update:modelValue="updateChartLine()"
+            @update:modelValue="chartStore.updateChartLine(lineChart)"
           >
           </v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
@@ -92,6 +92,7 @@ import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 import DataQuality from '@/components/DataQuality.vue'
 import { useChartsStore } from '@/stores/charts'
 import { APP_API_URL } from '@/constants'
+import { storeToRefs } from 'pinia'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
 
 const { lgAndUp } = useDisplay()
@@ -99,14 +100,13 @@ const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenVariable: Object })
-const line = ref(null)
 const downloading = ref({ csv: false, json: false, chart: false })
 const showStatistics = ref(false)
 const dataQuality = ref([0, 1, 2, 3])
-const plotStyle = ref('Connected')
+const { plotStyle, nodeChartData, lineChart } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const timeRef = ref()
-let chartData = ref(chartStore.nodeChartData)
+const chartData = nodeChartData
 
 const setDefaults = () => {
   // sets page elements back to their default values.
@@ -125,7 +125,7 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
 }
 
 const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.title}: ${props.chosenVariable?.name} vs Distance`
+const title = `${chartData.value.title}: ${props.chosenVariable?.name} vs Distance`
 
 const options = {
   responsive: true,
@@ -149,9 +149,9 @@ const options = {
 
           // toggle the q0.75 data series that is not displayed in the legend. This will make
           // IQR appear as a patch instead of a line.
-          let isHidden = line.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden
-          line.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden = !isHidden
-          line.value.chart.update()
+          let isHidden = lineChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden
+          lineChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden = !isHidden
+          lineChart.value.chart.update()
         } else {
           toggleByIndex(index)
         }
@@ -248,17 +248,17 @@ const options = {
 }
 
 const filterAllDatasets = (dataQualityValues) => {
-  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets, 'node_q')
-  setParsing(line.value.chart.data.datasets)
-  line.value.chart.update()
+  chartStore.filterDataQuality(dataQualityValues, lineChart.value.chart.data.datasets, 'node_q')
+  setParsing(lineChart.value.chart.data.datasets)
+  lineChart.value.chart.update()
 }
 
 const resetZoom = () => {
-  line.value.chart.resetZoom()
+  lineChart.value.chart.resetZoom()
 }
 
 const getChartName = () => {
-  let identifier = `${props.data.datasets[0].label}-${props.chosenVariable.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenVariable.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
@@ -267,9 +267,9 @@ const downloadChart = async () => {
   downloading.value.chart = true
   const filename = getChartName()
   // change the chart background color to white
-  line.value.chart.canvas.style.backgroundColor = 'white'
+  lineChart.value.chart.canvas.style.backgroundColor = 'white'
 
-  const image = line.value.chart.toBase64Image('image/png', 1)
+  const image = lineChart.value.chart.toBase64Image('image/png', 1)
   const link = document.createElement('a')
   link.href = image
   link.download = filename
@@ -287,18 +287,6 @@ const downJson = async () => {
   downloading.value.json = true
   await downloadMultiNodesJson()
   downloading.value.json = false
-}
-
-const updateChartLine = () => {
-  let showLine = false
-  if (plotStyle.value === 'Connected') {
-    showLine = true
-  }
-  line.value.chart.data.datasets.forEach((dataset) => {
-    dataset.showLine = showLine
-    setParsing(line.value.chart.data.datasets)
-  })
-  line.value.chart.update()
 }
 
 const resetData = () => {
@@ -328,16 +316,16 @@ const resetData = () => {
   setDefaults()
 
   // update the chart
-  line.value.chart.data.datasets = chartData.value.datasets
-  line.value.chart.update()
+  lineChart.value.chart.data.datasets = chartData.value.datasets
+  lineChart.value.chart.update()
 }
 
 const timeSliderUpdated = () => {
   // This function is called when the time slider is updated.
   // It filters the chart data to the data that are active in the time slider range.
 
-  line.value.chart.data.datasets = chartData.value.datasets
-  line.value.chart.update()
+  lineChart.value.chart.data.datasets = chartData.value.datasets
+  lineChart.value.chart.update()
 }
 
 const timeRangeUpdateComplete = async () => {
@@ -363,8 +351,8 @@ const timeRangeUpdateComplete = async () => {
     chartStore.updateNodeChartData(datasets)
 
     // update the chart
-    line.value.chart.data.datasets = chartData.value.datasets
-    line.value.chart.update()
+    lineChart.value.chart.data.datasets = chartData.value.datasets
+    lineChart.value.chart.update()
   }
 }
 
@@ -472,7 +460,7 @@ const toggleSeriesStatistics = async (visible = true) => {
   // adds and removes computed statistics from the chart
 
   // get the data from the chart
-  let updatedDatasets = line.value.chart.data.datasets
+  let updatedDatasets = lineChart.value.chart.data.datasets
 
   if (visible) {
     let statisticSeries = await generateStatisticsSeries()
@@ -488,8 +476,8 @@ const toggleSeriesStatistics = async (visible = true) => {
   chartStore.updateNodeChartData(updatedDatasets)
 
   // update the chart
-  line.value.chart.data.datasets = chartData.value.datasets
-  // line.value.chart.data.datasets = updatedDatasets;
-  line.value.chart.update()
+  lineChart.value.chart.data.datasets = chartData.value.datasets
+  // lineChart.value.chart.data.datasets = updatedDatasets;
+  lineChart.value.chart.update()
 }
 </script>
