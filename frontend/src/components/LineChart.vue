@@ -27,7 +27,7 @@
                 label="Plot Style"
                 v-model="plotStyle"
                 :items="['Scatter', 'Connected']"
-                @update:modelValue="updateChartLine()"
+                @update:modelValue="chartStore.updateChartLine(line)"
               ></v-select>
               <v-btn
                 :loading="downloading.chart"
@@ -104,6 +104,7 @@ import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import {
   mdiDownloadBox,
   mdiFileDelimited,
@@ -126,13 +127,9 @@ const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
 const line = ref(null)
-const plotStyle = ref('Scatter')
+const { plotStyle, chartData } = storeToRefs(chartStore)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
-
-// TODO: might need a more efficient way of doing this instead of re-mapping the data
-// Ideally use the store directly instead of passing it as a prop
-let chartData = ref(props.data)
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
@@ -144,7 +141,7 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
 }
 
 const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.title} - ${props.chosenVariable?.name}`
+const title = `${chartData.value.title} - ${props.chosenVariable?.name}`
 
 const options = {
   responsive: true,
@@ -309,7 +306,7 @@ const resetZoom = () => {
 }
 
 const getChartName = () => {
-  let identifier = `${props.data.datasets[0].label}-${props.chosenVariable.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenVariable.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
@@ -338,18 +335,6 @@ const downJson = async () => {
   downloading.value.json = true
   await downloadFeatureJson()
   downloading.value.json = false
-}
-
-const updateChartLine = () => {
-  let showLine = false
-  if (plotStyle.value === 'Connected') {
-    showLine = true
-  }
-  line.value.chart.data.datasets.forEach((dataset) => {
-    dataset.showLine = showLine
-    setParsing(line.value.chart.data.datasets)
-  })
-  line.value.chart.update()
 }
 
 const filterAllDatasets = (dataQualityValues) => {

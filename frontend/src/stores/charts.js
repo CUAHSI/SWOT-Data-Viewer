@@ -9,9 +9,12 @@ import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   let nodeChartData = ref({})
+  const nodeChart = ref(null)
+  const lineChart = ref(null)
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
+  const plotStyle = ref('Scatter')
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -129,7 +132,8 @@ export const useChartsStore = defineStore('charts', () => {
         let pointStyle = dataset.pointStyle[i]
 
         if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
-          // TODO: need to figure out how to have the connecting line skip the point
+          // TODO: CAM-393
+          // need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
           pointStyle = false
         } else {
@@ -545,6 +549,21 @@ export const useChartsStore = defineStore('charts', () => {
     }
   }
 
+  const updateChartLine = (vueChartjsChart) => {
+    // TODO: CAM-393
+    // https://www.chartjs.org/docs/latest/samples/line/segments.html
+    let showLine = false
+    if (plotStyle.value === 'Connected') {
+      showLine = true
+    }
+    vueChartjsChart.chart.data.datasets.forEach((dataset) => {
+      dataset.showLine = showLine
+      // TODO: check does this break reactivity?
+      // setParsing(line.value.chart.data.datasets)
+    })
+    vueChartjsChart.chart.update()
+  }
+
   return {
     updateChartData,
     updateNodeChartData,
@@ -563,6 +582,10 @@ export const useChartsStore = defineStore('charts', () => {
     dataQualityOptions,
     setDatasetVisibility,
     getNodeTimeStamps,
-    chartTab
+    chartTab,
+    plotStyle,
+    updateChartLine,
+    lineChart,
+    nodeChart,
   }
 })
