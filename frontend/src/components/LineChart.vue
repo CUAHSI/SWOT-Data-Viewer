@@ -70,13 +70,11 @@
                       @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
                     ></v-icon>
                   </template>
-                  <v-list-item-content>
                     <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
                     <v-list-item-subtitle
                       >Average {{ props.chosenVariable?.abbreviation }}:
                       {{ timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle
                     >
-                  </v-list-item-content>
                 </v-list-item>
               </v-list>
             </v-expansion-panel-text>
