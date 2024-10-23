@@ -24,13 +24,14 @@ import { useFeaturesStore } from '../stores/features'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { RouterLink } from 'vue-router'
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 
 const featureStore = useFeaturesStore()
 const hydrologicStore = useHydrologicStore()
 
 let hasFeatures = computed(() => featureStore.selectedFeatures.length > 0)
 
-let selectedVariables = hydrologicStore.selectedVariables
+const { selectedVariables } = storeToRefs(hydrologicStore)
 </script>
 
 <style scoped>
