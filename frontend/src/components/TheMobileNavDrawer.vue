@@ -37,10 +37,10 @@ import { useDisplay } from 'vuetify'
 const props = defineProps(['show', 'paths'])
 defineEmits(['toggleMobileNav'])
 
-const auth = useAuthStore()
+const authStore = useAuthStore()
 const { mdAndDown } = useDisplay()
 
 function login() {
-  auth.isLoggedIn = true
+  authStore.isLoggedIn = true
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-if="!auth.isLoggedIn" width="500">
+  <v-dialog v-if="!authStore.isLoggedIn" width="500">
     <template v-slot:activator="{ props }">
       <template v-if="mobile">
         <v-list class="text-body-1">
@@ -45,7 +45,7 @@
     <template v-else>
       <v-card class="nav-items mr-2 d-flex mr-4" :elevation="2">
         <v-btn @click="logOutUser" :prepend-icon="mdiAccountKey" :elevation="0"
-          >Log Out {{ auth.user.email }}</v-btn
+          >Log Out {{ authStore.user.email }}</v-btn
         >
       </v-card>
     </template>
@@ -59,7 +59,7 @@ import { logIn, logOut } from '@/auth.js'
 defineProps(['mobile'])
 const emit = defineEmits(['loggedIn', 'loggedOut'])
 
-const auth = useAuthStore()
+const authStore = useAuthStore()
 
 async function openLogInDialog() {
   logIn(onLoggedIn)
