@@ -72,6 +72,19 @@ export const useFeaturesStore = defineStore('features', () => {
     return river_name
   }
 
+  const setActiveFeatureByReachId = async(reachId) => {
+    // https://developers.arcgis.com/esri-leaflet/samples/querying-feature-layers-1/
+    let features = []
+    let query = mapStore.mapObject.reachesFeatures.query().where('reach_id = ' + reachId)
+    query.run(
+      function(error, featureCollection){
+        features = featureCollection.features
+        console.log('Features by reach id:', features)
+        activeFeature.value = features[0]
+      }
+    )
+  }
+
   return {
     selectedFeatures,
     selectFeature,
@@ -82,6 +95,7 @@ export const useFeaturesStore = defineStore('features', () => {
     mergeFeature,
     nodes,
     getFeatureName,
+    setActiveFeatureByReachId,
     timeRange,
     minTime,
     maxTime
