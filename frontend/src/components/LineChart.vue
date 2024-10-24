@@ -8,7 +8,7 @@
           max-width="100%"
           min-width="500px"
         >
-          <Line :data="chartData" :options="options" ref="nodeChart" />
+          <Line :data="chartData" :options="options" ref="lineChart" />
         </v-sheet>
       </v-col>
       <v-col xs="12" lg="3">
@@ -27,7 +27,7 @@
                 label="Plot Style"
                 v-model="plotStyle"
                 :items="['Scatter', 'Connected']"
-                @update:modelValue="chartStore.updateChartLine(nodeChart)"
+                @update:modelValue="chartStore.updateChartLine(lineChart)"
               ></v-select>
               <v-btn
                 :loading="downloading.chart"
@@ -126,7 +126,7 @@ const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
-const { plotStyle, chartData, nodeChart } = storeToRefs(chartStore)
+const { plotStyle, chartData, lineChart } = storeToRefs(chartStore)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
@@ -235,13 +235,13 @@ const options = {
 }
 
 const handleTimeseriesPointClick = (e) => {
-  const elems = nodeChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+  const elems = lineChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
   }
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
-  const dataset = nodeChart.value.chart.data.datasets[datasetIndex]
+  const dataset = lineChart.value.chart.data.datasets[datasetIndex]
   const timeSeriesPoint = dataset.data[index]
 
   addSelectedTimeseriesPoint(timeSeriesPoint)
@@ -291,7 +291,7 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
 
     // in the case that the point was removed from the selected list, make sure to remove the selected state
     if (ref) {
-      nodeChart.value.chart.update()
+      lineChart.value.chart.update()
     }
   }
 
@@ -301,7 +301,7 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
 }
 
 const resetZoom = () => {
-  nodeChart.value.chart.resetZoom()
+  lineChart.value.chart.resetZoom()
 }
 
 const getChartName = () => {
@@ -314,9 +314,9 @@ const downloadChart = async () => {
   downloading.value.chart = true
   const filename = getChartName()
   // change the chart background color to white
-  nodeChart.value.chart.canvas.style.backgroundColor = 'white'
+  lineChart.value.chart.canvas.style.backgroundColor = 'white'
 
-  const image = nodeChart.value.chart.toBase64Image('image/png', 1)
+  const image = lineChart.value.chart.toBase64Image('image/png', 1)
   const link = document.createElement('a')
   link.href = image
   link.download = filename
@@ -337,8 +337,8 @@ const downJson = async () => {
 }
 
 const filterAllDatasets = (dataQualityValues) => {
-  chartStore.filterDataQuality(dataQualityValues, nodeChart.value.chart.data.datasets, 'reach_q')
-  setParsing(nodeChart.value.chart.data.datasets)
-  nodeChart.value.chart.update()
+  chartStore.filterDataQuality(dataQualityValues, lineChart.value.chart.data.datasets, 'reach_q')
+  setParsing(lineChart.value.chart.data.datasets)
+  lineChart.value.chart.update()
 }
 </script>
