@@ -51,7 +51,7 @@
             label="Plot Style"
             v-model="showLine"
             :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
-            @update:modelValue="chartStore.updateChartLine(nodeChart)"
+            @update:modelValue="chartStore.updateShowLine"
           >
           </v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
@@ -85,7 +85,7 @@ import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import { Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns'
-import { ref } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
@@ -103,10 +103,20 @@ const props = defineProps({ data: Object, chosenVariable: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
 const showStatistics = ref(false)
 const dataQuality = ref([0, 1, 2, 3])
-const { showLine, nodeChartData, nodeChart } = storeToRefs(chartStore)
+const { showLine, nodeChartData } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
+const nodeChart = ref(null)
 const timeRef = ref()
 const chartData = nodeChartData
+
+onMounted(async () => {
+  // wait for chart to be available
+  await nextTick()
+
+  // push the chart to the store
+  chartStore.storeMountedChart(nodeChart.value)
+  chartStore.updateShowLine()
+})
 
 const setDefaults = () => {
   // sets page elements back to their default values.

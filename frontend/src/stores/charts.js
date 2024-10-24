@@ -9,8 +9,7 @@ import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   let nodeChartData = ref({})
-  const nodeChart = ref(null)
-  const lineChart = ref(null)
+  const storedCharts = ref([])
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
@@ -549,15 +548,22 @@ export const useChartsStore = defineStore('charts', () => {
     }
   }
 
-  const updateChartLine = (vueChartjsChart) => {
-    // TODO: CAM-393
-    // https://www.chartjs.org/docs/latest/samples/line/segments.html
-    vueChartjsChart.chart.data.datasets.forEach((dataset) => {
-      dataset.showLine = showLine.value
-      // TODO: check does this break reactivity?
-      // setParsing(line.value.chart.data.datasets)
+  const updateShowLine = () => {
+    // iterate over stored charts and update the line visibility
+    storedCharts.value.forEach((storedChart) => {
+      try {
+        storedChart.chart.data.datasets.forEach((dataset) => {
+          dataset.showLine = showLine.value
+        })
+        storedChart.chart.update()
+      } catch (error) {
+        console.error('Error updating chart lines', error)
+      }
     })
-    vueChartjsChart.chart.update()
+  }
+
+  const storeMountedChart = (chart) => {
+    storedCharts.value.push(chart)
   }
 
   return {
@@ -580,8 +586,7 @@ export const useChartsStore = defineStore('charts', () => {
     getNodeTimeStamps,
     chartTab,
     showLine,
-    updateChartLine,
-    lineChart,
-    nodeChart,
+    updateShowLine,
+    storeMountedChart
   }
 })
