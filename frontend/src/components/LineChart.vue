@@ -25,9 +25,9 @@
 
               <v-select
                 label="Plot Style"
-                v-model="plotStyle"
-                :items="['Scatter', 'Connected']"
-                @update:modelValue="chartStore.updateChartLine(lineChart)"
+                v-model="showLine"
+                :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
+                @update:modelValue="chartStore.updateShowLine"
               ></v-select>
               <v-btn
                 :loading="downloading.chart"
@@ -117,6 +117,7 @@ import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
 import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import DataQuality from '@/components/DataQuality.vue'
+import { onMounted, nextTick } from 'vue'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotOptions'])
@@ -126,9 +127,19 @@ const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
-const { plotStyle, chartData, lineChart } = storeToRefs(chartStore)
+const { showLine, chartData } = storeToRefs(chartStore)
+const lineChart = ref(null)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
+
+onMounted(async () => {
+  // wait for chart to be available
+  await nextTick()
+
+  // push the chart to the store
+  chartStore.storeMountedChart(lineChart.value)
+  chartStore.updateShowLine()
+})
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
