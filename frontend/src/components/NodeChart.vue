@@ -49,8 +49,8 @@
           </v-expansion-panels>
           <v-select
             label="Plot Style"
-            v-model="plotStyle"
-            :items="['Scatter', 'Connected']"
+            v-model="showLine"
+            :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
             @update:modelValue="chartStore.updateChartLine(nodeChart)"
           >
           </v-select>
@@ -103,7 +103,7 @@ const props = defineProps({ data: Object, chosenVariable: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
 const showStatistics = ref(false)
 const dataQuality = ref([0, 1, 2, 3])
-const { plotStyle, nodeChartData, nodeChart } = storeToRefs(chartStore)
+const { showLine, nodeChartData, nodeChart } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const timeRef = ref()
 const chartData = nodeChartData

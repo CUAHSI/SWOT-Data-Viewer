@@ -14,7 +14,7 @@ export const useChartsStore = defineStore('charts', () => {
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
-  const plotStyle = ref('Scatter')
+  const showLine = ref(false)
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -476,7 +476,7 @@ export const useChartsStore = defineStore('charts', () => {
     })
     console.log('Styles', styles)
     return {
-      showLine: false,
+      showLine: showLine.value,
       pointStyle: styles.pointStyles,
       fill: true,
       pointBorderColor: styles.pointBorderColors,
@@ -531,7 +531,7 @@ export const useChartsStore = defineStore('charts', () => {
     })
     console.log('Styles', styles)
     return {
-      showLine: true,
+      showLine: showLine.value,
       pointStyle: styles.pointStyles,
       pointRadius: 5,
       pointHoverRadius: 15,
@@ -552,12 +552,8 @@ export const useChartsStore = defineStore('charts', () => {
   const updateChartLine = (vueChartjsChart) => {
     // TODO: CAM-393
     // https://www.chartjs.org/docs/latest/samples/line/segments.html
-    let showLine = false
-    if (plotStyle.value === 'Connected') {
-      showLine = true
-    }
     vueChartjsChart.chart.data.datasets.forEach((dataset) => {
-      dataset.showLine = showLine
+      dataset.showLine = showLine.value
       // TODO: check does this break reactivity?
       // setParsing(line.value.chart.data.datasets)
     })
@@ -583,7 +579,7 @@ export const useChartsStore = defineStore('charts', () => {
     setDatasetVisibility,
     getNodeTimeStamps,
     chartTab,
-    plotStyle,
+    showLine,
     updateChartLine,
     lineChart,
     nodeChart,
