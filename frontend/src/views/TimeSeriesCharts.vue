@@ -51,6 +51,7 @@ import { useHydrologicStore } from '@/stores/hydrologic'
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import { storeToRefs } from 'pinia'
+import { ref } from 'vue'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
@@ -59,7 +60,7 @@ const hydrologicStore = useHydrologicStore()
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
 
 const { selectedVariables } = storeToRefs(hydrologicStore)
-let varTab = selectedVariables.value[0]
+let varTab = ref(selectedVariables.value[0])
 </script>
 
 <style scoped>
