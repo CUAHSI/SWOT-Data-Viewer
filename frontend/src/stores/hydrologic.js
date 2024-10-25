@@ -7,9 +7,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
   const swotVariables = ref([
     {
       abbreviation: 'time_str',
-      name: 'Time',
-      unit: '',
-      definition: 'Time of the measurement',
+      name: 'Date',
+      definition: 'Date and time of the measurement',
       default: false,
       always: true,
       selectable: false,

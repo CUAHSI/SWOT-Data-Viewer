@@ -129,22 +129,38 @@ const line = ref(null)
 const plotStyle = ref('Scatter')
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
+let chartData = ref(chartStore.chartData)
 
-// TODO: might need a more efficient way of doing this instead of re-mapping the data
-// Ideally use the store directly instead of passing it as a prop
-let chartData = ref(props.data)
+// set the initial plot labels. This is overridden in the setParting function
+let xLabel = 'Date'
+let yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
+let title = `${props.data.title}: ${props.chosenVariable?.name} vs Time`
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
-    dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
+
+    // update the chart based on the selected plot 
+    var plt = props.chosenVariable
+    dataset.parsing.xAxisKey = plt.xvar.abbreviation
+    dataset.parsing.yAxisKey = plt.yvar.abbreviation
+
+    // check that the variable has a unit, if it does, add it to the label
+    // if it doesn't, just use the name. This will be the case when the
+    // x-variable is "time"
+    if (plt.xvar.unit != undefined) {
+      xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+    } else {
+      xLabel = `${plt.xvar.name}`
+    }
+
+    yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+    title = `${props.data.title}\n${plt.title}`
   })
 }
 if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
   setParsing(chartData.value.datasets)
 }
 
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.title} - ${props.chosenVariable?.name}`
 
 const options = {
   responsive: true,
@@ -186,17 +202,15 @@ const options = {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
         label: function (context) {
-          // var label = context.dataset.label || '';
-          let selectedVariable = props.chosenVariable
-          let label = `${capitalizeFirstLetter(selectedVariable.abbreviation)}`
+          let plt = props.chosenVariable
+          let label = `${plt.yvar.name}`
           if (label) {
             label += ': '
           }
           if (context.parsed.y !== null) {
-            // label += new Intl.NumberFormat('en-US', { style: 'decimal', maximumFractionDigits: 5 }).format(context.parsed.y);
             label += context.parsed.y
           }
-          label += ` ${selectedVariable.unit}`
+          label += ` ${plt.yvar.unit}`
           return label
         },
         footer: function (context) {
@@ -224,7 +238,7 @@ const options = {
       },
       title: {
         display: true,
-        text: 'Date'
+        text: xLabel
       }
     },
     y: {
@@ -235,7 +249,6 @@ const options = {
     }
   },
   onClick: (e) => handleTimeseriesPointClick(e)
-  // events: ["click", "contextmenu"],
 }
 
 const handleTimeseriesPointClick = (e) => {
