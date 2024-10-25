@@ -3,11 +3,11 @@
     <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
       <v-tab value="timeseries">
         <v-icon :icon="mdiTimelineClock"></v-icon>
-        Timeseries
+        Reach Timeseries
       </v-tab>
       <v-tab value="distance">
         <v-icon :icon="mdiMapMarkerDistance"></v-icon>
-        Distance
+        Node Profile
       </v-tab>
     </v-tabs>
     <TimeSeriesCharts v-if="chartStore.chartTab === 'timeseries'" />
