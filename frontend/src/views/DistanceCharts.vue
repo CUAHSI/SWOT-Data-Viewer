@@ -32,7 +32,7 @@
               v-if="plt"
               class="chart"
               :data="chartStore.nodeChartData"
-              :chosenVariable="plt"
+              :chosenPlot="plt"
             />
           </v-window-item>
         </v-window>
