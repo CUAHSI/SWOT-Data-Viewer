@@ -81,7 +81,6 @@
 </template>
 
 <script setup>
-import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import { Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns'
