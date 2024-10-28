@@ -8,7 +8,7 @@
           max-width="100%"
           min-width="500px"
         >
-          <Line :data="chartData" :options="options" ref="line" />
+          <Line :data="chartData" :options="options" ref="lineChart" />
         </v-sheet>
       </v-col>
       <v-col xs="12" lg="3">
@@ -27,7 +27,7 @@
                 label="Plot Style"
                 v-model="plotStyle"
                 :items="['Scatter', 'Connected']"
-                @update:modelValue="updateChartLine()"
+                @update:modelValue="chartStore.updateChartLine(lineChart)"
               ></v-select>
               <v-btn
                 :loading="downloading.chart"
@@ -104,6 +104,7 @@ import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import {
   mdiDownloadBox,
   mdiFileDelimited,
@@ -125,8 +126,7 @@ const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenVariable: Object })
-const line = ref(null)
-const plotStyle = ref('Scatter')
+const { plotStyle, chartData, lineChart } = storeToRefs(chartStore)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 let chartData = ref(chartStore.chartData)
@@ -160,7 +160,6 @@ const setParsing = (datasets) => {
 if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
   setParsing(chartData.value.datasets)
 }
-
 
 const options = {
   responsive: true,
@@ -252,13 +251,13 @@ const options = {
 }
 
 const handleTimeseriesPointClick = (e) => {
-  const elems = line.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+  const elems = lineChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
   }
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
-  const dataset = line.value.chart.data.datasets[datasetIndex]
+  const dataset = lineChart.value.chart.data.datasets[datasetIndex]
   const timeSeriesPoint = dataset.data[index]
 
   addSelectedTimeseriesPoint(timeSeriesPoint)
@@ -308,7 +307,7 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
 
     // in the case that the point was removed from the selected list, make sure to remove the selected state
     if (ref) {
-      line.value.chart.update()
+      lineChart.value.chart.update()
     }
   }
 
@@ -318,11 +317,11 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
 }
 
 const resetZoom = () => {
-  line.value.chart.resetZoom()
+  lineChart.value.chart.resetZoom()
 }
 
 const getChartName = () => {
-  let identifier = `${props.data.datasets[0].label}-${props.chosenVariable.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenVariable.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
@@ -331,9 +330,9 @@ const downloadChart = async () => {
   downloading.value.chart = true
   const filename = getChartName()
   // change the chart background color to white
-  line.value.chart.canvas.style.backgroundColor = 'white'
+  lineChart.value.chart.canvas.style.backgroundColor = 'white'
 
-  const image = line.value.chart.toBase64Image('image/png', 1)
+  const image = lineChart.value.chart.toBase64Image('image/png', 1)
   const link = document.createElement('a')
   link.href = image
   link.download = filename
@@ -353,21 +352,9 @@ const downJson = async () => {
   downloading.value.json = false
 }
 
-const updateChartLine = () => {
-  let showLine = false
-  if (plotStyle.value === 'Connected') {
-    showLine = true
-  }
-  line.value.chart.data.datasets.forEach((dataset) => {
-    dataset.showLine = showLine
-    setParsing(line.value.chart.data.datasets)
-  })
-  line.value.chart.update()
-}
-
 const filterAllDatasets = (dataQualityValues) => {
-  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets, 'reach_q')
-  setParsing(line.value.chart.data.datasets)
-  line.value.chart.update()
+  chartStore.filterDataQuality(dataQualityValues, lineChart.value.chart.data.datasets, 'reach_q')
+  setParsing(lineChart.value.chart.data.datasets)
+  lineChart.value.chart.update()
 }
 </script>

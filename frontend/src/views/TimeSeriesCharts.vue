@@ -49,9 +49,10 @@
 import LineChart from '@/components/LineChart.vue'
 import { useChartsStore } from '../stores/charts'
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { ref } from 'vue'
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
+import { storeToRefs } from 'pinia'
+import { ref } from 'vue'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
@@ -61,8 +62,8 @@ let hasData = computed(() => chartStore.chartData && chartStore.chartData.datase
 
 let reachCharts = chartStore.reachCharts
 let pltTab = ref(reachCharts[0])
-//let selectedVariables = hydrologicStore.selectedVariables
-//let varTab = ref(selectedVariables[0])
+const { selectedVariables } = storeToRefs(hydrologicStore)
+
 </script>
 
 <style scoped>
