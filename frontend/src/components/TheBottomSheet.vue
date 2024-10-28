@@ -28,7 +28,7 @@
               <LineChart
                 v-if="variable"
                 id="chart"
-                :chosenVariable="variable"
+                :chosenPlot="variable"
               />
             </v-window-item>
           </v-window>

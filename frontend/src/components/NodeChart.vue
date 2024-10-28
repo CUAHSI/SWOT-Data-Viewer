@@ -93,23 +93,20 @@ import { useChartsStore } from '@/stores/charts'
 import { APP_API_URL } from '@/constants'
 import { storeToRefs } from 'pinia'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
-import { useHydrologicStore } from '@/stores/hydrologic'
 
 const { lgAndUp } = useDisplay()
 
-const hydrologicStore = useHydrologicStore()
 const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
 const showStatistics = ref(false)
 const dataQuality = ref([0, 1, 2, 3])
-const { plotStyle, nodeChartData, nodeChart } = storeToRefs(chartStore)
+const { plotStyle, nodeChart } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const timeRef = ref()
 
 let chartData = ref(chartStore.nodeChartData)
-let swotVariables = ref(hydrologicStore.swotVariables)
 
 // set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Distance from outlet (m)'
@@ -125,7 +122,7 @@ const setDefaults = () => {
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
-//Proxy(Object) {abbreviation: 'wse_v_dist', xvar: Proxy(Object), yvar: Proxy(Object), name: 'Water Surface Elevation vs. Distance'}
+    // Proxy(Object) {abbreviation: 'wse_v_dist', xvar: Proxy(Object), yvar: Proxy(Object), name: 'Water Surface Elevation vs. Distance'}
 
     // update the chart based on the selected plot 
     var plt = props.chosenPlot
