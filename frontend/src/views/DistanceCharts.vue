@@ -24,7 +24,7 @@
       <v-col sm="10">
         <v-window v-model="pltTab">
           <v-window-item
-            v-for="plt in nodeCharts"
+            v-for="plt in chartStore.nodeCharts"
             :key="plt.abbreviation"
             :value="plt"
           >
@@ -51,17 +51,13 @@
 <script setup>
 import NodeChart from '@/components/NodeChart.vue'
 import { useChartsStore } from '../stores/charts'
-import { useHydrologicStore } from '@/stores/hydrologic'
 import { ref } from 'vue'
 import { useDisplay } from 'vuetify'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
-const hydrologicStore = useHydrologicStore()
+let pltTab = ref(chartStore.nodeCharts[0])
 
-// TODO:nodes on tab switch, update distance chart data by query nodes
-let nodeCharts = chartStore.nodeCharts
-let pltTab = ref(nodeCharts[0])
 </script>
 
 <style scoped>

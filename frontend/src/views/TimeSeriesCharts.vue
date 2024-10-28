@@ -28,7 +28,7 @@
       <v-col sm="10">
         <v-window v-model="pltTab">
           <v-window-item
-            v-for="plt in reachCharts"
+            v-for="plt in chartStore.reachCharts"
             :key="plt.abbreviation"
             :value="plt"
           >
@@ -56,9 +56,7 @@ const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-
-let reachCharts = chartStore.reachCharts
-let pltTab = ref(reachCharts[0])
+let pltTab = ref(chartStore.reachCharts[0])
 
 </script>
 

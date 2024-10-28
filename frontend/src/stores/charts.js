@@ -44,7 +44,7 @@ export const useChartsStore = defineStore('charts', () => {
   let swotVariables = ref(hydrologicStore.swotVariables)
 
   // a collection of charts that can be created in the node view
-  const nodeCharts = [
+  const nodeCharts = ref([
     {
       abbreviation: 'wse/dist',
       xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
@@ -77,10 +77,10 @@ export const useChartsStore = defineStore('charts', () => {
       help: "Water Surface Elevation plotted against Reach Width for all nodes in the selected reach",
       name: 'WSE vs Width',
     }
-  ]
+  ])
 
   // a collection of charts that can be created in the reach view
-  const reachCharts = [
+  const reachCharts = ref([
     {
       abbreviation: 'wse/time',
       xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
@@ -113,7 +113,7 @@ export const useChartsStore = defineStore('charts', () => {
       help: swotVariables.value.find((v) => v.abbreviation == 'slope').definition,
       name: 'Slope vs Time',
     }
-  ]
+  ])
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
