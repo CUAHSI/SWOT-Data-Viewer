@@ -3,7 +3,7 @@
     <v-row>
       <v-col v-for="variable in selectedVariables" :key="variable">
         {{ variable.name }}
-        <LineChart class="chart" :chosenVariable="variable" />
+        <LineChart class="chart" :chosenPlot="variable" />
       </v-col>
     </v-row>
   </v-container>

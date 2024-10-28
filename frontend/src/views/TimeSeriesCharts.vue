@@ -4,38 +4,39 @@
       <v-col sm="2">
         <v-card class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
-          <v-tabs v-model="varTab" direction="vertical" color="primary">
+          <v-tabs v-model="pltTab" direction="vertical" color="primary">
             <v-tab
-              v-for="variable in selectedVariables"
-              :value="variable"
-              :key="variable.abbreviation"
+              v-for="plt in chartStore.reachCharts"
+              :value="plt"
+              :key="plt.abbreviation"
             >
               <template v-if="lgAndUp">
-                {{ variable.name }}
+                {{ plt.name }}
               </template>
               <template v-else>
-                {{ variable.abbreviation }}
+                {{ plt.abbreviation }}
               </template>
             </v-tab>
           </v-tabs>
         </v-card>
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <v-card class="pa-2" v-if="lgAndUp">
-          {{ varTab.definition }}
+          {{ pltTab.help }}
         </v-card>
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
       <v-col sm="10">
-        <v-window v-model="varTab">
+        <v-window v-model="pltTab">
           <v-window-item
-            v-for="variable in selectedVariables"
-            :key="variable.abbreviation"
-            :value="variable"
+            v-for="plt in chartStore.reachCharts"
+            :key="plt.abbreviation"
+            :value="plt"
           >
             <LineChart
-              v-if="variable"
+              v-if="plt"
               class="chart"
-              :chosenVariable="variable"
+              :data="chartStore.chartData"
+              :chosenPlot="plt"
             />
           </v-window-item>
         </v-window>
@@ -47,20 +48,16 @@
 <script setup>
 import LineChart from '@/components/LineChart.vue'
 import { useChartsStore } from '../stores/charts'
-import { useHydrologicStore } from '@/stores/hydrologic'
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
-import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
-const hydrologicStore = useHydrologicStore()
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
+let pltTab = ref(chartStore.reachCharts[0])
 
-const { selectedVariables } = storeToRefs(hydrologicStore)
-let varTab = ref(selectedVariables.value[0])
 </script>
 
 <style scoped>

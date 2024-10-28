@@ -5,6 +5,9 @@ import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
 import chroma from 'chroma-js'
 import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
+import { useHydrologicStore } from '@/stores/hydrologic'
+
+
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
@@ -34,6 +37,83 @@ export const useChartsStore = defineStore('charts', () => {
     },
     { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
   ]
+
+  // load the swot variables from the hydrologic store.
+  // these are used to build the charts for the node and reach views.
+  const hydrologicStore = useHydrologicStore()
+  let swotVariables = ref(hydrologicStore.swotVariables)
+
+  // a collection of charts that can be created in the node view
+  const nodeCharts = ref([
+    {
+      abbreviation: 'wse/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation along Reach Length',
+      name: 'WSE vs Distance',
+      help: swotVariables.value.find((v) => v.abbreviation == 'wse').definition,
+    },
+    {
+      abbreviation: 'area/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+      title: 'Water Surface Area along Reach Length',
+      help: swotVariables.value.find((v) => v.abbreviation == 'area_total').definition,
+      name: 'WSA vs Distance',
+    },
+    {
+      abbreviation: 'width/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      title: 'Reach Width along Reach Length',
+      help: "Reach Width plotted against Reach Length for all nodes in the selected reach",
+      name: 'Width vs Distance',
+    },
+    {
+      abbreviation: 'wse/width',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation vs Reach Width',
+      help: "Water Surface Elevation plotted against Reach Width for all nodes in the selected reach",
+      name: 'WSE vs Width',
+    }
+  ])
+
+  // a collection of charts that can be created in the reach view
+  const reachCharts = ref([
+    {
+      abbreviation: 'wse/time',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation',
+      name: 'WSE vs Time',
+      help: swotVariables.value.find((v) => v.abbreviation == 'wse').definition,
+    },
+    {
+      abbreviation: 'area/time',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+      title: 'Water Surface Area',
+      help: swotVariables.value.find((v) => v.abbreviation == 'area_total').definition,
+      name: 'WSA vs Time',
+    },
+    {
+      abbreviation: 'width/time',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      title: 'Reach Width',
+      help: "Reach Width plotted against Reach Length for all nodes in the selected reach",
+      name: 'Width vs Time',
+    },
+    {
+      abbreviation: 'slope/time',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'slope'),
+      title: 'Reach Slope',
+      help: swotVariables.value.find((v) => v.abbreviation == 'slope').definition,
+      name: 'Slope vs Time',
+    }
+  ])
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
@@ -583,6 +663,8 @@ export const useChartsStore = defineStore('charts', () => {
     setDatasetVisibility,
     getNodeTimeStamps,
     chartTab,
+    nodeCharts,
+    reachCharts,
     plotStyle,
     updateChartLine,
     lineChart,

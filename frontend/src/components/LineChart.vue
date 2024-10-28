@@ -72,8 +72,8 @@
                   </template>
                     <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
                     <v-list-item-subtitle
-                      >Average {{ props.chosenVariable?.abbreviation }}:
-                      {{ timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle
+                      >Average {{ props.chosenPlot?.abbreviation }}:
+                      {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
                     >
                 </v-list-item>
               </v-list>
@@ -115,7 +115,6 @@ import {
 } from '@mdi/js'
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
-import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import DataQuality from '@/components/DataQuality.vue'
 
 const { lgAndUp } = useDisplay()
@@ -125,22 +124,40 @@ const selectedTimeseriesPoints = ref([])
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
-const props = defineProps({ data: Object, chosenVariable: Object })
+const props = defineProps({ data: Object, chosenPlot: Object })
 const { plotStyle, chartData, lineChart } = storeToRefs(chartStore)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
+// set the initial plot labels. This is overridden in the setParting function
+let xLabel = 'Date'
+let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
+let title = `${props.data.title}: ${props.chosenPlot?.name} vs Time`
+
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
-    dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
+
+    // update the chart based on the selected plot 
+    var plt = props.chosenPlot
+    dataset.parsing.xAxisKey = plt.xvar.abbreviation
+    dataset.parsing.yAxisKey = plt.yvar.abbreviation
+
+    // check that the variable has a unit, if it does, add it to the label
+    // if it doesn't, just use the name. This will be the case when the
+    // x-variable is "time"
+    if (plt.xvar.unit != undefined) {
+      xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+    } else {
+      xLabel = `${plt.xvar.name}`
+    }
+
+    yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+    title = `${props.data.title}\n${plt.title}`
   })
 }
-if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
+if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
   setParsing(chartData.value.datasets)
 }
-
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${chartData.value.title} - ${props.chosenVariable?.name}`
 
 const options = {
   responsive: true,
@@ -182,17 +199,15 @@ const options = {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
         label: function (context) {
-          // var label = context.dataset.label || '';
-          let selectedVariable = props.chosenVariable
-          let label = `${capitalizeFirstLetter(selectedVariable.abbreviation)}`
+          let plt = props.chosenPlot
+          let label = `${plt.yvar.name}`
           if (label) {
             label += ': '
           }
           if (context.parsed.y !== null) {
-            // label += new Intl.NumberFormat('en-US', { style: 'decimal', maximumFractionDigits: 5 }).format(context.parsed.y);
             label += context.parsed.y
           }
-          label += ` ${selectedVariable.unit}`
+          label += ` ${plt.yvar.unit}`
           return label
         },
         footer: function (context) {
@@ -220,7 +235,7 @@ const options = {
       },
       title: {
         display: true,
-        text: 'Date'
+        text: xLabel
       }
     },
     y: {
@@ -231,7 +246,6 @@ const options = {
     }
   },
   onClick: (e) => handleTimeseriesPointClick(e)
-  // events: ["click", "contextmenu"],
 }
 
 const handleTimeseriesPointClick = (e) => {
@@ -305,7 +319,7 @@ const resetZoom = () => {
 }
 
 const getChartName = () => {
-  let identifier = `${chartData.value.datasets[0].label}-${props.chosenVariable.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }

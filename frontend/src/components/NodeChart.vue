@@ -81,7 +81,6 @@
 </template>
 
 <script setup>
-import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import { Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns'
@@ -99,14 +98,20 @@ const { lgAndUp } = useDisplay()
 
 const chartStore = useChartsStore()
 
-const props = defineProps({ data: Object, chosenVariable: Object })
+const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
 const showStatistics = ref(false)
 const dataQuality = ref([0, 1, 2, 3])
-const { plotStyle, nodeChartData, nodeChart } = storeToRefs(chartStore)
+const { plotStyle, nodeChart } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const timeRef = ref()
-const chartData = nodeChartData
+
+let chartData = ref(chartStore.nodeChartData)
+
+// set the initial plot labels. This is overridden in the setParting function
+let xLabel = 'Distance from outlet (m)'
+let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
+let title = `${props.data.title}: ${props.chosenPlot?.name} vs Distance`
 
 const setDefaults = () => {
   // sets page elements back to their default values.
@@ -117,15 +122,20 @@ const setDefaults = () => {
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
-    dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
+    // Proxy(Object) {abbreviation: 'wse_v_dist', xvar: Proxy(Object), yvar: Proxy(Object), name: 'Water Surface Elevation vs. Distance'}
+
+    // update the chart based on the selected plot 
+    var plt = props.chosenPlot
+    dataset.parsing.xAxisKey = plt.xvar.abbreviation
+    dataset.parsing.yAxisKey = plt.yvar.abbreviation
+    xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+    yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+    title = `${props.data.title}\n${plt.title}`
   })
 }
-if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
+if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
   setParsing(chartData.value.datasets)
 }
-
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${chartData.value.title}: ${props.chosenVariable?.name} vs Distance`
 
 const options = {
   responsive: true,
@@ -199,12 +209,12 @@ const options = {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
         title: function (context) {
-          return `Distance: ${context[0].parsed.x} m`
+          let plt = props.chosenPlot
+          return `${plt.xvar.name}: ${context[0].parsed.x} (${plt.xvar.unit})`
         },
         label: function (context) {
-          // var label = context.dataset.label || '';
-          let selectedVariable = props.chosenVariable
-          let label = `${capitalizeFirstLetter(selectedVariable.abbreviation)}`
+          let plt = props.chosenPlot
+          let label = `${plt.yvar.name}`
           if (label) {
             label += ': '
           }
@@ -212,7 +222,7 @@ const options = {
             // label += new Intl.NumberFormat('en-US', { style: 'decimal', maximumFractionDigits: 5 }).format(context.parsed.y);
             label += context.parsed.y
           }
-          label += ` ${selectedVariable.unit}`
+          label += ` ${plt.yvar.unit}`
           // add the timestamp as well
           return label
         },
@@ -234,7 +244,7 @@ const options = {
       type: 'linear',
       title: {
         display: true,
-        text: 'Distance from outlet (m)'
+        text: xLabel
       },
       reverse: true
     },
@@ -258,7 +268,7 @@ const resetZoom = () => {
 }
 
 const getChartName = () => {
-  let identifier = `${chartData.value.datasets[0].label}-${props.chosenVariable.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
@@ -418,7 +428,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenVariable.abbreviation,
+        props.chosenPlot.abbreviation,
         stat,
         { fill: false, hidden: false }
       )
@@ -428,7 +438,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenVariable.abbreviation,
+        props.chosenPlot.abbreviation,
         'IQR',
         { showLine: true, borderColor: 'gray', borderWidth: 1, pointRadius: 0 }
       )
@@ -438,7 +448,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenVariable.abbreviation,
+        props.chosenPlot.abbreviation,
         stat,
         {
           fill: '-1',

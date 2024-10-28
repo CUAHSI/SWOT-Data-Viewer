@@ -35,7 +35,7 @@ import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
 
 const chartStore = useChartsStore()
-defineProps({ data: Object, chosenVariable: Object })
+defineProps({ data: Object })
 const dataQuality = ref([0, 1, 2, 3])
 const emit = defineEmits(['qualityUpdated'])
 
