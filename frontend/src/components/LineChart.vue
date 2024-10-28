@@ -72,8 +72,8 @@
                   </template>
                     <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
                     <v-list-item-subtitle
-                      >Average {{ props.chosenVariable?.abbreviation }}:
-                      {{ timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle
+                      >Average {{ props.chosenPlot?.abbreviation }}:
+                      {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
                     >
                 </v-list-item>
               </v-list>
@@ -125,21 +125,21 @@ const selectedTimeseriesPoints = ref([])
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
-const props = defineProps({ data: Object, chosenVariable: Object })
+const props = defineProps({ data: Object, chosenPlot: Object })
 const { plotStyle, chartData, lineChart } = storeToRefs(chartStore)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
 // set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Date'
-let yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-let title = `${props.data.title}: ${props.chosenVariable?.name} vs Time`
+let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
+let title = `${props.data.title}: ${props.chosenPlot?.name} vs Time`
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
 
     // update the chart based on the selected plot 
-    var plt = props.chosenVariable
+    var plt = props.chosenPlot
     dataset.parsing.xAxisKey = plt.xvar.abbreviation
     dataset.parsing.yAxisKey = plt.yvar.abbreviation
 
@@ -156,7 +156,7 @@ const setParsing = (datasets) => {
     title = `${props.data.title}\n${plt.title}`
   })
 }
-if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
+if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
   setParsing(chartData.value.datasets)
 }
 
@@ -200,7 +200,7 @@ const options = {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
         label: function (context) {
-          let plt = props.chosenVariable
+          let plt = props.chosenPlot
           let label = `${plt.yvar.name}`
           if (label) {
             label += ': '
@@ -320,7 +320,7 @@ const resetZoom = () => {
 }
 
 const getChartName = () => {
-  let identifier = `${chartData.value.datasets[0].label}-${props.chosenVariable.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
