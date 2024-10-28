@@ -472,12 +472,6 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     return descriptions
   }
 
-  function getPlottableSwotVariables(fileType = 'node') {
-    return swotVariables.value.filter((variable) => {
-      return variable.plottable && (variable.fileType === fileType || variable.fileType === 'all')
-    })
-  }
-
   return {
     swotVariables,
     selectableVariables,
@@ -486,7 +480,6 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     defaultVariables,
     queryVariables,
     swordVariables,
-    getSwordDescriptions,
-    getPlottableSwotVariables
+    getSwordDescriptions
   }
 })

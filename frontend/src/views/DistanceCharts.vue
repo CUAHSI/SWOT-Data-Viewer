@@ -60,7 +60,6 @@ const chartStore = useChartsStore()
 const hydrologicStore = useHydrologicStore()
 
 // TODO:nodes on tab switch, update distance chart data by query nodes
-//let nodeVariables = hydrologicStore.getPlottableSwotVariables('node')
 let nodeCharts = chartStore.nodeCharts
 let pltTab = ref(nodeCharts[0])
 </script>
