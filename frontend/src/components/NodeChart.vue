@@ -141,9 +141,6 @@ if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined
   setParsing(chartData.value.datasets)
 }
 
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${chartData.value.title}: ${props.chosenVariable?.name} vs Distance`
-
 const options = {
   responsive: true,
   maintainAspectRatio: false,

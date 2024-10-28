@@ -129,7 +129,6 @@ const props = defineProps({ data: Object, chosenVariable: Object })
 const { plotStyle, chartData, lineChart } = storeToRefs(chartStore)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
-let chartData = ref(chartStore.chartData)
 
 // set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Date'
