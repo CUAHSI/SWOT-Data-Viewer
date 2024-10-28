@@ -115,7 +115,6 @@ import {
 } from '@mdi/js'
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
-import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import DataQuality from '@/components/DataQuality.vue'
 
 const { lgAndUp } = useDisplay()
