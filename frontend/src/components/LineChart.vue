@@ -8,7 +8,7 @@
           max-width="100%"
           min-width="500px"
         >
-          <Line :data="thisChartsData" :options="options" ref="lineChart" />
+          <Line :data="chartData" :options="options" ref="lineChart" />
         </v-sheet>
       </v-col>
       <v-col xs="12" lg="3">
@@ -16,7 +16,6 @@
           <v-expansion-panel value="plotOptions">
             <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
             <v-expansion-panel-text>
-              <!-- TODO: should this be using thisChartsData? -->
               <DataQuality
                 v-model="dataQuality"
                 id="dataQuality"
@@ -137,9 +136,6 @@ let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Time`
 
-// make a deep copy of the data for each chart instance
-const thisChartsData = ref(JSON.parse(JSON.stringify(chartData.value)))
-
 onMounted(async () => {
   // wait for chart to be available
   await nextTick()
@@ -173,8 +169,8 @@ const setParsing = (datasets) => {
     title = `${props.data.title}\n${plt.title}`
   })
 }
-if (props.chosenPlot !== undefined && thisChartsData.value.datasets !== undefined) {
-  setParsing(thisChartsData.value.datasets)
+if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
+  setParsing(chartData.value.datasets)
 }
 
 const options = {
@@ -337,7 +333,7 @@ const resetZoom = () => {
 }
 
 const getChartName = () => {
-  let identifier = `${thisChartsData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }

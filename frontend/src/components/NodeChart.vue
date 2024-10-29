@@ -8,7 +8,7 @@
           max-width="100%"
           min-width="500px"
         >
-          <Line :data="thisChartsData" :options="options" ref="nodeChart" :plugins="[Filler]" />
+          <Line :data="chartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
           <TimeRangeSlider
@@ -37,7 +37,7 @@
                     >Enable/Disable computed statistics in the long-profile plot.</v-tooltip
                   >
                 </div>
-                <!-- TODO: should this be using thisChartsData? -->
+
                 <DataQuality
                   v-model="dataQuality"
                   id="dataQuality"
@@ -107,8 +107,7 @@ const chartStatistics = ref(null)
 const nodeChart = ref(null)
 const timeRef = ref()
 
-// deep copy of the data
-const thisChartsData = ref(JSON.parse(JSON.stringify(nodeChartData.value)))
+let chartData = ref(nodeChartData.value)
 
 // set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Distance from outlet (m)'
@@ -144,8 +143,8 @@ const setParsing = (datasets) => {
     title = `${props.data.title}\n${plt.title}`
   })
 }
-if (props.chosenPlot !== undefined && thisChartsData.value.datasets !== undefined) {
-  setParsing(thisChartsData.value.datasets)
+if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
+  setParsing(chartData.value.datasets)
 }
 
 const options = {
@@ -279,7 +278,7 @@ const resetZoom = () => {
 }
 
 const getChartName = () => {
-  let identifier = `${thisChartsData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
@@ -318,7 +317,7 @@ const resetData = () => {
 
   // remove all non-swot series from the chart. This is necessary
   // to reset the chart to its initial state.
-  let datasets = thisChartsData.value.datasets.filter((s) => s.seriesType == 'swot_node_series')
+  let datasets = chartData.value.datasets.filter((s) => s.seriesType == 'swot_node_series')
 
   // turn on all hidden swot node series datasets
   datasets
@@ -337,7 +336,7 @@ const resetData = () => {
   setDefaults()
 
   // update the chart
-  nodeChart.value.chart.data.datasets = thisChartsData.value.datasets
+  nodeChart.value.chart.data.datasets = chartData.value.datasets
   nodeChart.value.chart.update()
 }
 
@@ -345,7 +344,7 @@ const timeSliderUpdated = () => {
   // This function is called when the time slider is updated.
   // It filters the chart data to the data that are active in the time slider range.
 
-  nodeChart.value.chart.data.datasets = thisChartsData.value.datasets
+  nodeChart.value.chart.data.datasets = chartData.value.datasets
   nodeChart.value.chart.update()
 }
 
@@ -372,7 +371,7 @@ const timeRangeUpdateComplete = async () => {
     chartStore.updateNodeChartData(datasets)
 
     // update the chart
-    nodeChart.value.chart.data.datasets = thisChartsData.value.datasets
+    nodeChart.value.chart.data.datasets = chartData.value.datasets
     nodeChart.value.chart.update()
   }
 }
@@ -497,7 +496,7 @@ const toggleSeriesStatistics = async (visible = true) => {
   chartStore.updateNodeChartData(updatedDatasets)
 
   // update the chart
-  nodeChart.value.chart.data.datasets = thisChartsData.value.datasets
+  nodeChart.value.chart.data.datasets = chartData.value.datasets
   // nodeChart.value.chart.data.datasets = updatedDatasets;
   nodeChart.value.chart.update()
 }
