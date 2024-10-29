@@ -407,11 +407,6 @@ export const useChartsStore = defineStore('charts', () => {
         // TODO: nodes label assumes reach
         label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
         data: measurements,
-        parsing: {
-          xAxisKey: 'datetime',
-          // TODO: this should be dynamic based on the selected variable
-          yAxisKey: 'wse'
-        },
         seriesType: 'swot_reach_series',
         ...getDataSetStyle(measurements)
       }
@@ -461,10 +456,6 @@ export const useChartsStore = defineStore('charts', () => {
       datasets.push({
         label: timeStampGroup[0].datetime.toDateString(),
         data: timeStampGroup,
-        parsing: {
-          xAxisKey: 'p_dist_out',
-          yAxisKey: 'wse'
-        },
         seriesType: 'swot_node_series',
         ...getNodeDataSetStyle(timeStampGroup, colorScale),
         ...getDatasetMinMaxDateTimes(timeStampGroup)

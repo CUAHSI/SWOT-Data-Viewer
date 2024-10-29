@@ -109,10 +109,14 @@ const timeRef = ref()
 
 let chartData = ref(nodeChartData.value)
 
-// set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Distance`
+
+let plt = props.chosenPlot
+xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+title = `${props.data.title}\n${plt.title}`
 
 onMounted(async () => {
   // wait for chart to be available
@@ -130,26 +134,17 @@ const setDefaults = () => {
   showStatistics.value = false
 }
 
-const setParsing = (datasets) => {
-  datasets.forEach((dataset) => {
-    // Proxy(Object) {abbreviation: 'wse_v_dist', xvar: Proxy(Object), yvar: Proxy(Object), name: 'Water Surface Elevation vs. Distance'}
-
-    // update the chart based on the selected plot 
-    var plt = props.chosenPlot
-    dataset.parsing.xAxisKey = plt.xvar.abbreviation
-    dataset.parsing.yAxisKey = plt.yvar.abbreviation
-    xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
-    yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
-    title = `${props.data.title}\n${plt.title}`
-  })
-}
-if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
-  setParsing(chartData.value.datasets)
+const getParsing = (context) => {
+  let parsing = {}
+  parsing.xAxisKey = plt.xvar.abbreviation
+  parsing.yAxisKey = plt.yvar.abbreviation
+  return parsing
 }
 
 const options = {
   responsive: true,
   maintainAspectRatio: false,
+  parsing: getParsing,
   plugins: {
     legend: {
       display: true,
@@ -269,7 +264,6 @@ const options = {
 
 const filterAllDatasets = (dataQualityValues) => {
   chartStore.filterDataQuality(dataQualityValues, nodeChart.value.chart.data.datasets, 'node_q')
-  setParsing(nodeChart.value.chart.data.datasets)
   nodeChart.value.chart.update()
 }
 

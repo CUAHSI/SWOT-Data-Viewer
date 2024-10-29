@@ -131,10 +131,21 @@ const lineChart = ref(null)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
-// set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Time`
+
+let plt = props.chosenPlot
+// check that the variable has a unit, if it does, add it to the label
+// if it doesn't, just use the name. This will be the case when the
+// x-variable is "time"
+if (plt.xvar.unit != undefined) {
+  xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+} else {
+  xLabel = `${plt.xvar.name}`
+}
+yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+title = `${props.data.title}\n${plt.title}`
 
 onMounted(async () => {
   // wait for chart to be available
@@ -145,37 +156,19 @@ onMounted(async () => {
   chartStore.updateShowLine()
 })
 
-const setParsing = (datasets) => {
-  // TODO: instead of parsing on dataset, set parsing at the chart level
-  // https://www.chartjs.org/docs/latest/api/interfaces/CoreChartOptions.html#parsing
-  
-  datasets.forEach((dataset) => {
+const getParsing = (context) => {
+  let plt = props.chosenPlot
+  let parsing = {}
 
-    // update the chart based on the selected plot 
-    var plt = props.chosenPlot
-    dataset.parsing.xAxisKey = plt.xvar.abbreviation
-    dataset.parsing.yAxisKey = plt.yvar.abbreviation
-
-    // check that the variable has a unit, if it does, add it to the label
-    // if it doesn't, just use the name. This will be the case when the
-    // x-variable is "time"
-    if (plt.xvar.unit != undefined) {
-      xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
-    } else {
-      xLabel = `${plt.xvar.name}`
-    }
-
-    yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
-    title = `${props.data.title}\n${plt.title}`
-  })
-}
-if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
-  setParsing(chartData.value.datasets)
+  parsing.xAxisKey = plt.xvar.abbreviation
+  parsing.yAxisKey = plt.yvar.abbreviation
+  return parsing
 }
 
 const options = {
   responsive: true,
   maintainAspectRatio: false,
+  parsing: getParsing,
   plugins: {
     legend: {
       display: false,
@@ -366,7 +359,6 @@ const downJson = async () => {
 
 const filterAllDatasets = (dataQualityValues) => {
   chartStore.filterDataQuality(dataQualityValues, lineChart.value.chart.data.datasets, 'reach_q')
-  setParsing(lineChart.value.chart.data.datasets)
   lineChart.value.chart.update()
 }
 </script>
