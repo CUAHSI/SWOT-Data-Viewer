@@ -27,7 +27,7 @@
                 label="Plot Style"
                 v-model="showLine"
                 :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
-                @update:modelValue="chartStore.updateChartLine(lineChart)"
+                @update:modelValue="chartStore.updateShowLine"
               ></v-select>
               <v-btn
                 :loading="downloading.chart"
@@ -116,6 +116,7 @@ import {
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
 import DataQuality from '@/components/DataQuality.vue'
+import { onMounted, nextTick } from 'vue'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotOptions'])
@@ -133,6 +134,15 @@ const downloading = ref({ csv: false, json: false, chart: false })
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Time`
+
+onMounted(async () => {
+  // wait for chart to be available
+  await nextTick()
+
+  // push the chart to the store
+  chartStore.storeMountedChart(lineChart.value)
+  chartStore.updateShowLine()
+})
 
 const setParsing = (datasets) => {
   datasets.forEach((dataset) => {
