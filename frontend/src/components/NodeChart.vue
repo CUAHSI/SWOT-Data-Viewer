@@ -79,7 +79,7 @@
     </v-row>
   </v-container>
 </template>
-
+ 
 <script setup>
 import { Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
@@ -113,15 +113,6 @@ let chartData = ref(chartStore.nodeChartData)
 let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Distance`
-
-// TODO: remove this console.log
-console.log('showStatistics', showStatistics.value)
-
-
-//if (showStatistics.value == true) {
-//  // we need to recompue the statistics based on the data that is currently visible
-//  toggleSeriesStatistics(true)
-//}
 
 
 //onMounted(() => {
