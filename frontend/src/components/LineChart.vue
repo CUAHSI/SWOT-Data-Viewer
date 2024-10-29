@@ -150,6 +150,9 @@ onMounted(async () => {
 })
 
 const setParsing = (datasets) => {
+  // TODO: instead of parsing on dataset, set parsing at the chart level
+  // https://www.chartjs.org/docs/latest/api/interfaces/CoreChartOptions.html#parsing
+  
   datasets.forEach((dataset) => {
 
     // update the chart based on the selected plot 
