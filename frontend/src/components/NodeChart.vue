@@ -93,6 +93,8 @@ import { useChartsStore } from '@/stores/charts'
 import { APP_API_URL } from '@/constants'
 import { storeToRefs } from 'pinia'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
+import { onMounted, onUpdated } from "vue"
+
 
 const { lgAndUp } = useDisplay()
 
@@ -100,9 +102,8 @@ const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
-const showStatistics = ref(false)
 const dataQuality = ref([0, 1, 2, 3])
-const { plotStyle, nodeChart } = storeToRefs(chartStore)
+const { plotStyle, nodeChart, showStatistics } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const timeRef = ref()
 
@@ -113,11 +114,31 @@ let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Distance`
 
+// TODO: remove this console.log
+console.log('showStatistics', showStatistics.value)
+
+
+//if (showStatistics.value == true) {
+//  // we need to recompue the statistics based on the data that is currently visible
+//  toggleSeriesStatistics(true)
+//}
+
+
+//onMounted(() => {
+//  if (showStatistics.value == true) {
+//    // we need to recompue the statistics based on the data that is currently visible
+//    toggleSeriesStatistics(true)
+//  }
+//
+//})
+
 const setDefaults = () => {
   // sets page elements back to their default values.
 
-  // set statistics switch to off
-  showStatistics.value = false
+  // set statistics switch to off in the charts store
+  chartStore.showStatistics = false
+//  showStatistics.value = false // TODO: remove this line
+
 }
 
 const setParsing = (datasets) => {
@@ -370,7 +391,6 @@ async function getStatistics() {
   // compute statistics based on the node series that are visible
   // in the chart.
 
-  //let datasets = chartStore.nodeChartData.datasets
   let datasets = chartStore.nodeChartData.datasets
     .filter((s) => s.seriesType == 'swot_node_series')
     .filter((s) => s.hidden == false)
@@ -428,7 +448,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenPlot.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         stat,
         { fill: false, hidden: false }
       )
@@ -438,7 +458,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenPlot.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         'IQR',
         { showLine: true, borderColor: 'gray', borderWidth: 1, pointRadius: 0 }
       )
@@ -448,7 +468,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenPlot.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         stat,
         {
           fill: '-1',
@@ -468,7 +488,7 @@ const generateStatisticsSeries = async () => {
 
 const toggleSeriesStatistics = async (visible = true) => {
   // adds and removes computed statistics from the chart
-
+  
   // get the data from the chart
   let updatedDatasets = nodeChart.value.chart.data.datasets
 

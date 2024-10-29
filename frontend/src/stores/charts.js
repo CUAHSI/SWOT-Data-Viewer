@@ -18,6 +18,7 @@ export const useChartsStore = defineStore('charts', () => {
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
   const plotStyle = ref('Scatter')
+  const showStatistics = ref(false)
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -669,5 +670,6 @@ export const useChartsStore = defineStore('charts', () => {
     updateChartLine,
     lineChart,
     nodeChart,
+    showStatistics
   }
 })
