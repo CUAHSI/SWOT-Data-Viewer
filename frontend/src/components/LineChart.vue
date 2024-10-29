@@ -25,9 +25,9 @@
 
               <v-select
                 label="Plot Style"
-                v-model="plotStyle"
-                :items="['Scatter', 'Connected']"
-                @update:modelValue="chartStore.updateChartLine(lineChart)"
+                v-model="showLine"
+                :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
+                @update:modelValue="chartStore.updateShowLine"
               ></v-select>
               <v-btn
                 :loading="downloading.chart"
@@ -116,6 +116,7 @@ import {
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
 import DataQuality from '@/components/DataQuality.vue'
+import { onMounted, nextTick } from 'vue'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotOptions'])
@@ -125,43 +126,49 @@ const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { plotStyle, chartData, lineChart } = storeToRefs(chartStore)
+const { showLine, chartData } = storeToRefs(chartStore)
+const lineChart = ref(null)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
-// set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Time`
 
-const setParsing = (datasets) => {
-  datasets.forEach((dataset) => {
-
-    // update the chart based on the selected plot 
-    var plt = props.chosenPlot
-    dataset.parsing.xAxisKey = plt.xvar.abbreviation
-    dataset.parsing.yAxisKey = plt.yvar.abbreviation
-
-    // check that the variable has a unit, if it does, add it to the label
-    // if it doesn't, just use the name. This will be the case when the
-    // x-variable is "time"
-    if (plt.xvar.unit != undefined) {
-      xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
-    } else {
-      xLabel = `${plt.xvar.name}`
-    }
-
-    yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
-    title = `${props.data.title}\n${plt.title}`
-  })
+let plt = props.chosenPlot
+// check that the variable has a unit, if it does, add it to the label
+// if it doesn't, just use the name. This will be the case when the
+// x-variable is "time"
+if (plt.xvar.unit != undefined) {
+  xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+} else {
+  xLabel = `${plt.xvar.name}`
 }
-if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
-  setParsing(chartData.value.datasets)
+yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+title = `${props.data.title}\n${plt.title}`
+
+onMounted(async () => {
+  // wait for chart to be available
+  await nextTick()
+
+  // push the chart to the store
+  chartStore.storeMountedChart(lineChart.value)
+  chartStore.updateShowLine()
+})
+
+const getParsing = (context) => {
+  let plt = props.chosenPlot
+  let parsing = {}
+
+  parsing.xAxisKey = plt.xvar.abbreviation
+  parsing.yAxisKey = plt.yvar.abbreviation
+  return parsing
 }
 
 const options = {
   responsive: true,
   maintainAspectRatio: false,
+  parsing: getParsing,
   plugins: {
     legend: {
       display: false,
@@ -352,7 +359,6 @@ const downJson = async () => {
 
 const filterAllDatasets = (dataQualityValues) => {
   chartStore.filterDataQuality(dataQualityValues, lineChart.value.chart.data.datasets, 'reach_q')
-  setParsing(lineChart.value.chart.data.datasets)
   lineChart.value.chart.update()
 }
 </script>

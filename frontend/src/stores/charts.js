@@ -12,12 +12,11 @@ import { useHydrologicStore } from '@/stores/hydrologic'
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   let nodeChartData = ref({})
-  const nodeChart = ref(null)
-  const lineChart = ref(null)
+  const storedCharts = ref([])
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
-  const plotStyle = ref('Scatter')
+  const showLine = ref(false)
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -408,11 +407,6 @@ export const useChartsStore = defineStore('charts', () => {
         // TODO: nodes label assumes reach
         label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
         data: measurements,
-        parsing: {
-          xAxisKey: 'datetime',
-          // TODO: this should be dynamic based on the selected variable
-          yAxisKey: 'wse'
-        },
         seriesType: 'swot_reach_series',
         ...getDataSetStyle(measurements)
       }
@@ -462,10 +456,6 @@ export const useChartsStore = defineStore('charts', () => {
       datasets.push({
         label: timeStampGroup[0].datetime.toDateString(),
         data: timeStampGroup,
-        parsing: {
-          xAxisKey: 'p_dist_out',
-          yAxisKey: 'wse'
-        },
         seriesType: 'swot_node_series',
         ...getNodeDataSetStyle(timeStampGroup, colorScale),
         ...getDatasetMinMaxDateTimes(timeStampGroup)
@@ -556,7 +546,7 @@ export const useChartsStore = defineStore('charts', () => {
     })
     console.log('Styles', styles)
     return {
-      showLine: false,
+      showLine: showLine.value,
       pointStyle: styles.pointStyles,
       fill: true,
       pointBorderColor: styles.pointBorderColors,
@@ -611,7 +601,7 @@ export const useChartsStore = defineStore('charts', () => {
     })
     console.log('Styles', styles)
     return {
-      showLine: true,
+      showLine: showLine.value,
       pointStyle: styles.pointStyles,
       pointRadius: 5,
       pointHoverRadius: 15,
@@ -629,19 +619,22 @@ export const useChartsStore = defineStore('charts', () => {
     }
   }
 
-  const updateChartLine = (vueChartjsChart) => {
-    // TODO: CAM-393
-    // https://www.chartjs.org/docs/latest/samples/line/segments.html
-    let showLine = false
-    if (plotStyle.value === 'Connected') {
-      showLine = true
-    }
-    vueChartjsChart.chart.data.datasets.forEach((dataset) => {
-      dataset.showLine = showLine
-      // TODO: check does this break reactivity?
-      // setParsing(line.value.chart.data.datasets)
+  const updateShowLine = () => {
+    // iterate over stored charts and update the line visibility
+    storedCharts.value.forEach((storedChart) => {
+      try {
+        storedChart.chart.data.datasets.forEach((dataset) => {
+          dataset.showLine = showLine.value
+        })
+        storedChart.chart.update()
+      } catch (error) {
+        console.error('Error updating chart lines', error)
+      }
     })
-    vueChartjsChart.chart.update()
+  }
+
+  const storeMountedChart = (chart) => {
+    storedCharts.value.push(chart)
   }
 
   return {
@@ -665,9 +658,8 @@ export const useChartsStore = defineStore('charts', () => {
     chartTab,
     nodeCharts,
     reachCharts,
-    plotStyle,
-    updateChartLine,
-    lineChart,
-    nodeChart,
+    showLine,
+    updateShowLine,
+    storeMountedChart
   }
 })
