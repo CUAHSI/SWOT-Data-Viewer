@@ -41,7 +41,7 @@
                 <DataQuality
                   v-model="dataQuality"
                   id="dataQuality"
-                  :data="chartStore.chartData"
+                  :data="chartStore.nodeChartData"
                   @qualityUpdated="filterAllDatasets"
                 />
               </v-expansion-panel-text>
@@ -102,13 +102,13 @@ const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
 const showStatistics = ref(false)
 const dataQuality = ref([0, 1, 2, 3])
-const { showLine, nodeChart } = storeToRefs(chartStore)
+const { showLine, nodeChartData } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const nodeChart = ref(null)
 const timeRef = ref()
 
 // deep copy of the data
-const thisChartsData = ref(JSON.parse(JSON.stringify(chartStore.nodeChartData.value)))
+const thisChartsData = ref(JSON.parse(JSON.stringify(nodeChartData.value)))
 
 // set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Distance from outlet (m)'
