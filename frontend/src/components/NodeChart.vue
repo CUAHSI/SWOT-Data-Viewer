@@ -2,12 +2,18 @@
   <v-container class="overflow-auto">
     <v-row>
       <v-col xs="12" lg="9">
-        <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
+        <v-sheet
+          :min-height="lgAndUp ? '65vh' : '50vh'"
+          :max-height="lgAndUp ? '100%' : '20vh'"
+          max-width="100%"
           min-width="500px">
           <Line :data="chartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
-          <TimeRangeSlider ref="timeRef" @update="timeSliderUpdated" @updateComplete="timeRangeUpdateComplete" />
+          <TimeRangeSlider 
+            ref="timeRef" 
+            @update="timeSliderUpdated"
+            @updateComplete="timeRangeUpdateComplete" />
         </v-sheet>
       </v-col>
       <v-col>
@@ -17,19 +23,28 @@
               <v-expansion-panel-title> Series Options </v-expansion-panel-title>
               <v-expansion-panel-text>
                 <div>
-                  <v-switch label="Statistics" v-model="showStatistics" color="primary"
+                  <v-switch 
+                    label="Statistics"
+                    v-model="showStatistics"
+                    color="primary"
                     @change="toggleSeriesStatistics(showStatistics)">
                     ></v-switch>
-                  <v-tooltip activator="parent" location="start">Enable/Disable computed statistics in the long-profile
-                    plot.</v-tooltip>
+                  <v-tooltip activator="parent" location="start">
+                    Enable/Disable computed statistics in the long-profile plot.
+                  </v-tooltip>
                 </div>
 
-                <DataQuality v-model="dataQuality" id="dataQuality" :data="chartStore.nodeChartData"
+                <DataQuality 
+                  v-model="dataQuality"
+                  id="dataQuality"
+                  :data="chartStore.nodeChartData"
                   @qualityUpdated="filterAllDatasets" />
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
-          <v-select label="Plot Style" v-model="showLine"
+          <v-select
+            label="Plot Style"
+            v-model="showLine"
             :items="[{ title: 'Scatter', value: false }, { title: 'Connected', value: true }]"
             @update:modelValue="chartStore.updateShowLine">
           </v-select>
