@@ -11,8 +11,8 @@
           <Line :data="chartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
-          <TimeRangeSlider 
-            ref="timeRef" 
+          <TimeRangeSlider
+            ref="timeRef"
             @update="timeSliderUpdated"
             @updateComplete="timeRangeUpdateComplete"
           />
@@ -31,13 +31,14 @@
                     color="primary"
                     @change="toggleSeriesStatistics(showStatistics)"
                   >
-                    ></v-switch>
+                    ></v-switch
+                  >
                   <v-tooltip activator="parent" location="start">
                     Enable/Disable computed statistics in the long-profile plot.</v-tooltip
                   >
                 </div>
 
-                <DataQuality 
+                <DataQuality
                   v-model="dataQuality"
                   id="dataQuality"
                   :data="chartStore.nodeChartData"
@@ -49,7 +50,7 @@
           <v-select
             label="Plot Style"
             v-model="showLine"
-            :items="[{ title: 'Scatter', value: false }, { title: 'Connected', value: true }]"
+            :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
             @update:modelValue="chartStore.updateShowLine"
           >
           </v-select>
