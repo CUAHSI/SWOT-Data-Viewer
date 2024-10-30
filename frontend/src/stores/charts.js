@@ -16,6 +16,7 @@ export const useChartsStore = defineStore('charts', () => {
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
+  const showStatistics = ref(false)
   const showLine = ref(false)
 
   const dataQualityOptions = [
@@ -635,7 +636,17 @@ export const useChartsStore = defineStore('charts', () => {
 
   const storeMountedChart = (chart) => {
     storedCharts.value.push(chart)
+
+    // clean stored charts that are undifined
+    cleanStoredCharts()
+
   }
+
+  const cleanStoredCharts = () => {
+    storedCharts.value = storedCharts.value.filter(e => e.chart != undefined) ;
+
+  }
+
 
   return {
     updateChartData,
@@ -658,6 +669,7 @@ export const useChartsStore = defineStore('charts', () => {
     chartTab,
     nodeCharts,
     reachCharts,
+    showStatistics,
     showLine,
     updateShowLine,
     storeMountedChart

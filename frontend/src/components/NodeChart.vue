@@ -94,15 +94,15 @@ import { APP_API_URL } from '@/constants'
 import { storeToRefs } from 'pinia'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
 
+
 const { lgAndUp } = useDisplay()
 
 const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
-const showStatistics = ref(false)
 const dataQuality = ref([0, 1, 2, 3])
-const { showLine, nodeChartData } = storeToRefs(chartStore)
+const { nodeChartData, showStatistics, showLine } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const nodeChart = ref(null)
 const timeRef = ref()
@@ -130,8 +130,9 @@ onMounted(async () => {
 const setDefaults = () => {
   // sets page elements back to their default values.
 
-  // set statistics switch to off
+  // set statistics switch to off in the charts store
   showStatistics.value = false
+
 }
 
 const getParsing = (context) => {
@@ -374,7 +375,6 @@ async function getStatistics() {
   // compute statistics based on the node series that are visible
   // in the chart.
 
-  //let datasets = chartStore.nodeChartData.datasets
   let datasets = chartStore.nodeChartData.datasets
     .filter((s) => s.seriesType == 'swot_node_series')
     .filter((s) => s.hidden == false)
@@ -432,7 +432,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenPlot.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         stat,
         { fill: false, hidden: false }
       )
@@ -442,7 +442,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenPlot.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         'IQR',
         { showLine: true, borderColor: 'gray', borderWidth: 1, pointRadius: 0 }
       )
@@ -452,7 +452,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenPlot.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         stat,
         {
           fill: '-1',
