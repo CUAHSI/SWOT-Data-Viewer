@@ -24,13 +24,21 @@
                     plot.</v-tooltip>
                 </div>
 
-                <DataQuality v-model="dataQuality" id="dataQuality" :data="chartStore.chartData"
-                  @qualityUpdated="filterAllDatasets" />
+                <DataQuality
+                  v-model="dataQuality"
+                  id="dataQuality"
+                  :data="chartStore.nodeChartData"
+                  @qualityUpdated="filterAllDatasets"
+                />
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
-          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected']"
-            @update:modelValue="chartStore.updateChartLine(nodeChart)">
+          <v-select
+            label="Plot Style"
+            v-model="showLine"
+            :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
+            @update:modelValue="chartStore.updateShowLine"
+          >
           </v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
@@ -62,7 +70,7 @@
 import { Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns'
-import { ref } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
@@ -82,14 +90,28 @@ const downloading = ref({ csv: false, json: false, chart: false })
 const dataQuality = ref([0, 1, 2, 3])
 const { plotStyle, nodeChart, showStatistics } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
+const nodeChart = ref(null)
 const timeRef = ref()
 
-let chartData = ref(chartStore.nodeChartData)
+let chartData = ref(nodeChartData.value)
 
-// set the initial plot labels. This is overridden in the setParting function
 let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Distance`
+
+let plt = props.chosenPlot
+xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+title = `${props.data.title}\n${plt.title}`
+
+onMounted(async () => {
+  // wait for chart to be available
+  await nextTick()
+
+  // push the chart to the store
+  chartStore.storeMountedChart(nodeChart.value)
+  chartStore.updateShowLine()
+})
 
 const setDefaults = () => {
   // sets page elements back to their default values.
@@ -99,26 +121,17 @@ const setDefaults = () => {
 
 }
 
-const setParsing = (datasets) => {
-  datasets.forEach((dataset) => {
-    // Proxy(Object) {abbreviation: 'wse_v_dist', xvar: Proxy(Object), yvar: Proxy(Object), name: 'Water Surface Elevation vs. Distance'}
-
-    // update the chart based on the selected plot 
-    var plt = props.chosenPlot
-    dataset.parsing.xAxisKey = plt.xvar.abbreviation
-    dataset.parsing.yAxisKey = plt.yvar.abbreviation
-    xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
-    yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
-    title = `${props.data.title}\n${plt.title}`
-  })
-}
-if (props.chosenPlot !== undefined && chartData.value.datasets !== undefined) {
-  setParsing(chartData.value.datasets)
+const getParsing = (context) => {
+  let parsing = {}
+  parsing.xAxisKey = plt.xvar.abbreviation
+  parsing.yAxisKey = plt.yvar.abbreviation
+  return parsing
 }
 
 const options = {
   responsive: true,
   maintainAspectRatio: false,
+  parsing: getParsing,
   plugins: {
     legend: {
       display: true,
@@ -238,7 +251,6 @@ const options = {
 
 const filterAllDatasets = (dataQualityValues) => {
   chartStore.filterDataQuality(dataQualityValues, nodeChart.value.chart.data.datasets, 'node_q')
-  setParsing(nodeChart.value.chart.data.datasets)
   nodeChart.value.chart.update()
 }
 
