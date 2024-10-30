@@ -13,7 +13,6 @@ export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   let nodeChartData = ref({})
   const storedCharts = ref([])
-  const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
   const showStatistics = ref(false)
@@ -133,7 +132,6 @@ export const useChartsStore = defineStore('charts', () => {
     chartData.value = {}
     chartData.value = {}
     nodeChartData.value = {}
-    showChart.value = false
     hasNodeData.value = false
   }
 
@@ -498,10 +496,6 @@ export const useChartsStore = defineStore('charts', () => {
     return dateStats
   }
 
-  const showVis = () => {
-    showChart.value = true
-  }
-
   const dynamicColors = function () {
     var r = Math.floor(Math.random() * 255)
     var g = Math.floor(Math.random() * 255)
@@ -656,8 +650,6 @@ export const useChartsStore = defineStore('charts', () => {
     clearChartData,
     buildChart,
     buildDistanceChart,
-    showVis,
-    showChart,
     hasNodeData,
     dynamicColors,
     filterDataQuality,

@@ -79,8 +79,9 @@ export const useFeaturesStore = defineStore('features', () => {
     query.run(
       function(error, featureCollection){
         features = featureCollection.features
-        console.log('Features by reach id:', features)
-        activeFeature.value = features[0]
+        let feature = features[0]
+        selectedFeatures.value.push(feature)
+        activeFeature.value = feature
       }
     )
   }

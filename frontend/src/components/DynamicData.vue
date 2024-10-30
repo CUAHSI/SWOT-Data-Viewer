@@ -1,27 +1,10 @@
 <template>
-  <v-sheet class="mx-auto" elevation="8">
+  <v-btn v-if="!hasData" @click="query" color="primary" :loading="querying.hydrocron"
+  >Query HydroCron</v-btn
+>
+  <v-sheet v-if="hasData" class="mx-auto" elevation="8">
     <v-card v-if="featureStore.activeFeature" height="100%">
-      <v-card-item class="text-center">
-        <v-card-title>{{ featureStore.activeFeature.properties.river_name }}</v-card-title>
-        <v-card-subtitle>
-          {{ featureStore.activeFeature.properties.reach_id }}
-        </v-card-subtitle>
-      </v-card-item>
-
-      <v-card-text>
-        <VariableSelect v-if="!hasResults()" />
-        <v-btn v-if="!hasResults()" @click="query" color="primary" :loading="querying.hydrocron"
-          >Query HydroCron</v-btn
-        >
-        <v-btn
-          @click="getNodesInActiveReach"
-          color="primary"
-          class="ma-2"
-          :loading="querying.nodes"
-        >
-          <v-icon :icon="mdiResistorNodes"></v-icon>Get Nodes
-        </v-btn>
-        <v-expansion-panels v-if="hasResults()">
+        <v-expansion-panels v-if="hasData">
           <v-expansion-panel>
             <v-expansion-panel-title>
               <v-icon :icon="mdiTimelineClockOutline"></v-icon>
@@ -52,47 +35,36 @@
             </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
-        <v-btn @click="showPlot" v-if="hasResults()">Show Plot</v-btn>
-      </v-card-text>
+        <TimeSeriesCharts v-if="hasData" />
     </v-card>
   </v-sheet>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
-import { mdiSatelliteVariant, mdiTimelineClockOutline, mdiResistorNodes } from '@mdi/js'
-import { queryHydroCron, getNodesFromReach } from '../_helpers/hydroCron'
-import VariableSelect from '@/components/VariableSelect.vue'
+import { mdiSatelliteVariant, mdiTimelineClockOutline } from '@mdi/js'
+import { queryHydroCron } from '../_helpers/hydroCron'
+import TimeSeriesCharts from '../views/TimeSeriesCharts.vue'
+
+// TODO: register chartjs globally
+import { ChartJS } from '@/_helpers/charts/charts'
 
 const featureStore = useFeaturesStore()
-const chartsStore = useChartsStore()
-
-let show = ref(false)
+const chartStore = useChartsStore()
 
 let querying = ref({ hydrocron: false, nodes: false })
+let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
 
+onMounted(() => {
+  // query()
+})
 const query = async () => {
   querying.value.hydrocron = true
   await queryHydroCron(featureStore.activeFeature)
+  chartStore.buildChart(featureStore.selectedFeatures)
   querying.value.hydrocron = false
-}
-
-const getNodesInActiveReach = async () => {
-  querying.value.nodes = true
-  const nodes = await getNodesFromReach(featureStore.activeFeature)
-  console.log('Nodes', nodes)
-  querying.value.nodes = false
-}
-
-const hasResults = () => {
-  return featureStore?.activeFeature?.results !== undefined
-}
-
-const showPlot = () => {
-  show.value = false
-  chartsStore.showVis()
 }
 </script>
 
