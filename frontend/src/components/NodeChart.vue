@@ -2,20 +2,12 @@
   <v-container class="overflow-auto">
     <v-row>
       <v-col xs="12" lg="9">
-        <v-sheet
-          :min-height="lgAndUp ? '65vh' : '50vh'"
-          :max-height="lgAndUp ? '100%' : '20vh'"
-          max-width="100%"
-          min-width="500px"
-        >
+        <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
+          min-width="500px">
           <Line :data="chartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
-          <TimeRangeSlider
-            ref="timeRef"
-            @update="timeSliderUpdated"
-            @updateComplete="timeRangeUpdateComplete"
-          />
+          <TimeRangeSlider ref="timeRef" @update="timeSliderUpdated" @updateComplete="timeRangeUpdateComplete" />
         </v-sheet>
       </v-col>
       <v-col>
@@ -25,34 +17,20 @@
               <v-expansion-panel-title> Series Options </v-expansion-panel-title>
               <v-expansion-panel-text>
                 <div>
-                  <v-switch
-                    label="Statistics"
-                    v-model="showStatistics"
-                    color="primary"
-                    @change="toggleSeriesStatistics(showStatistics)"
-                  >
-                    ></v-switch
-                  >
-                  <v-tooltip activator="parent" location="start"
-                    >Enable/Disable computed statistics in the long-profile plot.</v-tooltip
-                  >
+                  <v-switch label="Statistics" v-model="showStatistics" color="primary"
+                    @change="toggleSeriesStatistics(showStatistics)">
+                    ></v-switch>
+                  <v-tooltip activator="parent" location="start">Enable/Disable computed statistics in the long-profile
+                    plot.</v-tooltip>
                 </div>
 
-                <DataQuality
-                  v-model="dataQuality"
-                  id="dataQuality"
-                  :data="chartStore.chartData"
-                  @qualityUpdated="filterAllDatasets"
-                />
+                <DataQuality v-model="dataQuality" id="dataQuality" :data="chartStore.chartData"
+                  @qualityUpdated="filterAllDatasets" />
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
-          <v-select
-            label="Plot Style"
-            v-model="plotStyle"
-            :items="['Scatter', 'Connected']"
-            @update:modelValue="chartStore.updateChartLine(nodeChart)"
-          >
+          <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected']"
+            @update:modelValue="chartStore.updateChartLine(nodeChart)">
           </v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
@@ -79,7 +57,7 @@
     </v-row>
   </v-container>
 </template>
- 
+
 <script setup>
 import { Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
@@ -93,7 +71,6 @@ import { useChartsStore } from '@/stores/charts'
 import { APP_API_URL } from '@/constants'
 import { storeToRefs } from 'pinia'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
-import { onMounted, onUpdated } from "vue"
 
 
 const { lgAndUp } = useDisplay()
@@ -114,21 +91,11 @@ let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
 let title = `${props.data.title}: ${props.chosenPlot?.name} vs Distance`
 
-
-//onMounted(() => {
-//  if (showStatistics.value == true) {
-//    // we need to recompue the statistics based on the data that is currently visible
-//    toggleSeriesStatistics(true)
-//  }
-//
-//})
-
 const setDefaults = () => {
   // sets page elements back to their default values.
 
   // set statistics switch to off in the charts store
-  chartStore.showStatistics = false
-//  showStatistics.value = false // TODO: remove this line
+  showStatistics.value = false // TODO: remove this line
 
 }
 
@@ -479,7 +446,7 @@ const generateStatisticsSeries = async () => {
 
 const toggleSeriesStatistics = async (visible = true) => {
   // adds and removes computed statistics from the chart
-  
+
   // get the data from the chart
   let updatedDatasets = nodeChart.value.chart.data.datasets
 
