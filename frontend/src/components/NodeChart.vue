@@ -6,14 +6,16 @@
           :min-height="lgAndUp ? '65vh' : '50vh'"
           :max-height="lgAndUp ? '100%' : '20vh'"
           max-width="100%"
-          min-width="500px">
+          min-width="500px"
+        >
           <Line :data="chartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
           <TimeRangeSlider 
             ref="timeRef" 
             @update="timeSliderUpdated"
-            @updateComplete="timeRangeUpdateComplete" />
+            @updateComplete="timeRangeUpdateComplete"
+          />
         </v-sheet>
       </v-col>
       <v-col>
@@ -23,22 +25,24 @@
               <v-expansion-panel-title> Series Options </v-expansion-panel-title>
               <v-expansion-panel-text>
                 <div>
-                  <v-switch 
+                  <v-switch
                     label="Statistics"
                     v-model="showStatistics"
                     color="primary"
-                    @change="toggleSeriesStatistics(showStatistics)">
+                    @change="toggleSeriesStatistics(showStatistics)"
+                  >
                     ></v-switch>
                   <v-tooltip activator="parent" location="start">
-                    Enable/Disable computed statistics in the long-profile plot.
-                  </v-tooltip>
+                    Enable/Disable computed statistics in the long-profile plot.</v-tooltip
+                  >
                 </div>
 
                 <DataQuality 
                   v-model="dataQuality"
                   id="dataQuality"
                   :data="chartStore.nodeChartData"
-                  @qualityUpdated="filterAllDatasets" />
+                  @qualityUpdated="filterAllDatasets"
+                />
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
@@ -46,7 +50,8 @@
             label="Plot Style"
             v-model="showLine"
             :items="[{ title: 'Scatter', value: false }, { title: 'Connected', value: true }]"
-            @update:modelValue="chartStore.updateShowLine">
+            @update:modelValue="chartStore.updateShowLine"
+          >
           </v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
