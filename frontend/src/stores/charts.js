@@ -623,7 +623,7 @@ export const useChartsStore = defineStore('charts', () => {
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
-        storedChart.chart.data.datasets.forEach((dataset) => {
+        storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
           dataset.showLine = showLine.value
         })
         storedChart.chart.update()
