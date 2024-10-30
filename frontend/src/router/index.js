@@ -27,9 +27,10 @@ const router = createRouter({
       component: ApiView
     },
     {
-      path: '/plots',
+      path: '/plots/:reachId?',
       name: 'plots',
-      component: () => import('../views/ChartsView.vue')
+      component: () => import('../views/ChartsView.vue'),
+      props: true
     },
     {
       path: "/reach/:reachId",
