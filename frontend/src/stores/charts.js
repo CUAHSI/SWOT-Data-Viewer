@@ -16,7 +16,6 @@ export const useChartsStore = defineStore('charts', () => {
   const showChart = ref(false)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
-  const plotStyle = ref('Scatter')
   const showStatistics = ref(false)
   const showLine = ref(false)
 
@@ -636,11 +635,10 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const storeMountedChart = (chart) => {
-    console.log('Number of stored charts (before)', storedCharts.value.length)
     storedCharts.value.push(chart)
 
+    // clean stored charts that are undifined
     cleanStoredCharts()
-    console.log('Number of stored charts (after)', storedCharts.value.length)
 
   }
 
@@ -671,7 +669,6 @@ export const useChartsStore = defineStore('charts', () => {
     chartTab,
     nodeCharts,
     reachCharts,
-    plotStyle,
     showStatistics,
     showLine,
     updateShowLine,

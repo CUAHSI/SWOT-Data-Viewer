@@ -110,7 +110,7 @@ const setDefaults = () => {
   // sets page elements back to their default values.
 
   // set statistics switch to off in the charts store
-  showStatistics.value = false // TODO: remove this line
+  showStatistics.value = false
 
 }
 
