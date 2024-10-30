@@ -33,8 +33,8 @@
                   >
                     ></v-switch
                   >
-                  <v-tooltip activator="parent" location="start">
-                    Enable/Disable computed statistics in the long-profile plot.</v-tooltip
+                  <v-tooltip activator="parent" location="start"
+                    >Enable/Disable computed statistics in the long-profile plot.</v-tooltip
                   >
                 </div>
 
