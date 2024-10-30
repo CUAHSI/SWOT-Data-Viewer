@@ -636,8 +636,19 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const storeMountedChart = (chart) => {
+    console.log('Number of stored charts (before)', storedCharts.value.length)
     storedCharts.value.push(chart)
+
+    cleanStoredCharts()
+    console.log('Number of stored charts (after)', storedCharts.value.length)
+
   }
+
+  const cleanStoredCharts = () => {
+    storedCharts.value = storedCharts.value.filter(e => e.chart != undefined) ;
+
+  }
+
 
   return {
     updateChartData,
@@ -661,10 +672,7 @@ export const useChartsStore = defineStore('charts', () => {
     nodeCharts,
     reachCharts,
     plotStyle,
-    updateChartLine,
-    lineChart,
-    nodeChart,
-    showStatistics
+    showStatistics,
     showLine,
     updateShowLine,
     storeMountedChart

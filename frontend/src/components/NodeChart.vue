@@ -24,21 +24,14 @@
                     plot.</v-tooltip>
                 </div>
 
-                <DataQuality
-                  v-model="dataQuality"
-                  id="dataQuality"
-                  :data="chartStore.nodeChartData"
-                  @qualityUpdated="filterAllDatasets"
-                />
+                <DataQuality v-model="dataQuality" id="dataQuality" :data="chartStore.nodeChartData"
+                  @qualityUpdated="filterAllDatasets" />
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
-          <v-select
-            label="Plot Style"
-            v-model="showLine"
-            :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
-            @update:modelValue="chartStore.updateShowLine"
-          >
+          <v-select label="Plot Style" v-model="showLine"
+            :items="[{ title: 'Scatter', value: false }, { title: 'Connected', value: true }]"
+            @update:modelValue="chartStore.updateShowLine">
           </v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
             <v-icon :icon="mdiDownloadBox"></v-icon>
@@ -88,7 +81,7 @@ const chartStore = useChartsStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
 const dataQuality = ref([0, 1, 2, 3])
-const { plotStyle, nodeChart, showStatistics } = storeToRefs(chartStore)
+const { nodeChartData, showStatistics, showLine } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const nodeChart = ref(null)
 const timeRef = ref()
