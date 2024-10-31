@@ -153,16 +153,6 @@ Jupyter Notebook examples will be added soon!
 
 </div>
 
-## Additional Information
-- What is the min, mean, median, max values for different variables for example river length across each basin level 6? For example: "Reach lengths of approximately 10 km are 
-typical, but they can vary from 5 to 20 km. Most reaches include a water surface area of at least 
-1 km2
-, to allow for enough spatial averaging of the SWOT observations that the estimated WSEs 
-meet an expected minimum precision". This information is obtained from https://deotb6e7tfubr.cloudfront.net/s3-edaf5da92e0ce48fb61175c28b67e95d/podaac-ops-cumulus-docs.s3.us-west-2.amazonaws.com/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20231026_RevBcite.pdf?A-userid=None&Expires=1722618530&Signature=PAXG2N3QN~teAbuU4KX-Q0q4vsxwFxUYeFCgm6Pxyi6lI1hs9XUesJelMhjeU892xXYmptT94XJHrEeUuxT9GUNqXBduHuK81nB443AeUpZkgByuqI-KrKzka2mab7G66Cb1iGx1Cime3uk07OIcN8h-UO2Jz37oMwsOFT8~MYH0W3zU~qcjPRpL8YbsBb~WRIi5z7V1jSzaxpz0BUeOoecIY8GdLF-Te96UAjt51kO-RXxeNaIrO7mfd~Jin7ZVJFPFJrm71FVQU8CIdt6nPVA8t6cRog-qXi1UZh2bYk3eIf119BEvDeTLPT5shCzf28XDcTq-k1FRFs936TLcEQ__&Key-Pair-Id=KX5J11OFWFB3T
-- The number of reaches in each L2_HR_RiverSP 
-granule varies, from as few as 50 to as many as 4000.
-
-
 ## Other Useful Resources
 ------------
 ### Tutorials
