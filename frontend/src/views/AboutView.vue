@@ -1,35 +1,13 @@
 <template>
-  <h2 class="ma-2 text-center">Our Team</h2>
-  <v-container>
-    <v-row align="center" justify="center">
-      <v-col v-for="member in members" :key="member.name" cols="auto">
-        <v-card>
-          <v-img
-            :src="`${member.image}`"
-            :width="400"
-            aspect-ratio="1"
-            cover
-            lazy-src="https://www.hydroshare.org/static/static/img/home-page/carousel/bg3.jpg"
-          >
-            <template v-slot:placeholder>
-              <div class="d-flex align-center justify-center fill-height">
-                <v-progress-circular color="grey-lighten-4" indeterminate></v-progress-circular>
-              </div>
-            </template>
-          </v-img>
-          <v-card-title class="text-h6">
-            {{ member.name }}
-          </v-card-title>
-          <v-card-subtitle>
-            {{ member.position }}
-            <v-divider></v-divider>
-            {{ member.org }}
-          </v-card-subtitle>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+  <div v-html="aboutHtml" class="about-content"></div>
 </template>
+
+<script setup>
+import marked from 'marked';
+import aboutContent from '../../../documentation/about_page.md';
+
+const aboutHtml = marked(aboutContent);
+</script>
 
 <style>
 @media (min-width: 1024px) {
@@ -39,31 +17,4 @@
 }
 </style>
 
-<script setup>
-const members = [
-  {
-    name: 'Tony Castronova',
-    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg',
-    position: 'Senior Research Hydrologist',
-    org: 'CUAHSI'
-  },
-  {
-    name: 'Devin Cowan',
-    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/Devin-Cowan.jpg',
-    position: 'Research Programmer',
-    org: 'CUAHSI'
-  },
-  {
-    name: 'Irene Garousi-Nejad',
-    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/Irene_headshot03.jpg',
-    position: 'Research Scientist',
-    org: 'CUAHSI'
-  },
-  {
-    name: 'Martin Seul',
-    image: 'https://www.cuahsi.org/uploads/team/img/_headshot/Martin.jpg',
-    position: 'Technical Director',
-    org: 'CUAHSI'
-  }
-]
-</script>
+
