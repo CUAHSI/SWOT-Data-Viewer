@@ -49,7 +49,7 @@ import { queryHydroCron } from '../_helpers/hydroCron'
 import TimeSeriesCharts from '../views/TimeSeriesCharts.vue'
 
 // TODO: register chartjs globally
-import { ChartJS } from '@/_helpers/charts/charts'
+import { ChartJS } from '@/_helpers/charts/charts' // eslint-disable-line
 
 const featureStore = useFeaturesStore()
 const chartStore = useChartsStore()

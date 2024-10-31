@@ -1,6 +1,6 @@
 <template>
   <v-container v-if="hasData" fluid fill-height>
-    <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
+    <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow @update:model-value="changePlotType">
       <v-tab value="timeseries">
         <v-icon :icon="mdiTimelineClock"></v-icon>
         Reach Timeseries
@@ -44,7 +44,7 @@ import DistanceCharts from './DistanceCharts.vue'
 import { queryHydroCron, getNodeDataForReach } from '../_helpers/hydroCron'
 
 // TODO: register chartjs globally
-import { ChartJS } from '@/_helpers/charts/charts'
+import { ChartJS } from '@/_helpers/charts/charts' // eslint-disable-line
 
 const props = defineProps({ reachId: String })
 const router = useRouter()
@@ -74,8 +74,21 @@ onMounted(() => {
     querying.value.hydrocron = true
     console.log('Setting active feature by reach id', props.reachId)
     featuresStore.setActiveFeatureByReachId(props.reachId)
+    
+    // check for query params that determine the chartTab
+    const query = router.currentRoute.value.query
+    if (query.plot) {
+      // check that the chartTab is valid
+      if (query.plot === 'timeseries' || query.plot === 'distance') {
+        chartStore.chartTab = query.plot
+      }
+    }
   }
 })
+
+const changePlotType = (plot) => {
+  router.push({ query: { plot } })
+}
 
 const runQuery = async () => {
   querying.value.hydrocron = true

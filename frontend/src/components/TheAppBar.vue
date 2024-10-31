@@ -78,6 +78,7 @@ const { smAndDown } = useDisplay()
 const showCopyUrlDialog = ref(false);
 let hasCopied = ref(false);
 const pageUrl = window.location.href
+// window.location.origin + router.currentRoute.value.fullPath
 
 const copyUrl = () => {
     navigator.clipboard.writeText(pageUrl);
