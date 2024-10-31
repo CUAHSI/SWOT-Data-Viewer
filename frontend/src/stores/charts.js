@@ -607,35 +607,31 @@ export const useChartsStore = defineStore('charts', () => {
   const getNodeDataSetStyle = (dataSet, colorScale) => {
     console.log('Getting node data set style', dataSet)
     const styles = {
-      pointBorderColor: [],
-      pointStyles: [],
       dynamicColors: []
     }
     dataSet.forEach((dataPoint) => {
-      const { pointStyle, pointBorderColor } = getPointStyle(dataPoint)
-      styles.pointBorderColor.push(pointBorderColor)
-      styles.pointStyles.push(pointStyle)
       styles.dynamicColors.push(dateGradientColors(dataPoint.datetime, colorScale))
     })
-    console.log('Styles', styles)
     return {
       showLine: showLine.value,
-      pointStyle: styles.pointStyles,
       pointRadius: 5,
       pointHoverRadius: 15,
       //fill: styles.dynamicColors,
       fill: false,
       // color: styles.colors,
-      // TODO: CAM-393 we set border color in two places
-      // borderColor: styles.dynamicColors, // The line fill color.
-      backgroundColor: styles.dynamicColors, // The line color.
-      pointBackgroundColor: styles.pointColors,
-      pointBorderColor: styles.pointBorderColor,
       // borderWidth: 1,
+      backgroundColor: styles.dynamicColors, // The line color.
+      // TODO: CAM-393 we set border color in two places
+      // pointBackgroundColor: styles.pointColors,
+      // pointStyle: styles.pointStyles,
+      // pointBorderColor: styles.pointBorderColor,
+      pointBorderColor: ctx => getPointBorderColors(ctx),
+      pointStyle: ctx => getPointStyles(ctx),
+      borderColor: styles.dynamicColors, // The line fill color.
       pointBorderWidth: 1,
       pointHoverBorderWidth: 5,
       segment: {
-        boderColor: ctx => skipOnDQ(ctx, 'rgb(0,0,0,0.2)', 'node_q'),
+        borderColor: ctx => skipOnDQ(ctx, 'rgb(0,0,0,0.2)', 'node_q'),
         borderDash: ctx => skipOnDQ(ctx, [6, 6], 'node_q'),
       },
       spanGaps: true,
