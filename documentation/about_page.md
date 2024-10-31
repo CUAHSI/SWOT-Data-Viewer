@@ -41,23 +41,23 @@ SWOTViz allows users to select their reach of interest through an interactive ma
 
 ### What types of plots does SWOTViz provide?
 
-<div style="display: flex; gap: 20px;">
+<div style="display: flex; gap: 20px; align-items: stretch;">
 
   <!-- Left Column Box -->
-  <div style="flex: 1; background-color: #C4D8E2 ; padding: 20px; border-radius: 8px;">
+  <div style="flex: 1; background-color: #C4D8E2; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; max-width: 400px;">
     <h3>Timeseries Plots</h3>
-    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/timeseries.png" alt="Thumbnail" style="width: 300px; height: 200px;">
-    <p>This type of plot can effectively show changes in a variable of interest (e.g., water surface elevation) across one or more reaches over a specified period, helping in the understanding of temporal changes in river dynamics, such as seasonal variations, impacts of climate events, or human activities. Typically, the values represent 1-D averages across the reach. </p>
+    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/timeseries.png" alt="Thumbnail" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover;">
+    <p style="flex-grow: 1; margin-top: 15px;">This type of plot can effectively show changes in a variable of interest (e.g., water surface elevation) across one or more reaches over a specified period, helping in the understanding of temporal changes in river dynamics, such as seasonal variations, impacts of climate events, or human activities. Typically, the values represent 1-D averages across the reach.</p>
   </div>
 
   <!-- Right Column Box -->
-  <div style="flex: 1; background-color: #AFEEEE ; padding: 20px; border-radius: 8px;">
+  <div style="flex: 1; background-color: #AFEEEE; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; max-width: 400px;">
     <h3>Longitudinal Profile Plots</h3>
-    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/distance.png" alt="Thumbnail" style="width: 300; height: 200;">
-    <p>The longitudinal profile helps in understanding variations in a variable of interest (e.g., water surface elevation) along the river reach, which is essential for studying river hydraulics, sediment transport, flood levels, and more. </p>
+    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/distance.png" alt="Thumbnail" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover;">
+    <p style="flex-grow: 1; margin-top: 15px;">The longitudinal profile helps in understanding variations in a variable of interest (e.g., water surface elevation) along the river reach, which is essential for studying river hydraulics, sediment transport, flood levels, and more.</p>
   </div>
 
- </div>
+</div>
  
  <br>
 
