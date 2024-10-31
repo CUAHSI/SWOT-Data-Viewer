@@ -3,13 +3,20 @@
     <v-main>
       <TheAppBar @toggle-mobile-nav="toggleMobileNav" :paths="paths" />
       <AlertPopup v-bind="alertStore.displayed"></AlertPopup>
-      <TheMobileNavDrawer @toggle-mobile-nav="toggleMobileNav" :show="showMobileNavigation" :paths="paths" />
+      <TheMobileNavDrawer
+        @toggle-mobile-nav="toggleMobileNav"
+        :show="showMobileNavigation"
+        :paths="paths"
+      />
       <RouterView />
       <!-- The leaflet map kept alive outside of the RouterView -->
       <KeepAlive>
         <TheLeafletMap />
       </KeepAlive>
-      <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
+      <link
+        href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+        rel="stylesheet"
+      />
       <SnackBar />
       <TheBottomSheet />
       <TheFooter />
@@ -26,20 +33,20 @@ import SnackBar from './components/SnackBar.vue'
 import TheFooter from './components/TheFooter.vue'
 import { ref } from 'vue'
 import { useAlertStore } from './stores/alerts'
-import TheBottomSheet from "@/components/TheBottomSheet.vue";
-import TheLeafletMap from './components/TheLeafletMap.vue';
+import TheBottomSheet from '@/components/TheBottomSheet.vue'
+import TheLeafletMap from './components/TheLeafletMap.vue'
 
 const alertStore = useAlertStore()
 
 let showMobileNavigation = ref(false)
 const paths = [
   {
-    attrs: { to: "/" },
-    label: "Map",
+    attrs: { to: '/map' },
+    label: 'Map'
   },
   {
-    attrs: { to: "/plots" },
-    label: "Plots",
+    attrs: { to: '/plots' },
+    label: 'Plots'
   },
   // {
   //   attrs: { to: "/dashboard" },
@@ -55,10 +62,10 @@ const paths = [
   //   label: "API",
   // },
   {
-    attrs: { to: "/about" },
-    label: "About",
-  },
-];
+    attrs: { to: '/about' },
+    label: 'About'
+  }
+]
 
 function toggleMobileNav() {
   showMobileNavigation.value = !showMobileNavigation.value

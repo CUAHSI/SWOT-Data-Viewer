@@ -16,7 +16,10 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   // TODO: get the start and end time from the date range
   let feature_type = swordFeature?.properties?.node_id == undefined ? 'Reach' : 'Node'
   swordFeature.feature_type = feature_type
-  let feature_id = feature_type === 'Reach' ? swordFeature?.properties?.reach_id : swordFeature?.properties?.node_id
+  let feature_id =
+    feature_type === 'Reach'
+      ? swordFeature?.properties?.reach_id
+      : swordFeature?.properties?.node_id
   swordFeature.feature_id = feature_id
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation)
@@ -62,7 +65,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     output: output,
     fields: fields,
     // https://podaac.github.io/hydrocron/timeseries.html#compact-string-required-no
-    compact: 'false'
+    compact: 'true'
   }
   let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
   if (response == null) {

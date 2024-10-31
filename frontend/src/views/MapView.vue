@@ -4,5 +4,5 @@
 </template>
 
 <script setup>
-import DataViewDrawer from '../components/DataViewDrawer.vue';
+import DataViewDrawer from '../components/DataViewDrawer.vue'
 </script>

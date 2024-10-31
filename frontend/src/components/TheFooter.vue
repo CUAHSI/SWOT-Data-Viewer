@@ -1,5 +1,12 @@
 <template>
-  <v-footer height="50" v-if="!$route.meta.hideNavigation" fixed app color="navbar" class="d-flex flex-column">
+  <v-footer
+    height="50"
+    v-if="!$route.meta.hideNavigation"
+    fixed
+    app
+    color="navbar"
+    class="d-flex flex-column"
+  >
     <div class="d-flex align-end full-height align-center w-100">
       <v-spacer></v-spacer>
       <v-btn color="secondary" href="https://www.cuahsi.org/" target="_blank">
@@ -13,7 +20,6 @@
 <script setup>
 // import ThemeButton from './ThemeButton.vue';
 import imgUrl from '@/assets/cuahsi-logo.png'
-
 </script>
 
 <style lang="scss" scoped>

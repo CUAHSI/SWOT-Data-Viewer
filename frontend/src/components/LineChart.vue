@@ -2,9 +2,13 @@
   <v-container class="overflow-auto">
     <v-row>
       <v-col xs="12" lg="9">
-        <v-sheet :min-height="lgAndUp ? '65vh' : '50vh'" :max-height="lgAndUp ? '100%' : '20vh'" max-width="100%"
-          min-width="500px">
-          <Line :data="chartData" :options="options" ref="line" />
+        <v-sheet
+          :min-height="lgAndUp ? '65vh' : '50vh'"
+          :max-height="lgAndUp ? '100%' : '20vh'"
+          max-width="100%"
+          min-width="500px"
+        >
+          <Line :data="chartData" :options="options" ref="lineChart" />
         </v-sheet>
       </v-col>
       <v-col xs="12" lg="3">
@@ -12,32 +16,25 @@
           <v-expansion-panel value="plotOptions">
             <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
             <v-expansion-panel-text>
-              <v-select label="Data Quality" v-model="dataQuality" :items="chartStore.dataQualityOptions"
-                item-title="label" item-value="value" @update:modelValue="filterAllDatasets()" multiple chips clearable>
-                <template #item="{ item, props }">
-                  <v-list-item v-bind="props">
-                    <template #prepend>
-                      <v-icon :icon="item.raw.icon" :color="item.raw.pointBorderColor" size="x-small"></v-icon>
-                    </template>
-                    <template #title>
-                      {{ item.raw.label }}
-                    </template>
-                  </v-list-item>
-                </template>
-                <template #chip="{ item, props }">
-                  <v-list-item v-bind="props">
-                    <template #prepend>
-                      <v-icon :icon="item.raw.icon" :color="item.raw.pointBorderColor" size="x-small"></v-icon>
-                    </template>
-                    <template #title>
-                      {{ item.raw.label }}
-                    </template>
-                  </v-list-item>
-                </template>
-              </v-select>
-              <v-select label="Plot Style" v-model="plotStyle" :items="['Scatter', 'Connected',]"
-                @update:modelValue="updateChartLine()"></v-select>
-              <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
+              <DataQuality
+                v-model="dataQuality"
+                id="dataQuality"
+                :data="chartStore.chartData"
+                @qualityUpdated="filterAllDatasets"
+              />
+
+              <v-select
+                label="Plot Style"
+                v-model="showLine"
+                :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
+                @update:modelValue="chartStore.updateShowLine"
+              ></v-select>
+              <v-btn
+                :loading="downloading.chart"
+                @click="downloadChart()"
+                class="ma-1"
+                color="input"
+              >
                 <v-icon :icon="mdiDownloadBox"></v-icon>
                 Download Chart
               </v-btn>
@@ -55,26 +52,40 @@
               </v-btn>
             </v-expansion-panel-text>
           </v-expansion-panel>
-          <v-expansion-panel :disabled="selectedTimeseriesPoints.length == 0" value="selectedTimeseriesPoints">
+          <v-expansion-panel
+            :disabled="selectedTimeseriesPoints.length == 0"
+            value="selectedTimeseriesPoints"
+          >
             <v-expansion-panel-title>Selected Timestamps</v-expansion-panel-title>
             <v-expansion-panel-text>
               <v-list>
-                <v-list-item v-for="timeSeriesPoint in selectedTimeseriesPoints" :key="timeSeriesPoint.datetime">
+                <v-list-item
+                  v-for="timeSeriesPoint in selectedTimeseriesPoints"
+                  :key="timeSeriesPoint.datetime"
+                >
                   <template v-slot:append>
-                    <v-icon :icon="mdiCloseBox" color="error"
-                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"></v-icon>
+                    <v-icon
+                      :icon="mdiCloseBox"
+                      color="error"
+                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
+                    ></v-icon>
                   </template>
-                  <v-list-item-content>
                     <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-                    <v-list-item-subtitle>Average {{ props.chosenVariable?.abbreviation }}: {{
-                      timeSeriesPoint[props.chosenVariable.abbreviation] }}</v-list-item-subtitle>
-                  </v-list-item-content>
+                    <v-list-item-subtitle
+                      >Average {{ props.chosenPlot?.abbreviation }}:
+                      {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
+                    >
                 </v-list-item>
               </v-list>
             </v-expansion-panel-text>
-            <v-btn v-if="selectedTimeseriesPoints.length > 0" :loading="!chartStore.hasNodeData"
-              :disabled="!chartStore.hasNodeData" class="ma-1 float-right" color="input"
-              @click="viewLongProfileByDates">
+            <v-btn
+              v-if="selectedTimeseriesPoints.length > 0"
+              :loading="!chartStore.hasNodeData"
+              :disabled="!chartStore.hasNodeData"
+              class="ma-1 float-right"
+              color="input"
+              @click="viewLongProfileByDates"
+            >
               <v-icon :icon="mdiChartBellCurveCumulative"></v-icon>
               View Long Profile
             </v-btn>
@@ -87,73 +98,100 @@
 
 <script setup>
 import { Line } from 'vue-chartjs'
-import 'chartjs-adapter-date-fns';
-import { enUS } from 'date-fns/locale';
+import 'chartjs-adapter-date-fns'
+import { enUS } from 'date-fns/locale'
 import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { ref } from 'vue'
-import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiMagnifyMinusOutline, mdiChartBellCurveCumulative, mdiCloseBox } from '@mdi/js'
-import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron';
+import { storeToRefs } from 'pinia'
+import {
+  mdiDownloadBox,
+  mdiFileDelimited,
+  mdiCodeJson,
+  mdiMagnifyMinusOutline,
+  mdiChartBellCurveCumulative,
+  mdiCloseBox
+} from '@mdi/js'
+import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
-import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
+import DataQuality from '@/components/DataQuality.vue'
+import { onMounted, nextTick } from 'vue'
 
 const { lgAndUp } = useDisplay()
-const panel = ref(["plotOptions"])
+const panel = ref(['plotOptions'])
 const selectedTimeseriesPoints = ref([])
 
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
-const props = defineProps({ data: Object, chosenVariable: Object })
-const line = ref(null)
-const plotStyle = ref('Scatter')
+const props = defineProps({ data: Object, chosenPlot: Object })
+const { showLine, chartData } = storeToRefs(chartStore)
+const lineChart = ref(null)
 const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
-// TODO: might need a more efficient way of doing this instead of re-mapping the data
-// Ideally use the store directly instead of passing it as a prop
-let chartData = ref(props.data)
+let xLabel = 'Date'
+let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
+let title = `${props.data.title}: ${props.chosenPlot?.name} vs Time`
 
-const setParsing = (datasets) => {
-  datasets.forEach((dataset) => {
-    dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
-  })
+let plt = props.chosenPlot
+// check that the variable has a unit, if it does, add it to the label
+// if it doesn't, just use the name. This will be the case when the
+// x-variable is "time"
+if (plt.xvar.unit != undefined) {
+  xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+} else {
+  xLabel = `${plt.xvar.name}`
 }
-if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
-  setParsing(chartData.value.datasets)
+yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+title = `${props.data.title}\n${plt.title}`
+
+onMounted(async () => {
+  // wait for chart to be available
+  await nextTick()
+
+  // push the chart to the store
+  chartStore.storeMountedChart(lineChart.value)
+  chartStore.updateShowLine()
+})
+
+const getParsing = (context) => {
+  let plt = props.chosenPlot
+  let parsing = {}
+
+  parsing.xAxisKey = plt.xvar.abbreviation
+  parsing.yAxisKey = plt.yvar.abbreviation
+  return parsing
 }
-
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.title} - ${props.chosenVariable?.name}`
-
 
 const options = {
   responsive: true,
   maintainAspectRatio: false,
+  parsing: getParsing,
   plugins: {
     legend: {
       display: false,
-      position: 'bottom',
+      position: 'bottom'
     },
     title: {
       display: true,
       text: title,
       font: {
         size: 16
-      },
+      }
     },
     customCanvasBackgroundColor: {
-      color: 'white',
+      color: 'white'
     },
     zoom: {
       pan: {
         enabled: true,
-        mode: 'xy',
+        mode: 'xy'
       },
       zoom: {
         wheel: {
-          enabled: true,
+          enabled: true
         },
         pinch: {
           enabled: false
@@ -161,35 +199,35 @@ const options = {
         drag: {
           enabled: false
         },
-        mode: 'xy',
+        mode: 'xy'
       }
     },
     tooltip: {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
         label: function (context) {
-          // var label = context.dataset.label || '';
-          let selectedVariable = props.chosenVariable
-          let label = `${capitalizeFirstLetter(selectedVariable.abbreviation)}`
+          let plt = props.chosenPlot
+          let label = `${plt.yvar.name}`
           if (label) {
-            label += ': ';
+            label += ': '
           }
           if (context.parsed.y !== null) {
-            // label += new Intl.NumberFormat('en-US', { style: 'decimal', maximumFractionDigits: 5 }).format(context.parsed.y);
             label += context.parsed.y
           }
-          label += ` ${selectedVariable.unit}`
-          return label;
+          label += ` ${plt.yvar.unit}`
+          return label
         },
         footer: function (context) {
-          const dataQualityOption = chartStore.dataQualityOptions.find((option) => option.value == context[0]?.raw?.reach_q)
+          const dataQualityOption = chartStore.dataQualityOptions.find(
+            (option) => option.value == context[0]?.raw?.reach_q
+          )
           if (dataQualityOption) {
             return `\n Data Quality: ${dataQualityOption.label}`
           }
           return ''
-        },
+        }
       },
-      displayColors: false,
+      displayColors: false
     }
   },
   scales: {
@@ -204,7 +242,7 @@ const options = {
       },
       title: {
         display: true,
-        text: 'Date'
+        text: xLabel
       }
     },
     y: {
@@ -214,18 +252,17 @@ const options = {
       }
     }
   },
-  onClick: (e) => handleTimeseriesPointClick(e),
-  // events: ["click", "contextmenu"],
+  onClick: (e) => handleTimeseriesPointClick(e)
 }
 
 const handleTimeseriesPointClick = (e) => {
-  const elems = line.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+  const elems = lineChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
   }
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
-  const dataset = line.value.chart.data.datasets[datasetIndex]
+  const dataset = lineChart.value.chart.data.datasets[datasetIndex]
   const timeSeriesPoint = dataset.data[index]
 
   addSelectedTimeseriesPoint(timeSeriesPoint)
@@ -234,9 +271,12 @@ const handleTimeseriesPointClick = (e) => {
 const viewLongProfileByDates = () => {
   chartStore.setDatasetVisibility(chartStore.nodeChartData.datasets, true)
   chartStore.filterDatasetsBySetOfDates(null, selectedTimeseriesPoints.value)
-  chartStore.chartTab = "distance"
+  chartStore.chartTab = 'distance'
   // TODO: update the date range slider based on the selections
-  featuresStore.timeRange.value = [selectedTimeseriesPoints.value[0].datetime, selectedTimeseriesPoints.value[selectedTimeseriesPoints.value.length - 1].datetime]
+  featuresStore.timeRange.value = [
+    selectedTimeseriesPoints.value[0].datetime,
+    selectedTimeseriesPoints.value[selectedTimeseriesPoints.value.length - 1].datetime
+  ]
 }
 
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
@@ -261,7 +301,7 @@ const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
   newPoints.sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
   selectedTimeseriesPoints.value = newPoints
 
-  panel.value = ["selectedTimeseriesPoints"]
+  panel.value = ['selectedTimeseriesPoints']
 }
 
 const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
@@ -272,21 +312,21 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
 
     // in the case that the point was removed from the selected list, make sure to remove the selected state
     if (ref) {
-      line.value.chart.update()
+      lineChart.value.chart.update()
     }
   }
 
   if (selectedTimeseriesPoints.value.length === 0) {
-    panel.value = ["plotOptions"]
+    panel.value = ['plotOptions']
   }
 }
 
 const resetZoom = () => {
-  line.value.chart.resetZoom()
+  lineChart.value.chart.resetZoom()
 }
 
 const getChartName = () => {
-  let identifier = `${props.data.datasets[0].label}-${props.chosenVariable.abbreviation}`
+  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
@@ -295,9 +335,9 @@ const downloadChart = async () => {
   downloading.value.chart = true
   const filename = getChartName()
   // change the chart background color to white
-  line.value.chart.canvas.style.backgroundColor = 'white'
+  lineChart.value.chart.canvas.style.backgroundColor = 'white'
 
-  const image = line.value.chart.toBase64Image('image/png', 1)
+  const image = lineChart.value.chart.toBase64Image('image/png', 1)
   const link = document.createElement('a')
   link.href = image
   link.download = filename
@@ -317,22 +357,8 @@ const downJson = async () => {
   downloading.value.json = false
 }
 
-const updateChartLine = () => {
-  let showLine = false
-  if (plotStyle.value === 'Connected') {
-    showLine = true
-  }
-  line.value.chart.data.datasets.forEach((dataset) => {
-    dataset.showLine = showLine
-    setParsing(line.value.chart.data.datasets)
-  })
-  line.value.chart.update()
-}
-
-const filterAllDatasets = () => {
-  let dataQualityValues = dataQuality.value
-  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets)
-  setParsing(line.value.chart.data.datasets)
-  line.value.chart.update()
+const filterAllDatasets = (dataQualityValues) => {
+  chartStore.filterDataQuality(dataQualityValues, lineChart.value.chart.data.datasets, 'reach_q')
+  lineChart.value.chart.update()
 }
 </script>

@@ -41,9 +41,10 @@
     "@vue/eslint-config-prettier": "^8.0.0",
     "cypress": "^13.2.0",
     "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-vue": "^9.17.0",
-    "prettier": "^3.0.3",
+    "prettier": "3.3.3",
     "sass": "^1.69.3",
     "start-server-and-test": "^2.0.0",
     "vite": "^4.4.9"

@@ -7,6 +7,10 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      redirect: '/map'
+    },
+    {
+      path: '/map',
       name: 'map',
       component: MapView,
       meta: {
@@ -27,14 +31,15 @@ const router = createRouter({
       component: ApiView
     },
     {
-      path: '/selections',
-      name: 'selections',
-      component: () => import('../views/SelectionsView.vue')
+      path: '/plots/:reachId?',
+      name: 'plots',
+      component: () => import('../views/ChartsView.vue'),
+      props: true
     },
     {
-      path: '/plots',
-      name: 'plots',
-      component: () => import('../views/ChartsView.vue')
+      path: "/reach/:reachId",
+      name: "reach",
+      component: () => import('../views/ReachView.vue')
     },
     {
       path: '/dashboard',

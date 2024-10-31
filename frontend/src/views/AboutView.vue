@@ -4,8 +4,13 @@
     <v-row align="center" justify="center">
       <v-col v-for="member in members" :key="member.name" cols="auto">
         <v-card>
-          <v-img :src="`${member.image}`" :width="400" aspect-ratio="1" cover
-            lazy-src="https://www.hydroshare.org/static/static/img/home-page/carousel/bg3.jpg">
+          <v-img
+            :src="`${member.image}`"
+            :width="400"
+            aspect-ratio="1"
+            cover
+            lazy-src="https://www.hydroshare.org/static/static/img/home-page/carousel/bg3.jpg"
+          >
             <template v-slot:placeholder>
               <div class="d-flex align-center justify-center fill-height">
                 <v-progress-circular color="grey-lighten-4" indeterminate></v-progress-circular>
@@ -35,7 +40,6 @@
 </style>
 
 <script setup>
-
 const members = [
   {
     name: 'Tony Castronova',
@@ -60,6 +64,6 @@ const members = [
     image: 'https://www.cuahsi.org/uploads/team/img/_headshot/Martin.jpg',
     position: 'Technical Director',
     org: 'CUAHSI'
-  },
+  }
 ]
 </script>

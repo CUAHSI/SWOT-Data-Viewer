@@ -4,14 +4,14 @@ import { ref } from 'vue'
 export const useAlertStore = defineStore('alerts', () => {
   let displayed = ref({})
 
-  function displayAlert (alert) {
+  function displayAlert(alert) {
     displayed.value = alert
     setTimeout(function () {
       displayed.value = {}
     }, alert.duration * 1000)
   }
-  
-  function clearAlert(){
+
+  function clearAlert() {
     displayed.value = {}
   }
 

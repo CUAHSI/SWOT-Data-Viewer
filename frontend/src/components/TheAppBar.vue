@@ -1,5 +1,13 @@
 <template>
-  <v-app-bar v-if="!$route.meta.hideNavigation" color="navbar" ref="appBar" id="app-bar" elevate-on-scroll fixed app>
+  <v-app-bar
+    v-if="!$route.meta.hideNavigation"
+    color="navbar"
+    ref="appBar"
+    id="app-bar"
+    elevate-on-scroll
+    fixed
+    app
+  >
     <div class="d-flex align-end full-height pa-2 align-center w-100">
       <router-link :to="{ path: `/` }" class="logo">
         <v-img :src="imgUrl" cover width="8rem"></v-img>
@@ -9,37 +17,78 @@
 
       <v-card class="nav-items mr-2 d-flex mr-4" :elevation="2" v-if="!smAndDown">
         <nav>
-          <v-btn v-for="path of paths" :key="path.attrs.to || path.attrs.href" v-bind="path.attrs"
-            :id="`navbar-nav-${path.label.replaceAll(/[\/\s]/g, ``)}`" :elevation="0" active-class="primary"
-            :class="path.isActive?.() ? 'primary' : ''">
+          <v-btn
+            v-for="path of paths"
+            :key="path.attrs.to || path.attrs.href"
+            v-bind="path.attrs"
+            :id="`navbar-nav-${path.label.replaceAll(/[\/\s]/g, ``)}`"
+            :elevation="0"
+            active-class="primary"
+            :class="$route.path.includes(path.attrs.to) ? 'v-btn--active' : ''"
+          >
             {{ path.label }}
           </v-btn>
         </nav>
       </v-card>
       <v-spacer></v-spacer>
+      <v-tooltip text="Share This Page" location="start">
+        <template v-slot:activator="{ props }">
+            <v-btn icon v-bind="props" @click="showCopyUrlDialog = true">
+                <v-icon :icon="mdiLink"></v-icon>
+            </v-btn>
+        </template>
+      </v-tooltip>
       <!-- <UserLogin @logged-in="login" v-if="!mdAndDown" :mobile="false" /> -->
-      <TheTestButton v-if="!mdAndDown" :mobile="false" />
       <v-app-bar-nav-icon @click="$emit('toggleMobileNav')" v-if="smAndDown" />
     </div>
   </v-app-bar>
+  <v-dialog v-model="showCopyUrlDialog" max-width="500">
+    <v-card>
+        <v-card-title>Share This Page</v-card-title>
+        <v-card-text>
+            <p class="text-body-1">
+                Copy the link below to share this page with others.
+            </p>
+            <v-text-field variant="outlined" v-on:focus="$event.target.select()" ref="clone" readonly
+                :value="pageUrl" />
+            <v-btn v-if="!hasCopied" @click="copyUrl">Copy</v-btn>
+            <v-btn color="green" v-else @click="copyUrl">Copied to clipboard!</v-btn>
+        </v-card-text>
+        <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text="Close" @click="showCopyUrlDialog = false"></v-btn>
+        </v-card-actions>
+    </v-card>
+</v-dialog>
 </template>
 <script setup>
 import { RouterLink } from 'vue-router'
 import { useDisplay } from 'vuetify'
-// import UserLogin from "@/components/UserLogin.vue";
+import { ref } from 'vue'
 import imgUrl from '@/assets/swotviz-high-quality-transparent-v10.png'
-import { useAuthStore } from '../stores/auth';
-import TheTestButton from '@/components/TheTestButton.vue';
+import { mdiLink } from '@mdi/js'
+// import UserLogin from "@/components/UserLogin.vue";
+// import { useAuthStore } from '../stores/auth'
+
 defineProps(['paths'])
 defineEmits(['toggleMobileNav'])
 
-const auth = useAuthStore();
 const { smAndDown } = useDisplay()
 
-function login() {
-  auth.isLoggedIn = true
+const showCopyUrlDialog = ref(false);
+let hasCopied = ref(false);
+const pageUrl = window.location.href
+// window.location.origin + router.currentRoute.value.fullPath
+
+const copyUrl = () => {
+    navigator.clipboard.writeText(pageUrl);
+    hasCopied.value = true;
 }
 
+// const auth = useAuthStore()
+// function login() {
+//   auth.isLoggedIn = true
+// }
 </script>
 
 <style lang="scss" scoped>
@@ -47,7 +96,7 @@ function login() {
   cursor: pointer;
 }
 
-.v-toolbar.v-app-bar--is-scrolled>.v-toolbar__content>.container {
+.v-toolbar.v-app-bar--is-scrolled > .v-toolbar__content > .container {
   align-items: center !important;
   will-change: padding;
   padding-top: 0;
@@ -58,12 +107,12 @@ function login() {
   border-radius: 2rem !important;
   overflow: hidden;
 
-  &>a.v-btn:first-child {
+  & > a.v-btn:first-child {
     border-top-left-radius: 2rem !important;
     border-bottom-left-radius: 2rem !important;
   }
 
-  &>a.v-btn:last-child {
+  & > a.v-btn:last-child {
     border-top-right-radius: 2rem !important;
     border-bottom-right-radius: 2rem !important;
   }
@@ -75,8 +124,10 @@ function login() {
   }
 }
 
-// .nav-items .v-btn.is-active,
-// .mobile-nav-items .v-list-item.is-active {
-//   background-color: #1976d2 !important;
-//   color: #FFF;
-// }</style>
+ .nav-items .v-btn.is-active,
+ .mobile-nav-items .v-list-item.is-active,
+ .v-btn--active {
+   background-color: #1976d2 !important;
+   color: #FFF;
+ }
+</style>

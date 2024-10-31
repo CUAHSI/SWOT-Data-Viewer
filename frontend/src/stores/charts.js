@@ -5,20 +5,114 @@ import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
 import chroma from 'chroma-js'
 import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
+import { useHydrologicStore } from '@/stores/hydrologic'
+
+
 
 export const useChartsStore = defineStore('charts', () => {
   let chartData = ref({})
   let nodeChartData = ref({})
-  const showChart = ref(false)
+  const storedCharts = ref([])
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
+  const showStatistics = ref(false)
+  const showLine = ref(false)
 
   const dataQualityOptions = [
-    { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle }, 
-    { value: 1, label: 'suspect', pointStyle: 'rectRounded', pointBorderColor: 'yellow', icon: mdiSquareRounded }, 
-    { value: 2, label: 'degraded', pointStyle: 'rect', pointBorderColor: 'orange', icon: mdiRectangle }, 
-    { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus },
+    { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
+    {
+      value: 1,
+      label: 'suspect',
+      pointStyle: 'rectRounded',
+      pointBorderColor: 'yellow',
+      icon: mdiSquareRounded
+    },
+    {
+      value: 2,
+      label: 'degraded',
+      pointStyle: 'rect',
+      pointBorderColor: 'orange',
+      icon: mdiRectangle
+    },
+    { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
   ]
+
+  // load the swot variables from the hydrologic store.
+  // these are used to build the charts for the node and reach views.
+  const hydrologicStore = useHydrologicStore()
+  let swotVariables = ref(hydrologicStore.swotVariables)
+
+  // a collection of charts that can be created in the node view
+  const nodeCharts = ref([
+    {
+      abbreviation: 'wse/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation along Reach Length',
+      name: 'WSE vs Distance',
+      help: swotVariables.value.find((v) => v.abbreviation == 'wse').definition,
+    },
+    {
+      abbreviation: 'area/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+      title: 'Water Surface Area along Reach Length',
+      help: swotVariables.value.find((v) => v.abbreviation == 'area_total').definition,
+      name: 'WSA vs Distance',
+    },
+    {
+      abbreviation: 'width/dist',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'p_dist_out'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      title: 'Reach Width along Reach Length',
+      help: "Reach Width plotted against Reach Length for all nodes in the selected reach",
+      name: 'Width vs Distance',
+    },
+    {
+      abbreviation: 'wse/width',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation vs Reach Width',
+      help: "Water Surface Elevation plotted against Reach Width for all nodes in the selected reach",
+      name: 'WSE vs Width',
+    }
+  ])
+
+  // a collection of charts that can be created in the reach view
+  const reachCharts = ref([
+    {
+      abbreviation: 'wse/time',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation',
+      name: 'WSE vs Time',
+      help: swotVariables.value.find((v) => v.abbreviation == 'wse').definition,
+    },
+    {
+      abbreviation: 'area/time',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+      title: 'Water Surface Area',
+      help: swotVariables.value.find((v) => v.abbreviation == 'area_total').definition,
+      name: 'WSA vs Time',
+    },
+    {
+      abbreviation: 'width/time',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      title: 'Reach Width',
+      help: "Reach Width plotted against Reach Length for all nodes in the selected reach",
+      name: 'Width vs Time',
+    },
+    {
+      abbreviation: 'slope/time',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'slope'),
+      title: 'Reach Slope',
+      help: swotVariables.value.find((v) => v.abbreviation == 'slope').definition,
+      name: 'Slope vs Time',
+    }
+  ])
 
   const updateChartData = (data) => {
     // TODO: bug in reactivity
@@ -27,21 +121,29 @@ export const useChartsStore = defineStore('charts', () => {
     console.log('Updated chart data', chartData.value)
   }
 
+  const updateNodeChartData = (data) => {
+    // This function is used to update the nodeChartData object
+    // data = the new data series to set in the object.
+    nodeChartData.value.datasets = data
+    console.log('Updated Node Chart Data', nodeChartData.value)
+  }
+
   const clearChartData = () => {
     chartData.value = {}
     chartData.value = {}
     nodeChartData.value = {}
-    showChart.value = false
     hasNodeData.value = false
   }
 
   const getLabels = (selectedFeatures) => {
     // TODO: for now we just use the first query
-    const labels = selectedFeatures[0].queries[0].results.geojson.features.map((feature) => {
-      if (feature.properties.time_str == 'no_data') {
+    // when compact = true, there will only be a single feature
+    const propertyObject = selectedFeatures[0].queries[0].results.geojson.features[0].properties
+    const labels = propertyObject.time_str.map((time_str) => {
+      if (time_str == 'no_data') {
         return
       }
-      return feature.properties.time_str
+      return time_str
     })
     return labels.filter((l) => l != undefined)
   }
@@ -91,15 +193,25 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const filterDataQuality = (dataQualityFlags, datasets) => {
-    console.log('Filtering data quality', dataQualityFlags)
-    console.log('Starting Datasets', datasets)
-    datasets.forEach((dataset) => {
-      console.log('Starting pointstyle', dataset.pointStyle)
+  const filterDataQuality = (dataQualityFlags, datasets, qualityLabel = 'reach_q') => {
+    // Alters series point styles between their default style (dataset.pointStyle) and
+    // Null. This is used to toggle them on/off using the data quality flag selection
+    // from the DataQuality.vue component.
+
+    // filter datasets to only include SWOT series. These are the
+    // only series that have a quality flag
+    let swotDatasets = datasets.filter((d) =>
+      ['swot_node_series', 'swot_reach_series'].includes(d.seriesType)
+    )
+
+    // loop over each point in the swot datasets and update the point style
+    swotDatasets.forEach((dataset) => {
       const pointStyles = dataset.data.map((dataPoint, i) => {
         let pointStyle = dataset.pointStyle[i]
-        if (!dataQualityFlags.includes(parseInt(dataPoint.reach_q))) {
-          // TODO: need to figure out how to have the connecting line skip the point
+
+        if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
+          // TODO: CAM-393
+          // need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
           pointStyle = false
         } else {
@@ -108,8 +220,8 @@ export const useChartsStore = defineStore('charts', () => {
         }
         return pointStyle
       })
+
       dataset.pointStyle = pointStyles
-      console.log('Ending pointstyle', dataset.pointStyle)
     })
   }
 
@@ -129,15 +241,17 @@ export const useChartsStore = defineStore('charts', () => {
       tolerance = NODE_DATETIME_VARIATION
     }
 
+    // Buffer start and end times by the tolerance
+    // Convert into a Date object and save as epoch time
+    // for comparision later.
     start = subMinutes(start, tolerance)
     end = addMinutes(end, tolerance)
+    console.log('Filtering time range', start, end)
 
     if (datasets == null) {
       console.log('Filtering using all datasets')
       datasets = nodeChartData.value.datasets
     }
-    console.log('Filtering time range', start, end)
-    console.log('Starting Datasets', datasets)
 
     datasets.forEach((dataset) => {
       // determine whether the dataset is within the time range
@@ -148,7 +262,6 @@ export const useChartsStore = defineStore('charts', () => {
         dataset.hidden = false
       }
     })
-    console.log('Ending Datasets', datasets)
   }
 
   const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {
@@ -259,14 +372,33 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
+    // builds the datasets for the time series chart. These are labeled
+    // using seriesType='swot_reach_series' to differentiate them from
+    // node-level data.
+
     const featureStore = useFeaturesStore()
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
     console.log('Getting chart datasets for selected features', selectedFeatures)
     return selectedFeatures.map((feature) => {
       // TODO: for now we just use the first query
-      let measurements = feature.queries[0].results.geojson.features.map((feature) => {
-        return feature.properties
-      })
+      // with compact = true, there will only be a single feature and properties is an object of arrays
+      let propertyObject = feature.queries[0].results.geojson.features[0].properties
+
+      // each property of the propertyObject contains an array of measurements.
+      // the key in the propertyObject is the variable abbreviation
+      // we need to convert this to a single array of objects
+      // https://www.chartjs.org/docs/latest/general/data-structures.html#object
+      let measurements = []
+      for (const key in propertyObject) {
+        let values = propertyObject[key]
+        values.forEach((value, i) => {
+          if (measurements[i] == null) {
+            measurements[i] = {}
+          }
+          measurements[i][key] = value
+        })
+      }
+
       measurements = filterMeasurements(measurements, dataQualityFlags)
       console.log('SWOT measurements', measurements)
       console.log('SWOT feature', feature)
@@ -274,23 +406,31 @@ export const useChartsStore = defineStore('charts', () => {
         // TODO: nodes label assumes reach
         label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
         data: measurements,
-        parsing: {
-          xAxisKey: 'datetime',
-          // TODO: this should be dynamic based on the selected variable
-          yAxisKey: 'wse'
-        },
+        seriesType: 'swot_reach_series',
         ...getDataSetStyle(measurements)
       }
     })
   }
 
   const getNodeChartDatasets = (nodes) => {
+    // builds the datasets for the long-profile chart. These are labeled
+    // using seriesType='swot_node_series' to differentiate them from
+    // reach-level data.
     console.log('getting node chart datasets for nodes', nodes)
     let measurements = nodes.map((node) => {
       console.log('Parsing node', node)
-      return node.queries[0].results.geojson.features.map((feature) => {
-        return feature.properties
-      })
+      const propertiesObj =  node.queries[0].results.geojson.features[0].properties
+      let array = []
+      for (const key in propertiesObj) {
+        let values = propertiesObj[key]
+        values.forEach((value, i) => {
+          if (array[i] == null) {
+            array[i] = {}
+          }
+          array[i][key] = value
+        })
+      }
+      return array
     })
     measurements = measurements.flat()
     measurements = filterMeasurements(measurements)
@@ -315,10 +455,7 @@ export const useChartsStore = defineStore('charts', () => {
       datasets.push({
         label: timeStampGroup[0].datetime.toDateString(),
         data: timeStampGroup,
-        parsing: {
-          xAxisKey: 'p_dist_out',
-          yAxisKey: 'wse'
-        },
+        seriesType: 'swot_node_series',
         ...getNodeDataSetStyle(timeStampGroup, colorScale),
         ...getDatasetMinMaxDateTimes(timeStampGroup)
       })
@@ -359,10 +496,6 @@ export const useChartsStore = defineStore('charts', () => {
     return dateStats
   }
 
-  const showVis = () => {
-    showChart.value = true
-  }
-
   const dynamicColors = function () {
     var r = Math.floor(Math.random() * 255)
     var g = Math.floor(Math.random() * 255)
@@ -382,7 +515,6 @@ export const useChartsStore = defineStore('charts', () => {
     let pointStyle = 'circle'
     let pointBorderColor = 'white'
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
-    console.log('Data Quality', dataQuality)
     const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
     if (dataQualityOption) {
       pointStyle = dataQualityOption.pointStyle
@@ -409,7 +541,7 @@ export const useChartsStore = defineStore('charts', () => {
     })
     console.log('Styles', styles)
     return {
-      showLine: false,
+      showLine: showLine.value,
       pointStyle: styles.pointStyles,
       fill: true,
       pointBorderColor: styles.pointBorderColors,
@@ -464,11 +596,13 @@ export const useChartsStore = defineStore('charts', () => {
     })
     console.log('Styles', styles)
     return {
-      showLine: true,
+      showLine: showLine.value,
       pointStyle: styles.pointStyles,
       pointRadius: 5,
       pointHoverRadius: 15,
-      fill: styles.dynamicColors,
+      //fill: styles.dynamicColors,
+      fill: false,
+      // color: styles.colors,
       borderColor: styles.dynamicColors, // The line fill color.
       backgroundColor: styles.dynamicColors, // The line color.
       spanGaps: false,
@@ -480,15 +614,42 @@ export const useChartsStore = defineStore('charts', () => {
     }
   }
 
+  const updateShowLine = () => {
+    // iterate over stored charts and update the line visibility
+    storedCharts.value.forEach((storedChart) => {
+      try {
+        storedChart.chart.data.datasets.forEach((dataset) => {
+          dataset.showLine = showLine.value
+        })
+        storedChart.chart.update()
+      } catch (error) {
+        console.error('Error updating chart lines', error)
+      }
+    })
+  }
+
+  const storeMountedChart = (chart) => {
+    storedCharts.value.push(chart)
+
+    // clean stored charts that are undifined
+    cleanStoredCharts()
+
+  }
+
+  const cleanStoredCharts = () => {
+    storedCharts.value = storedCharts.value.filter(e => e.chart != undefined) ;
+
+  }
+
+
   return {
     updateChartData,
+    updateNodeChartData,
     chartData,
     nodeChartData,
     clearChartData,
     buildChart,
     buildDistanceChart,
-    showVis,
-    showChart,
     hasNodeData,
     dynamicColors,
     filterDataQuality,
@@ -497,6 +658,12 @@ export const useChartsStore = defineStore('charts', () => {
     dataQualityOptions,
     setDatasetVisibility,
     getNodeTimeStamps,
-    chartTab
+    chartTab,
+    nodeCharts,
+    reachCharts,
+    showStatistics,
+    showLine,
+    updateShowLine,
+    storeMountedChart
   }
 })
