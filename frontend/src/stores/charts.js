@@ -17,7 +17,7 @@ export const useChartsStore = defineStore('charts', () => {
   const chartTab = ref('timeseries')
   const showStatistics = ref(false)
   const showLine = ref(true)
-  const dataQualityFlags = ref([0, 1, 2, 3])
+  const dataQualityFlags = ref([0, 1])  // by default don't show degraded or bad data
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -512,21 +512,59 @@ export const useChartsStore = defineStore('charts', () => {
     return colorScale(date)
   }
 
+  const getPointBorderColors = (ctx) => {
+    const pointBorderColors = []
+    const dataSet = ctx.dataset.data
+    dataSet.forEach((dataPoint) => {
+      const pointBorderColor = getPointBorderColor(dataPoint)
+      pointBorderColors.push(pointBorderColor)
+    })
+    return pointBorderColors
+  }
+
+  const getPointStyles = (ctx) => {
+    const pointStyles = []
+    const data = ctx.dataset.data
+    data.forEach((dataPoint) => {
+      const pointStyle = getPointStyle(dataPoint)
+      pointStyles.push(pointStyle)
+    })
+    console.log('Point Styles', pointStyles)
+    return pointStyles
+  }
+
   const getPointStyle = (dataPoint) => {
+    const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+    if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
+      return false
+    }
+    
     // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
     const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
     let pointStyle = 'circle'
-    let pointBorderColor = 'white'
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
     const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
     if (dataQualityOption) {
       pointStyle = dataQualityOption.pointStyle
+    }
+    return pointStyle
+  }
+
+  const getPointBorderColor = (dataPoint) => {
+    const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+    if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
+      return false
+    }
+    
+    // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
+    const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
+    let pointBorderColor = 'white'
+    // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
+    const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
+    if (dataQualityOption) {
       pointBorderColor = dataQualityOption.pointBorderColor
     }
-    return {
-      pointStyle,
-      pointBorderColor
-    }
+    return pointBorderColor
   }
 
   const skipOnDQ = (ctx, value, quality_variable='reach_q') => {
@@ -547,24 +585,11 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getDataSetStyle = (dataSet) => {
-    console.log('Getting data set style', dataSet)
-    const styles = {
-      colors: [],
-      pointStyles: [],
-      fills: [],
-      pointBorderColors: []
-    }
-    dataSet.forEach((dataPoint) => {
-      const { pointStyle, pointBorderColor } = getPointStyle(dataPoint)
-      styles.pointBorderColors.push(pointBorderColor)
-      styles.pointStyles.push(pointStyle)
-    })
-    console.log('Styles', styles)
-    return {
+    const style = {
       showLine: showLine.value,
-      pointStyle: styles.pointStyles,
       fill: true,
-      pointBorderColor: styles.pointBorderColors,
+      pointBorderColor: ctx => getPointBorderColors(ctx),
+      pointStyle: ctx => getPointStyles(ctx),
       pointBorderWidth: 2,
       borderColor: 'black', // The line fill color.
       backgroundColor: 'black', // The line color
@@ -578,6 +603,8 @@ export const useChartsStore = defineStore('charts', () => {
       },
       spanGaps: true,
     }
+    console.log('Style', style)
+    return style
   }
 
   function getPointRadius(context) {
@@ -628,7 +655,8 @@ export const useChartsStore = defineStore('charts', () => {
       //fill: styles.dynamicColors,
       fill: false,
       // color: styles.colors,
-      borderColor: styles.dynamicColors, // The line fill color.
+      // TODO: CAM-393 we set border color in two places
+      // borderColor: styles.dynamicColors, // The line fill color.
       backgroundColor: styles.dynamicColors, // The line color.
       pointBackgroundColor: styles.pointColors,
       pointBorderColor: styles.pointBorderColor,
@@ -636,7 +664,6 @@ export const useChartsStore = defineStore('charts', () => {
       pointBorderWidth: 1,
       pointHoverBorderWidth: 5,
       segment: {
-        // TODO: CAM-393 color is broken
         boderColor: ctx => skipOnDQ(ctx, 'rgb(0,0,0,0.2)', 'node_q'),
         borderDash: ctx => skipOnDQ(ctx, [6, 6], 'node_q'),
       },

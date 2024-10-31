@@ -261,7 +261,6 @@ const options = {
 }
 
 const filterAllDatasets = () => {
-  // chartStore.filterDataQuality()
   nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   chartStore.updateAllCharts()
 }

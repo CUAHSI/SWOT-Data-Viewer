@@ -357,9 +357,7 @@ const downJson = async () => {
 }
 
 const filterAllDatasets = () => {
-  // chartStore.filterDataQuality()
   lineChart.value.chart.data.datasets = chartData.value.datasets
-  // lineChart.value.chart.update()
   chartStore.updateAllCharts()
 }
 </script>
