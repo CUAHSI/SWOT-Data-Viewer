@@ -398,14 +398,10 @@ async function getStatistics() {
   chartStatistics.value = stats
 }
 
-function buildChartSeries(data, xkey = 'p_dist_out', ykey, series_label, props = {}) {
+function buildChartSeries(data, series_label, props = {}) {
   let dat = {
     label: series_label,
     data: data,
-    parsing: {
-      yAxisKey: ykey,
-      xAxisKey: xkey
-    },
     fill: props.fill || false,
     hidden: props.hidden || false,
     showLine: props.showLine || true,
@@ -476,6 +472,7 @@ const toggleSeriesStatistics = async (visible = true) => {
   // get the data from the chart
   let updatedDatasets = nodeChart.value.chart.data.datasets
 
+  console.log('hello')
   if (visible) {
     let statisticSeries = await generateStatisticsSeries()
 
