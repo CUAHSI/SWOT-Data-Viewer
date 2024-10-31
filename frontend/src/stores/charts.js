@@ -210,7 +210,7 @@ export const useChartsStore = defineStore('charts', () => {
         let pointStyle = dataset.pointStyle[i]
 
         if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
-          // TODO: CAM-393
+          // TODO: CAM-393 https://cuahsi.atlassian.net/browse/CAM-393
           // need to figure out how to have the connecting line skip the point
           // https://www.chartjs.org/docs/latest/samples/line/segments.html
           pointStyle = false
