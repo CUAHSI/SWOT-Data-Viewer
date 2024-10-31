@@ -24,7 +24,7 @@
             :id="`navbar-nav-${path.label.replaceAll(/[\/\s]/g, ``)}`"
             :elevation="0"
             active-class="primary"
-            :class="path.isActive?.() ? 'primary' : ''"
+            :class="$route.path.includes(path.attrs.to) ? 'v-btn--active' : ''"
           >
             {{ path.label }}
           </v-btn>
@@ -86,9 +86,10 @@ function login() {
   }
 }
 
-// .nav-items .v-btn.is-active,
-// .mobile-nav-items .v-list-item.is-active {
-//   background-color: #1976d2 !important;
-//   color: #FFF;
-// }
+ .nav-items .v-btn.is-active,
+ .mobile-nav-items .v-list-item.is-active,
+ .v-btn--active {
+   background-color: #1976d2 !important;
+   color: #FFF;
+ }
 </style>
