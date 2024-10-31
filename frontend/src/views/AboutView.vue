@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import marked from 'marked';
+import { marked } from 'marked';
 import aboutContent from '../../../documentation/about_page.md';
 
 const aboutHtml = marked(aboutContent);
