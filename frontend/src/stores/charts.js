@@ -194,40 +194,6 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const filterDataQuality = (qualityLabel = 'reach_q') => {
-    // TODO CAM-393 this is broken
-    // needs to be fixed for node data as well
-
-    // Alters series point styles between their default style (dataset.pointStyle) and
-    // Null. This is used to toggle them on/off using the data quality flag selection
-    // from the DataQuality.vue component.
-
-    for (const data in [chartData.value, nodeChartData.value]) {
-      const datasets = data.datasets
-      // filter datasets to only include SWOT series. These are the
-      // only series that have a quality flag
-      let swotDatasets = datasets.filter((d) =>
-        ['swot_node_series', 'swot_reach_series'].includes(d.seriesType)
-      )
-
-      // loop over each point in the swot datasets and update the point style
-      swotDatasets.forEach((dataset) => {
-        const pointStyles = dataset.data.map((dataPoint, i) => {
-          let pointStyle = dataset.pointStyle[i]
-
-          if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
-            pointStyle = false
-          } else {
-            const styles = getPointStyle(dataPoint)
-            pointStyle = styles.pointStyle
-          }
-          return pointStyle
-        })
-        dataset.pointStyle = pointStyles
-      })
-    }
-  }
-
   const filterDatasetsToTimeRange = (datasets, start, end, tolerance) => {
     // if end is null, use now
     if (end == null) {
@@ -513,9 +479,12 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getPointBorderColors = (ctx) => {
+    const dataSet = ctx.dataset
+    if(!['swot_node_series', 'swot_reach_series'].includes(dataSet.seriesType)) {
+      return dataSet.pointBorderColor
+    }
     const pointBorderColors = []
-    const dataSet = ctx.dataset.data
-    dataSet.forEach((dataPoint) => {
+    dataSet.data.forEach((dataPoint) => {
       const pointBorderColor = getPointBorderColor(dataPoint)
       pointBorderColors.push(pointBorderColor)
     })
@@ -523,13 +492,15 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getPointStyles = (ctx) => {
+    const dataSet = ctx.dataset
+    if(!['swot_node_series', 'swot_reach_series'].includes(dataSet.seriesType)) {
+      return dataSet.pointStyle
+    }
     const pointStyles = []
-    const data = ctx.dataset.data
-    data.forEach((dataPoint) => {
+    dataSet.data.forEach((dataPoint) => {
       const pointStyle = getPointStyle(dataPoint)
       pointStyles.push(pointStyle)
     })
-    console.log('Point Styles', pointStyles)
     return pointStyles
   }
 
@@ -720,7 +691,6 @@ export const useChartsStore = defineStore('charts', () => {
     buildDistanceChart,
     hasNodeData,
     dynamicColors,
-    filterDataQuality,
     updateAllCharts,
     filterDatasetsToTimeRange,
     filterDatasetsBySetOfDates,
