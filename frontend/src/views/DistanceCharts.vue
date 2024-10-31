@@ -4,7 +4,7 @@
       <v-col sm="2">
         <v-sheet class="elevation-1" color="input">
           <v-card-title> Plots </v-card-title>
-          <v-tabs v-model="pltTab" direction="vertical" color="primary">
+          <v-tabs v-model="pltTab" direction="vertical" color="primary" @update:model-value="changePlot">
             <v-tab v-for="plt in chartStore.nodeCharts" :value="plt" :key="plt.abbreviation">
               <template v-if="lgAndUp">
                 {{ plt.name }}
@@ -51,12 +51,30 @@
 <script setup>
 import NodeChart from '@/components/NodeChart.vue'
 import { useChartsStore } from '../stores/charts'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useRouter } from 'vue-router'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
+const router = useRouter()
+
 let pltTab = ref(chartStore.nodeCharts[0])
+
+onMounted(() => {
+  // check for query params that determine the pltTab
+  const query = router.currentRoute.value.query
+  if (query.variables) {
+    const plt = chartStore.nodeCharts.find((plt) => plt.abbreviation === query.variables)
+    if (plt) {
+      pltTab.value = plt
+    }
+  }
+})
+
+const changePlot = (plt) => {
+  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
+}
 
 </script>
 

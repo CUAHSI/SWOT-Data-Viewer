@@ -4,7 +4,7 @@
       <v-col sm="2">
         <v-card class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
-          <v-tabs v-model="pltTab" direction="vertical" color="primary">
+          <v-tabs v-model="pltTab" direction="vertical" color="primary" @update:model-value="changePlot">
             <v-tab
               v-for="plt in chartStore.reachCharts"
               :value="plt"
@@ -50,13 +50,30 @@ import LineChart from '@/components/LineChart.vue'
 import { useChartsStore } from '../stores/charts'
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
+const router = useRouter()
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
 let pltTab = ref(chartStore.reachCharts[0])
+
+onMounted(() => {
+  // check for query params that determine the pltTab
+  const query = router.currentRoute.value.query
+  if (query.variables) {
+    const plt = chartStore.reachCharts.find((plt) => plt.abbreviation === query.variables)
+    if (plt) {
+      pltTab.value = plt
+    }
+  }
+})
+
+const changePlot = (plt) => {
+  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
+}
 
 </script>
 
