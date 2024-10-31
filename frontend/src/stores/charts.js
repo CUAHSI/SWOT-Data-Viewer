@@ -16,7 +16,8 @@ export const useChartsStore = defineStore('charts', () => {
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
   const showStatistics = ref(false)
-  const showLine = ref(false)
+  const showLine = ref(true)
+  const dataQualityFlags = ref([0, 1, 2, 3])
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -193,36 +194,38 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const filterDataQuality = (dataQualityFlags, datasets, qualityLabel = 'reach_q') => {
+  const filterDataQuality = (qualityLabel = 'reach_q') => {
+    // TODO CAM-393 this is broken
+    // needs to be fixed for node data as well
+
     // Alters series point styles between their default style (dataset.pointStyle) and
     // Null. This is used to toggle them on/off using the data quality flag selection
     // from the DataQuality.vue component.
 
-    // filter datasets to only include SWOT series. These are the
-    // only series that have a quality flag
-    let swotDatasets = datasets.filter((d) =>
-      ['swot_node_series', 'swot_reach_series'].includes(d.seriesType)
-    )
+    for (const data in [chartData.value, nodeChartData.value]) {
+      const datasets = data.datasets
+      // filter datasets to only include SWOT series. These are the
+      // only series that have a quality flag
+      let swotDatasets = datasets.filter((d) =>
+        ['swot_node_series', 'swot_reach_series'].includes(d.seriesType)
+      )
 
-    // loop over each point in the swot datasets and update the point style
-    swotDatasets.forEach((dataset) => {
-      const pointStyles = dataset.data.map((dataPoint, i) => {
-        let pointStyle = dataset.pointStyle[i]
+      // loop over each point in the swot datasets and update the point style
+      swotDatasets.forEach((dataset) => {
+        const pointStyles = dataset.data.map((dataPoint, i) => {
+          let pointStyle = dataset.pointStyle[i]
 
-        if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
-          // TODO: CAM-393 https://cuahsi.atlassian.net/browse/CAM-393
-          // need to figure out how to have the connecting line skip the point
-          // https://www.chartjs.org/docs/latest/samples/line/segments.html
-          pointStyle = false
-        } else {
-          const styles = getPointStyle(dataPoint)
-          pointStyle = styles.pointStyle
-        }
-        return pointStyle
+          if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
+            pointStyle = false
+          } else {
+            const styles = getPointStyle(dataPoint)
+            pointStyle = styles.pointStyle
+          }
+          return pointStyle
+        })
+        dataset.pointStyle = pointStyles
       })
-
-      dataset.pointStyle = pointStyles
-    })
+    }
   }
 
   const filterDatasetsToTimeRange = (datasets, start, end, tolerance) => {
@@ -407,7 +410,7 @@ export const useChartsStore = defineStore('charts', () => {
         label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
         data: measurements,
         seriesType: 'swot_reach_series',
-        ...getDataSetStyle(measurements)
+        ...getDataSetStyle(measurements),
       }
     })
   }
@@ -526,6 +529,23 @@ export const useChartsStore = defineStore('charts', () => {
     }
   }
 
+  const skipOnDQ = (ctx, value, quality_variable='reach_q') => {
+    // segment util to define whether a line segment should be skipped
+    // based on data quality values
+    // https://www.chartjs.org/docs/latest/samples/line/segments.html
+    const p0 = ctx.p0.raw
+    const p1 = ctx.p1.raw
+    const p0_quality = parseInt(p0[quality_variable])
+    if (!dataQualityFlags.value.includes(p0_quality)) {
+      return value
+    }
+    const p1_quality = parseInt(p1[quality_variable])
+    if (!dataQualityFlags.value.includes(p1_quality)) {
+      return value
+    }
+    return undefined
+  }
+
   const getDataSetStyle = (dataSet) => {
     console.log('Getting data set style', dataSet)
     const styles = {
@@ -551,7 +571,12 @@ export const useChartsStore = defineStore('charts', () => {
       pointHoverRadius: 15,
       pointHoverBorderWidth: 5,
       pointRadius: getPointRadius,
-      borderWidth: getBorderWidth
+      borderWidth: getBorderWidth,
+      segment: {
+        borderColor: ctx => skipOnDQ(ctx, 'rgb(0,0,0,0.2)', 'reach_q'),
+        borderDash: ctx => skipOnDQ(ctx, [6, 6], 'reach_q'),
+      },
+      spanGaps: true,
     }
   }
 
@@ -605,12 +630,17 @@ export const useChartsStore = defineStore('charts', () => {
       // color: styles.colors,
       borderColor: styles.dynamicColors, // The line fill color.
       backgroundColor: styles.dynamicColors, // The line color.
-      spanGaps: false,
       pointBackgroundColor: styles.pointColors,
       pointBorderColor: styles.pointBorderColor,
       // borderWidth: 1,
       pointBorderWidth: 1,
-      pointHoverBorderWidth: 5
+      pointHoverBorderWidth: 5,
+      segment: {
+        // TODO: CAM-393 color is broken
+        boderColor: ctx => skipOnDQ(ctx, 'rgb(0,0,0,0.2)', 'node_q'),
+        borderDash: ctx => skipOnDQ(ctx, [6, 6], 'node_q'),
+      },
+      spanGaps: true,
     }
   }
 
@@ -624,6 +654,17 @@ export const useChartsStore = defineStore('charts', () => {
         storedChart.chart.update()
       } catch (error) {
         console.error('Error updating chart lines', error)
+      }
+    })
+  }
+
+  const updateAllCharts = () => {
+    // iterate over stored charts and update the line visibility
+    storedCharts.value.forEach((storedChart) => {
+      try {
+        storedChart.chart.update()
+      } catch (error) {
+        console.error('Error updating chart', error)
       }
     })
   }
@@ -653,9 +694,11 @@ export const useChartsStore = defineStore('charts', () => {
     hasNodeData,
     dynamicColors,
     filterDataQuality,
+    updateAllCharts,
     filterDatasetsToTimeRange,
     filterDatasetsBySetOfDates,
     dataQualityOptions,
+    dataQualityFlags,
     setDatasetVisibility,
     getNodeTimeStamps,
     chartTab,

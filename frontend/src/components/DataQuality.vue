@@ -13,7 +13,7 @@
           >
             <v-list-item-action>
               <v-checkbox
-                v-model="dataQuality"
+                v-model="dataQualityFlags"
                 :label="item.label"
                 :value="item.value"
                 @update:modelValue="qualityHasChanged()"
@@ -33,16 +33,16 @@
 <script setup>
 import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia';
 
 const chartStore = useChartsStore()
 defineProps({ data: Object })
-const dataQuality = ref([0, 1, 2, 3])
 const emit = defineEmits(['qualityUpdated'])
-
+const { dataQualityFlags } = storeToRefs(chartStore)
 const panel = ref('0')
 
 function qualityHasChanged() {
   // emit the qualityUpdated event when the ndataQuality value changes
-  emit('qualityUpdated', dataQuality.value)
+  emit('qualityUpdated', dataQualityFlags.value)
 }
 </script>

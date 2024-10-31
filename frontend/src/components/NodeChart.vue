@@ -8,7 +8,7 @@
           max-width="100%"
           min-width="500px"
         >
-          <Line :data="chartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
+          <Line :data="nodeChartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
           <TimeRangeSlider
@@ -39,7 +39,7 @@
                 </div>
 
                 <DataQuality
-                  v-model="dataQuality"
+                  v-model="dataQualityFlags"
                   id="dataQuality"
                   :data="chartStore.nodeChartData"
                   @qualityUpdated="filterAllDatasets"
@@ -101,13 +101,10 @@ const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
-const dataQuality = ref([0, 1, 2, 3])
-const { nodeChartData, showStatistics, showLine } = storeToRefs(chartStore)
+const { nodeChartData, showStatistics, showLine, dataQualityFlags } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const nodeChart = ref(null)
 const timeRef = ref()
-
-let chartData = ref(nodeChartData.value)
 
 let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -263,9 +260,10 @@ const options = {
   }
 }
 
-const filterAllDatasets = (dataQualityValues) => {
-  chartStore.filterDataQuality(dataQualityValues, nodeChart.value.chart.data.datasets, 'node_q')
-  nodeChart.value.chart.update()
+const filterAllDatasets = () => {
+  // chartStore.filterDataQuality()
+  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
+  chartStore.updateAllCharts()
 }
 
 const resetZoom = () => {
@@ -273,7 +271,7 @@ const resetZoom = () => {
 }
 
 const getChartName = () => {
-  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
+  let identifier = `${nodeChartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
@@ -312,7 +310,7 @@ const resetData = () => {
 
   // remove all non-swot series from the chart. This is necessary
   // to reset the chart to its initial state.
-  let datasets = chartData.value.datasets.filter((s) => s.seriesType == 'swot_node_series')
+  let datasets = nodeChartData.value.datasets.filter((s) => s.seriesType == 'swot_node_series')
 
   // turn on all hidden swot node series datasets
   datasets
@@ -331,7 +329,7 @@ const resetData = () => {
   setDefaults()
 
   // update the chart
-  nodeChart.value.chart.data.datasets = chartData.value.datasets
+  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   nodeChart.value.chart.update()
 }
 
@@ -339,7 +337,7 @@ const timeSliderUpdated = () => {
   // This function is called when the time slider is updated.
   // It filters the chart data to the data that are active in the time slider range.
 
-  nodeChart.value.chart.data.datasets = chartData.value.datasets
+  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   nodeChart.value.chart.update()
 }
 
@@ -366,7 +364,7 @@ const timeRangeUpdateComplete = async () => {
     chartStore.updateNodeChartData(datasets)
 
     // update the chart
-    nodeChart.value.chart.data.datasets = chartData.value.datasets
+    nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
     nodeChart.value.chart.update()
   }
 }
@@ -424,7 +422,7 @@ const generateStatisticsSeries = async () => {
 
   let statisticSeries = []
 
-  // build chart series for each statistic and set it in chartData.
+  // build chart series for each statistic and set it in nodeChartData.
   // set each of these to hidden.
   for (let stat in chartStatistics.value) {
     // skip Interquartile range because these will added later
@@ -490,7 +488,7 @@ const toggleSeriesStatistics = async (visible = true) => {
   chartStore.updateNodeChartData(updatedDatasets)
 
   // update the chart
-  nodeChart.value.chart.data.datasets = chartData.value.datasets
+  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   // nodeChart.value.chart.data.datasets = updatedDatasets;
   nodeChart.value.chart.update()
 }
