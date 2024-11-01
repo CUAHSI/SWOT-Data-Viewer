@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
     },
+    publicDir: './public',
     assetsInclude: ['**/*.md']
   }
 })
