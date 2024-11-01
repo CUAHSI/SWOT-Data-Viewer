@@ -9,6 +9,8 @@ from app.models import SwotNodeDataModel, SwotNodeDataSeriesModel
 
 router = APIRouter()
 
+import epdb
+
 
 @router.post(
     "/compute_node_series",
@@ -37,6 +39,46 @@ async def compute_node_series(data: List[List[SwotNodeDataModel]]):
     # from HydroCron.
     series = SwotNodeDataSeriesModel(all_series=data)
 
+    df = series.as_dataframe()
+
+    # TODO: this is hard-coded and should be generalized in the future
+    computed = {}
+    variables_to_compute = [
+        {"name": "wse", "xvar": "p_dist_out", "yvar": "wse"},
+        {"name": "width", "xvar": "p_dist_out", "yvar": "width"},
+        {"name": "area_total", "xvar": "p_dist_out", "yvar": "area_total"},
+        {"name": "wse_vs_width", "xvar": "width", "yvar": "wse"},
+    ]
+
+    for variable in variables_to_compute:
+        # ["wse", "width", "area_total"]:
+        output_variable_name = variable["name"]
+        stats = compute_iqr_statistics(
+            df, variable["xvar"], variable["yvar"], output_variable_name, x_precision=0
+        )
+
+        # save the computed statistics for this variable in the computed dictionary
+        for statistic_name, statistic_dataframe in stats.items():
+            if statistic_name in computed.keys():
+                # extend the entry in computed to include the stats for variable_name
+                computed[statistic_name] = pd.concat(
+                    [computed[statistic_name], statistic_dataframe], axis=1
+                )
+            else:
+                computed[statistic_name] = statistic_dataframe
+
+            # replace np.nan with None because np.nan is not JSON serializable
+            computed[statistic_name] = computed[statistic_name].replace(
+                [np.nan], [None]
+            )
+
+    # format stats in a way that can be serialized to json easily
+    res2 = {}
+    for k, d in computed.items():
+        res2[k] = d.to_dict(orient="records")
+    return res2
+
+    epdb.st()
     # group all data by p_dist_out and remove all columns except
     # those corresponding to node variables
     grouped = series.as_dataframe()[NodeVariables.list()].groupby("p_dist_out")
@@ -77,3 +119,57 @@ async def compute_node_series(data: List[List[SwotNodeDataModel]]):
 
     # return a JSON serializable dictionary and let FastAPI handle the conversion
     return res
+
+
+def compute_iqr_statistics(
+    df, x_variable_name, y_variable_name, output_variable_name, x_precision=2
+):
+    """
+    Computes the IQR statistics for a given x and y variable.
+
+    Arguments:
+    ==========
+    df: pd.DataFrame
+        A pandas dataframe containing the x and y variables.
+    x_variable_name: str
+        Name of the x variable to compute the IQR statistics for.
+    y_variable_name: str
+        Name of the y variable to compute the IQR statistics for.
+    output_variable_name: str
+        Name to use when saving the computed statistics output. This will usually be the same
+        as the y_variable_name
+    x_precision: int
+        The number of decimal places to round the x variable to before computing the IQR statistics.
+
+    Returns:
+    ========
+    dict
+        A dictionary of pandas dataframes containing the IQR statistics for the x and y variables.
+
+    """
+
+    # lambda function to round the x variable to x_precision decimal
+    round_func = lambda x: round(x, x_precision)
+
+    dat = {}
+    dat["median"] = (
+        df[[x_variable_name, y_variable_name]]
+        .groupby(df[x_variable_name].apply(round_func), as_index=False)
+        .median()
+        .replace([np.nan], [None])
+        .rename(columns={y_variable_name: output_variable_name})
+    )[output_variable_name]
+
+    # compute quantiles for each node variable
+    for q in [0.25, 0.75]:
+        dat[f"q{q}"] = (
+            df[[x_variable_name, y_variable_name]]
+            .groupby(
+                df[x_variable_name].apply(round_func),
+                as_index=False,
+            )
+            .quantile(q)
+            .replace([np.nan], [None])
+            .rename(columns={y_variable_name: output_variable_name})
+        )[output_variable_name]
+    return dat
