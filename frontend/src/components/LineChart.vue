@@ -17,9 +17,7 @@
             <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
             <v-expansion-panel-text>
               <DataQuality
-                v-model="dataQualityFlags"
                 id="dataQuality"
-                :data="chartStore.chartData"
                 @qualityUpdated="filterAllDatasets"
               />
 

@@ -36,7 +36,6 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia';
 
 const chartStore = useChartsStore()
-defineProps({ data: Object })
 const emit = defineEmits(['qualityUpdated'])
 const { dataQualityFlags } = storeToRefs(chartStore)
 const panel = ref('0')

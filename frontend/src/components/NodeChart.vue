@@ -39,9 +39,7 @@
                 </div>
 
                 <DataQuality
-                  v-model="dataQualityFlags"
                   id="dataQuality"
-                  :data="chartStore.nodeChartData"
                   @qualityUpdated="filterAllDatasets"
                 />
               </v-expansion-panel-text>
