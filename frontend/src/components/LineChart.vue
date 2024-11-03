@@ -124,7 +124,7 @@ const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { showLine, chartData, dataQualityFlags } = storeToRefs(chartStore)
+const { showLine, chartData } = storeToRefs(chartStore)
 const lineChart = ref(null)
 const downloading = ref({ csv: false, json: false, chart: false })
 
@@ -153,7 +153,7 @@ onMounted(async () => {
   chartStore.updateShowLine()
 })
 
-const getParsing = (context) => {
+const getParsing = () => {
   let plt = props.chosenPlot
   let parsing = {}
 
@@ -355,6 +355,7 @@ const downJson = async () => {
 }
 
 const filterAllDatasets = () => {
+  chartStore.dataQualityFilterAllDatasets()
   lineChart.value.chart.data.datasets = chartData.value.datasets
   chartStore.updateAllCharts()
 }

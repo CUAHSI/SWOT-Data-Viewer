@@ -99,7 +99,7 @@ const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
-const { nodeChartData, showStatistics, showLine, dataQualityFlags } = storeToRefs(chartStore)
+const { nodeChartData, showStatistics, showLine } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
 const nodeChart = ref(null)
 const timeRef = ref()
@@ -130,7 +130,7 @@ const setDefaults = () => {
 
 }
 
-const getParsing = (context) => {
+const getParsing = () => {
   let parsing = {}
   parsing.xAxisKey = plt.xvar.abbreviation
   parsing.yAxisKey = plt.yvar.abbreviation
@@ -259,6 +259,7 @@ const options = {
 }
 
 const filterAllDatasets = () => {
+  chartStore.dataQualityFilterAllDatasets()
   nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   chartStore.updateAllCharts()
 }

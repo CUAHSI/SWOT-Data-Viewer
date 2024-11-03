@@ -10,7 +10,6 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     console.error('No hydroCron query params provided')
     return
   }
-  console.log('Querying HydroCron for swordFeature', swordFeature)
   let params = {}
 
   // TODO: get the start and end time from the date range
@@ -23,18 +22,15 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   swordFeature.feature_id = feature_id
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation)
-  console.log('Selected fields:', fields)
 
   // remove any variables that aren't allowed for this feature type
   const allowedAbbreviations = hydrologicStore
     .queryVariables(feature_type)
     .map((v) => v.abbreviation)
-  console.log('Filtering to only include allowed fields:', allowedAbbreviations)
   fields = fields.filter((abbreviation) => {
     return allowedAbbreviations.includes(abbreviation)
   })
   fields.join(',')
-  console.log('Fetching for selected fields', fields)
 
   const additional = hydrologicStore
     .queryVariables(feature_type, true)
@@ -43,7 +39,6 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   if (additional !== '') {
     fields += ',' + additional
   }
-  console.log('Fetching for selected fields', fields)
 
   if (fields === '') {
     console.error('No variables selected')
@@ -123,7 +118,6 @@ const processHydroCronResult = async (response, params, swordFeature) => {
       return null
     }
 
-    console.log('Saving results to feature', swordFeature)
     query.params = params
     // check if the feature already has queries
     if (swordFeature.queries === undefined) {
@@ -258,16 +252,13 @@ async function getNodesFromReach(reachFeature) {
     Object.defineProperty(node, 'properties', Object.getOwnPropertyDescriptor(node, 'attributes'))
     delete node.attributes
   })
-  console.log('Nodes for reach', data.features)
   return data.features
 }
 
 async function getNodeDataForReach(reachFeature) {
-  console.log('Retrieving nodes for reach', reachFeature)
   let nodes = await getNodesFromReach(reachFeature)
   reachFeature.nodes = nodes
   await getDataForNodes(nodes)
-  console.log('Reach with updated node data', reachFeature)
   return reachFeature
 }
 
@@ -279,7 +270,6 @@ async function getDataForNodes(nodes) {
       await queryHydroCron(node)
     })
   )
-  console.log('Nodes with data:', nodes)
   // TODO: right now we just keep a single set of nodes. But we could instead retain all node data
   // featureStore.nodes.push(...nodes)
   featureStore.nodes = nodes
