@@ -10,13 +10,16 @@ import { useHydrologicStore } from '@/stores/hydrologic'
 
 
 export const useChartsStore = defineStore('charts', () => {
-  let chartData = ref({})
-  let nodeChartData = ref({})
+  const unfilteredChartData = ref({})
+  const unfilteredNodeChartData = ref({})
+  const chartData = ref({})
+  const nodeChartData = ref({})
   const storedCharts = ref([])
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
   const showStatistics = ref(false)
-  const showLine = ref(false)
+  const showLine = ref(true)
+  const dataQualityFlags = ref([0, 1])  // by default don't show degraded or bad data
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -114,13 +117,6 @@ export const useChartsStore = defineStore('charts', () => {
     }
   ])
 
-  const updateChartData = (data) => {
-    // TODO: bug in reactivity
-    // https://github.com/apertureless/vue-chartjs/issues/1040
-    chartData.value = data
-    console.log('Updated chart data', chartData.value)
-  }
-
   const updateNodeChartData = (data) => {
     // This function is used to update the nodeChartData object
     // data = the new data series to set in the object.
@@ -170,7 +166,9 @@ export const useChartsStore = defineStore('charts', () => {
       datasets: getChartDatasets(selectedFeatures),
       title: getTitle()
     }
-    updateChartData(data)
+    // https://github.com/apertureless/vue-chartjs/issues/1040
+    unfilteredChartData.value = data
+    dataQualityFilterAllDatasets()
     return data
   }
 
@@ -181,8 +179,9 @@ export const useChartsStore = defineStore('charts', () => {
       datasets: getNodeChartDatasets(nodes),
       title: getTitle()
     }
-    console.log('Node Chart Data', data)
-    nodeChartData.value = data
+    // https://github.com/apertureless/vue-chartjs/issues/1040
+    unfilteredNodeChartData.value = data
+    dataQualityFilterAllDatasets()
     hasNodeData.value = true
     return data
   }
@@ -193,36 +192,59 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
-  const filterDataQuality = (dataQualityFlags, datasets, qualityLabel = 'reach_q') => {
-    // Alters series point styles between their default style (dataset.pointStyle) and
-    // Null. This is used to toggle them on/off using the data quality flag selection
-    // from the DataQuality.vue component.
+  /**
+   * Filters the data quality for all datasets.
+   *
+   * This function processes the chart data and node chart data by applying data quality filters.
+   * It first makes a copy of the unfiltered data, then filters the datasets to only include SWOT series,
+   * which are the only series that have a quality flag. It then loops over each point in the SWOT datasets
+   * and updates the point style based on the data quality filters.
+   *
+   * The function assumes that `chartData`, `nodeChartData`, `unfilteredChartData`, and `unfilteredNodeChartData`
+   * are reactive objects (e.g., Vue's `ref` or `reactive`).
+   *
+   * Note:
+   * - `chartData` and `nodeChartData` hold the filtered data.
+   * - `unfilteredChartData` and `unfilteredNodeChartData` hold the unfiltered data.
+   *
+   * @returns {void}
+   */
+  const dataQualityFilterAllDatasets = () => {
+    // make a copy of the unfiltered data
+    chartData.value = JSON.parse(JSON.stringify(unfilteredChartData.value))
+    nodeChartData.value = JSON.parse(JSON.stringify(unfilteredNodeChartData.value))
 
-    // filter datasets to only include SWOT series. These are the
-    // only series that have a quality flag
-    let swotDatasets = datasets.filter((d) =>
-      ['swot_node_series', 'swot_reach_series'].includes(d.seriesType)
-    )
-
-    // loop over each point in the swot datasets and update the point style
-    swotDatasets.forEach((dataset) => {
-      const pointStyles = dataset.data.map((dataPoint, i) => {
-        let pointStyle = dataset.pointStyle[i]
-
-        if (!dataQualityFlags.includes(parseInt(dataPoint[qualityLabel]))) {
-          // TODO: CAM-393
-          // need to figure out how to have the connecting line skip the point
-          // https://www.chartjs.org/docs/latest/samples/line/segments.html
-          pointStyle = false
-        } else {
-          const styles = getPointStyle(dataPoint)
-          pointStyle = styles.pointStyle
-        }
-        return pointStyle
+    for (const data of [chartData.value, nodeChartData.value]) {
+      const datasets = data?.datasets
+      if (datasets == null) {
+        console.warn('No datasets found when filtering data quality')
+        continue
+      }
+      // loop over each point in the swot datasets and update the point style
+      datasets.forEach((dataset) => {
+        dataQualityFilterSingleDataset(dataset)
+        // update the line visibility
+        dataset.showLine = showLine.value
       })
+    }
+  }
 
-      dataset.pointStyle = pointStyles
+  const dataQualityFilterSingleDataset = (dataset) => {
+    // Filter the dataset to only include points that have a data quality flag
+
+    if(!['swot_node_series', 'swot_reach_series'].includes(dataset.seriesType)) {
+      return
+    }
+
+    dataset.data = dataset.data.filter((dataPoint) => {
+      const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+      if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
+        return false
+      }
+      return true
     })
+    dataset.pointStyle = getPointStyles(dataset)
+    dataset.pointBorderColor = getPointBorderColors(dataset)
   }
 
   const filterDatasetsToTimeRange = (datasets, start, end, tolerance) => {
@@ -338,10 +360,9 @@ export const useChartsStore = defineStore('charts', () => {
     return timeStampGroups
   }
 
-  const filterMeasurements = (measurements, dataQualityFlags) => {
+  const removeInvalidMeasurements = (measurements) => {
     // TODO: this is a hack to remove the invalid measurements
     // need to handle this with a formal validator
-    console.log('Starting number of measurements', measurements.length)
     measurements = measurements.filter((m) => {
       if (m.time_str == 'no_data') {
         return false
@@ -359,26 +380,18 @@ export const useChartsStore = defineStore('charts', () => {
       if (m.width == '-999999999999.0') {
         return false
       }
-      // check data quality flags
-      if (dataQualityFlags != null) {
-        if (!dataQualityFlags.includes(parseInt(m.reach_q))) {
-          return false
-        }
-      }
       return true
     })
-    console.log('Ending number of measurements', measurements.length)
     return measurements
   }
 
-  const getChartDatasets = (selectedFeatures, dataQualityFlags = null) => {
+  const getChartDatasets = (selectedFeatures) => {
     // builds the datasets for the time series chart. These are labeled
     // using seriesType='swot_reach_series' to differentiate them from
     // node-level data.
 
     const featureStore = useFeaturesStore()
     // TODO: need to update just for the newly selected feature: this currently will re-map all selected features
-    console.log('Getting chart datasets for selected features', selectedFeatures)
     return selectedFeatures.map((feature) => {
       // TODO: for now we just use the first query
       // with compact = true, there will only be a single feature and properties is an object of arrays
@@ -399,15 +412,13 @@ export const useChartsStore = defineStore('charts', () => {
         })
       }
 
-      measurements = filterMeasurements(measurements, dataQualityFlags)
-      console.log('SWOT measurements', measurements)
-      console.log('SWOT feature', feature)
+      measurements = removeInvalidMeasurements(measurements)
       return {
         // TODO: nodes label assumes reach
         label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
         data: measurements,
         seriesType: 'swot_reach_series',
-        ...getDataSetStyle(measurements)
+        ...getDataSetStyle(),
       }
     })
   }
@@ -416,9 +427,7 @@ export const useChartsStore = defineStore('charts', () => {
     // builds the datasets for the long-profile chart. These are labeled
     // using seriesType='swot_node_series' to differentiate them from
     // reach-level data.
-    console.log('getting node chart datasets for nodes', nodes)
     let measurements = nodes.map((node) => {
-      console.log('Parsing node', node)
       const propertiesObj =  node.queries[0].results.geojson.features[0].properties
       let array = []
       for (const key in propertiesObj) {
@@ -433,12 +442,10 @@ export const useChartsStore = defineStore('charts', () => {
       return array
     })
     measurements = measurements.flat()
-    measurements = filterMeasurements(measurements)
-    console.log('Node measurements parsed', measurements)
+    measurements = removeInvalidMeasurements(measurements)
 
     // instead of creating a single dataset, create a dataset for each timestamp
     const timeStampGroups = getNodeTimeStamps(measurements)
-    console.log('Time Stamp Groups', timeStampGroups)
 
     // get the min and max dates and define a chroma scale
     const chartDates = getChartMinMaxDateTimes(timeStampGroups)
@@ -447,11 +454,9 @@ export const useChartsStore = defineStore('charts', () => {
       .mode('lch')
       .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
 
-    console.log('using reach from ', nodes[0])
     const datasets = []
     for (const date in timeStampGroups) {
       const timeStampGroup = timeStampGroups[date]
-      console.log('Time Stamp Group', timeStampGroup)
       datasets.push({
         label: timeStampGroup[0].datetime.toDateString(),
         data: timeStampGroup,
@@ -479,7 +484,6 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getChartMinMaxDateTimes = (timeStampGroups) => {
-    console.log('Getting chart min max date times', timeStampGroups)
     const allMeasurements = Object.values(timeStampGroups).flat()
     const minDateTime = Math.min(...allMeasurements.map((m) => m.datetime))
     const maxDateTime = Math.max(...allMeasurements.map((m) => m.datetime))
@@ -491,8 +495,6 @@ export const useChartsStore = defineStore('charts', () => {
       medianDateTime,
       hidden: false
     }
-    console.log('Date Stats', dateStats)
-    console.log('Time Stamp Groups', timeStampGroups)
     return dateStats
   }
 
@@ -506,53 +508,91 @@ export const useChartsStore = defineStore('charts', () => {
   const dateGradientColors = function (date, colorScale) {
     // https://www.chartjs.org/docs/latest/general/colors.html
     // https://github.com/kurkle/chartjs-plugin-gradient
-    return colorScale(date)
+    return colorScale(date).hex()
+  }
+
+  const getDateGradientColors = (dataSet, colorScale) => {
+    const colors = []
+    dataSet.forEach((dataPoint) => {
+      const color = dateGradientColors(dataPoint.datetime, colorScale)
+      colors.push(color)
+    })
+    return colors
+  }
+
+  const getPointBorderColors = (dataSet) => {
+    if(!['swot_node_series', 'swot_reach_series'].includes(dataSet.seriesType)) {
+      return dataSet.pointBorderColor
+    }
+    const pointBorderColors = []
+    dataSet.data.forEach((dataPoint) => {
+      const pointBorderColor = getPointBorderColor(dataPoint)
+      pointBorderColors.push(pointBorderColor)
+    })
+    return pointBorderColors
+  }
+
+  const getPointStyles = (dataSet) => {
+    if(!['swot_node_series', 'swot_reach_series'].includes(dataSet.seriesType)) {
+      return dataSet.pointStyle
+    }
+    const pointStyles = []
+    dataSet.data.forEach((dataPoint) => {
+      const pointStyle = getPointStyle(dataPoint)
+      pointStyles.push(pointStyle)
+    })
+    return pointStyles
   }
 
   const getPointStyle = (dataPoint) => {
+    const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+    if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
+      return false
+    }
+    
     // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
     const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
     let pointStyle = 'circle'
-    let pointBorderColor = 'white'
     // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
     const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
     if (dataQualityOption) {
       pointStyle = dataQualityOption.pointStyle
-      pointBorderColor = dataQualityOption.pointBorderColor
     }
-    return {
-      pointStyle,
-      pointBorderColor
-    }
+    return pointStyle
   }
 
-  const getDataSetStyle = (dataSet) => {
-    console.log('Getting data set style', dataSet)
-    const styles = {
-      colors: [],
-      pointStyles: [],
-      fills: [],
-      pointBorderColors: []
+  const getPointBorderColor = (dataPoint) => {
+    const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+    if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
+      return false
     }
-    dataSet.forEach((dataPoint) => {
-      const { pointStyle, pointBorderColor } = getPointStyle(dataPoint)
-      styles.pointBorderColors.push(pointBorderColor)
-      styles.pointStyles.push(pointStyle)
-    })
-    console.log('Styles', styles)
-    return {
+    
+    // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
+    const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
+    let pointBorderColor = 'white'
+    // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
+    const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
+    if (dataQualityOption) {
+      pointBorderColor = dataQualityOption.pointBorderColor
+    }
+    return pointBorderColor
+  }
+
+  const getDataSetStyle = () => {
+    const style = {
       showLine: showLine.value,
-      pointStyle: styles.pointStyles,
       fill: true,
-      pointBorderColor: styles.pointBorderColors,
+      pointBorderColor: ctx => getPointBorderColors(ctx.dataset),
+      pointStyle: ctx => getPointStyles(ctx.dataset),
       pointBorderWidth: 2,
       borderColor: 'black', // The line fill color.
       backgroundColor: 'black', // The line color
       pointHoverRadius: 15,
       pointHoverBorderWidth: 5,
       pointRadius: getPointRadius,
-      borderWidth: getBorderWidth
+      borderWidth: getBorderWidth,
     }
+    return style
   }
 
   function getPointRadius(context) {
@@ -582,35 +622,21 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const getNodeDataSetStyle = (dataSet, colorScale) => {
-    console.log('Getting node data set style', dataSet)
-    const styles = {
-      pointBorderColor: [],
-      pointStyles: [],
-      dynamicColors: []
-    }
-    dataSet.forEach((dataPoint) => {
-      const { pointStyle, pointBorderColor } = getPointStyle(dataPoint)
-      styles.pointBorderColor.push(pointBorderColor)
-      styles.pointStyles.push(pointStyle)
-      styles.dynamicColors.push(dateGradientColors(dataPoint.datetime, colorScale))
-    })
-    console.log('Styles', styles)
     return {
       showLine: showLine.value,
-      pointStyle: styles.pointStyles,
       pointRadius: 5,
       pointHoverRadius: 15,
       //fill: styles.dynamicColors,
       fill: false,
       // color: styles.colors,
-      borderColor: styles.dynamicColors, // The line fill color.
-      backgroundColor: styles.dynamicColors, // The line color.
-      spanGaps: false,
-      pointBackgroundColor: styles.pointColors,
-      pointBorderColor: styles.pointBorderColor,
       // borderWidth: 1,
+      backgroundColor: getDateGradientColors(dataSet, colorScale),
+      pointBorderColor: ctx => getPointBorderColors(ctx.dataset),
+      pointStyle: ctx => getPointStyles(ctx.dataset),
+      // borderColor: styles.dynamicColors, // The line fill color.
+      borderColor: getDateGradientColors(dataSet, colorScale),
       pointBorderWidth: 1,
-      pointHoverBorderWidth: 5
+      pointHoverBorderWidth: 5,
     }
   }
 
@@ -624,6 +650,17 @@ export const useChartsStore = defineStore('charts', () => {
         storedChart.chart.update()
       } catch (error) {
         console.error('Error updating chart lines', error)
+      }
+    })
+  }
+
+  const updateAllCharts = () => {
+    // iterate over stored charts and update the line visibility
+    storedCharts.value.forEach((storedChart) => {
+      try {
+        storedChart.chart.update()
+      } catch (error) {
+        console.error('Error updating chart', error)
       }
     })
   }
@@ -643,7 +680,6 @@ export const useChartsStore = defineStore('charts', () => {
 
 
   return {
-    updateChartData,
     updateNodeChartData,
     chartData,
     nodeChartData,
@@ -652,10 +688,12 @@ export const useChartsStore = defineStore('charts', () => {
     buildDistanceChart,
     hasNodeData,
     dynamicColors,
-    filterDataQuality,
+    dataQualityFilterAllDatasets,
+    updateAllCharts,
     filterDatasetsToTimeRange,
     filterDatasetsBySetOfDates,
     dataQualityOptions,
+    dataQualityFlags,
     setDatasetVisibility,
     getNodeTimeStamps,
     chartTab,

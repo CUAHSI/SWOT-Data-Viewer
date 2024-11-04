@@ -17,9 +17,7 @@
             <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
             <v-expansion-panel-text>
               <DataQuality
-                v-model="dataQuality"
                 id="dataQuality"
-                :data="chartStore.chartData"
                 @qualityUpdated="filterAllDatasets"
               />
 
@@ -128,7 +126,6 @@ const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
 const { showLine, chartData } = storeToRefs(chartStore)
 const lineChart = ref(null)
-const dataQuality = ref([0, 1, 2, 3])
 const downloading = ref({ csv: false, json: false, chart: false })
 
 let xLabel = 'Date'
@@ -156,7 +153,7 @@ onMounted(async () => {
   chartStore.updateShowLine()
 })
 
-const getParsing = (context) => {
+const getParsing = () => {
   let plt = props.chosenPlot
   let parsing = {}
 
@@ -357,8 +354,9 @@ const downJson = async () => {
   downloading.value.json = false
 }
 
-const filterAllDatasets = (dataQualityValues) => {
-  chartStore.filterDataQuality(dataQualityValues, lineChart.value.chart.data.datasets, 'reach_q')
-  lineChart.value.chart.update()
+const filterAllDatasets = () => {
+  chartStore.dataQualityFilterAllDatasets()
+  lineChart.value.chart.data.datasets = chartData.value.datasets
+  chartStore.updateAllCharts()
 }
 </script>
