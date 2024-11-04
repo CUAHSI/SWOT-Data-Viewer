@@ -5,7 +5,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { marked } from 'marked';
-import about_page_url from '@/assets/documentation/about_page.md'
+import about_page_url from '@/assets/about_page.md'
 
 // use the about_page_url to fetch the markdown content
 const aboutHtml = ref('');
