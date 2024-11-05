@@ -99,22 +99,23 @@ const setInitialState = () => {
 
   // set the initial state for the time ranges based
   // off available data.
-  let offset = 2 * 86400 // 2 days in seconds. This is chosen arbitrarily
+  const offset = 2 * 86400 // 2 days in seconds. This is chosen arbitrarily
 
   // compute min/max date based on the datasets, omitting computed_series (i.e. derived data)
-  let minDateSec =
+  const minDateSec =
     Math.min(...chartStore.nodeChartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.minDateTime)) / 1000 -
     offset
-  let maxDateSec =
+  const maxDateSec =
     Math.max(...chartStore.nodeChartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.maxDateTime)) / 1000 +
     offset
-  timeRange.value = [minDateSec, maxDateSec]
+
   featuresStore.minTime = minDateSec
   featuresStore.maxTime = maxDateSec
 
   dateRange.value = timeRange.value.map((seconds) => {
     return convertSecondsToDateString(seconds)
   })
+  filterDatasetsToTimeRange()
 }
 
 // set the min/max time range for the time slider component

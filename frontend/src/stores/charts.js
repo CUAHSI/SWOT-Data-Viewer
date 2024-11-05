@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
@@ -249,11 +249,14 @@ export const useChartsStore = defineStore('charts', () => {
 
   const filterDatasetsToTimeRange = (datasets, start, end, tolerance) => {
     // if end is null, use now
+    const featureStore = useFeaturesStore()
+    const { timeRange } = storeToRefs(featureStore)
     if (end == null) {
-      end = new Date()
+      end = new Date(timeRange.value[1] * 1000)
     }
     if (start == null) {
-      start = new Date(0)
+      start = new Date(timeRange.value[0] * 1000)
+
     }
     if (start > end) {
       console.error('Invalid time range')

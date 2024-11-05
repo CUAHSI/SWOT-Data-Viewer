@@ -52,13 +52,17 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     return
   }
 
+  const start_time = '2024-01-01T00:00:00Z'
+  const end_time = new Date().toISOString().split('.')[0] + 'Z'
+
+
   params = {
     feature: feature_type,
-    feature_id: feature_id,
-    start_time: '2024-01-01T00:00:00Z',
-    end_time: '2024-10-30T00:00:00Z',
-    output: output,
-    fields: fields,
+    feature_id,
+    start_time,
+    end_time,
+    output,
+    fields,
     // https://podaac.github.io/hydrocron/timeseries.html#compact-string-required-no
     compact: 'true'
   }
