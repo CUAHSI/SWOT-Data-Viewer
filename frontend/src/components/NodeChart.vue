@@ -88,6 +88,7 @@ import { useDisplay } from 'vuetify'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 import DataQuality from '@/components/DataQuality.vue'
 import { useChartsStore } from '@/stores/charts'
+import { useFeaturesStore } from '@/stores/features'
 import { APP_API_URL } from '@/constants'
 import { storeToRefs } from 'pinia'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
@@ -96,6 +97,7 @@ import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMin
 const { lgAndUp } = useDisplay()
 
 const chartStore = useChartsStore()
+const featureStore = useFeaturesStore()
 
 const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
@@ -321,7 +323,8 @@ const resetData = () => {
   chartStore.updateNodeChartData(datasets)
 
   // Reset timeslider extents to the full range of the data
-  timeRef.value.setInitialState()
+  // timeRef.value.setInitialState()
+  featureStore.resetTimeRange()
 
   // reset page components to their default state, e.g. statistics switch
   setDefaults()
@@ -334,7 +337,10 @@ const resetData = () => {
 const timeSliderUpdated = () => {
   // This function is called when the time slider is updated.
   // It filters the chart data to the data that are active in the time slider range.
-
+  
+  if (!nodeChart?.value){
+    return
+  }
   nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   nodeChart.value.chart.update()
 }
