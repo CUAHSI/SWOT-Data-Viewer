@@ -287,6 +287,7 @@ export const useChartsStore = defineStore('charts', () => {
         dataset.hidden = false
       }
     })
+    updateAllCharts()
   }
 
   const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {

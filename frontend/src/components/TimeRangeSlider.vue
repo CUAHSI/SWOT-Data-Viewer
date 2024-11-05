@@ -76,11 +76,11 @@ const updateDateRange = () => {
   dateRange.value = timeRange.value.map((seconds) => {
     return convertSecondsToDateString(seconds)
   })
-  filterDatasetsToTimeRange()
 }
 
 // When the user is done changing the slider range, emit event.
 const updateDateRangeComplete = () => {
+  filterDatasetsToTimeRange()
   emit('updateComplete', timeRange.value)
 }
 
