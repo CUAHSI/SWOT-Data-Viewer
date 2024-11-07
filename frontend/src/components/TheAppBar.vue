@@ -56,15 +56,15 @@
         </v-card-text>
         <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text="Close" @click="showCopyUrlDialog = false"></v-btn>
+            <v-btn text="Close" @click="closeDialog"></v-btn>
         </v-card-actions>
     </v-card>
 </v-dialog>
 </template>
 <script setup>
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import imgUrl from '@/assets/swotviz-high-quality-transparent-v10.png'
 import { mdiLink } from '@mdi/js'
 // import UserLogin from "@/components/UserLogin.vue";
@@ -76,13 +76,22 @@ defineEmits(['toggleMobileNav'])
 const { smAndDown } = useDisplay()
 
 const showCopyUrlDialog = ref(false);
-let hasCopied = ref(false);
-const pageUrl = window.location.href
-// window.location.origin + router.currentRoute.value.fullPath
+const hasCopied = ref(false);
+const route = useRoute()
+const pageUrl = ref(window.location.origin + route.fullPath)
+
+watch(route, () => {
+  pageUrl.value = window.location.origin + route.fullPath
+})
 
 const copyUrl = () => {
-    navigator.clipboard.writeText(pageUrl);
+    navigator.clipboard.writeText(pageUrl.value);
     hasCopied.value = true;
+}
+
+const closeDialog = () => {
+    showCopyUrlDialog.value = false;
+    hasCopied.value = false;
 }
 
 // const auth = useAuthStore()
