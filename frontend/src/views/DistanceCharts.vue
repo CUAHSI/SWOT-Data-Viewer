@@ -12,13 +12,12 @@
               <template v-else>
                 {{ plt.abbreviation }}
               </template>
+              <v-tooltip activator="parent" location="start" max-width="300px">
+                {{ plt.help }}
+              </v-tooltip>
             </v-tab>
           </v-tabs>
         </v-sheet>
-        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
-        <v-card class="pa-2" v-if="lgAndUp">
-          {{ pltTab.help }}
-        </v-card>
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
       <v-col sm="10">
