@@ -33,7 +33,7 @@
       <v-spacer></v-spacer>
       <v-tooltip text="Share This Page" location="start">
         <template v-slot:activator="{ props }">
-            <v-btn icon v-bind="props" @click="showCopyUrlDialog = true">
+            <v-btn icon v-bind="props" @click="toggleDialog">
                 <v-icon :icon="mdiLink"></v-icon>
             </v-btn>
         </template>
@@ -56,7 +56,7 @@
         </v-card-text>
         <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text="Close" @click="closeDialog"></v-btn>
+            <v-btn text="Close" @click="toggleDialog"></v-btn>
         </v-card-actions>
     </v-card>
 </v-dialog>
@@ -78,10 +78,10 @@ const { smAndDown } = useDisplay()
 const showCopyUrlDialog = ref(false);
 const hasCopied = ref(false);
 const route = useRoute()
-const pageUrl = ref(window.location.origin + route.fullPath)
+const pageUrl = ref(window.location.href)
 
 watch(route, () => {
-  pageUrl.value = window.location.origin + route.fullPath
+  pageUrl.value = window.location.href
 })
 
 const copyUrl = () => {
@@ -89,8 +89,8 @@ const copyUrl = () => {
     hasCopied.value = true;
 }
 
-const closeDialog = () => {
-    showCopyUrlDialog.value = false;
+const toggleDialog = () => {
+    showCopyUrlDialog.value = !showCopyUrlDialog.value;
     hasCopied.value = false;
 }
 
