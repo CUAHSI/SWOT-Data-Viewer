@@ -11,10 +11,19 @@ export const useFeaturesStore = defineStore('features', () => {
   const minTime = new Date('2023-03-29').getTime() / 1000
   // set the maxtime to today in decimal seconds
   const maxTime = Date.now() / 1000
-  const timeRange = ref([minTime, maxTime])
+
+  const oneMonthAgoInSeconds = new Date().getTime() / 1000 - 30 * 24 * 60 * 60
+  const initialTimeRange = [oneMonthAgoInSeconds, maxTime]
+  const timeRange = ref(initialTimeRange)
+  const querying = ref({ hydrocron: false, nodes: false })
 
   const mapStore = useMapStore()
   const chartStore = useChartsStore()
+
+  function resetTimeRange() {
+    timeRange.value = initialTimeRange
+    chartStore.filterDatasetsToTimeRange()
+  }
 
   function selectFeature(feature) {
     mapStore.selectFeature(feature)
@@ -72,6 +81,21 @@ export const useFeaturesStore = defineStore('features', () => {
     return river_name
   }
 
+  const setActiveFeatureByReachId = (reachId) => {
+    // https://developers.arcgis.com/esri-leaflet/samples/querying-feature-layers-1/
+    let features = []
+    let query = mapStore.mapObject.reachesFeatures.query().where('reach_id = ' + reachId)
+    // it doesn't seem that this query.run is awaitable
+    query.run(
+      function(error, featureCollection){
+        features = featureCollection.features
+        let feature = features[0]
+        selectedFeatures.value.push(feature)
+        activeFeature.value = feature
+      }
+    )
+  }
+
   return {
     selectedFeatures,
     selectFeature,
@@ -82,8 +106,11 @@ export const useFeaturesStore = defineStore('features', () => {
     mergeFeature,
     nodes,
     getFeatureName,
+    setActiveFeatureByReachId,
     timeRange,
+    resetTimeRange,
     minTime,
-    maxTime
+    maxTime,
+    querying
   }
 })

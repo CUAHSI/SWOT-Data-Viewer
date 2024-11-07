@@ -3,7 +3,7 @@
     <v-row>
       <v-col v-for="variable in selectedVariables" :key="variable">
         {{ variable.name }}
-        <LineChart class="chart" :data="chartStore.chartData" :chosenVariable="variable" />
+        <LineChart class="chart" :chosenPlot="variable" />
       </v-col>
     </v-row>
   </v-container>
@@ -21,18 +21,17 @@
 <script setup>
 import LineChart from '@/components/LineChart.vue'
 import { useFeaturesStore } from '../stores/features'
-import { useChartsStore } from '../stores/charts'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { RouterLink } from 'vue-router'
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 
 const featureStore = useFeaturesStore()
-const chartStore = useChartsStore()
 const hydrologicStore = useHydrologicStore()
 
 let hasFeatures = computed(() => featureStore.selectedFeatures.length > 0)
 
-let selectedVariables = hydrologicStore.selectedVariables
+const { selectedVariables } = storeToRefs(hydrologicStore)
 </script>
 
 <style scoped>

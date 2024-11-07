@@ -19,7 +19,7 @@
                 {
                   "path_regexp": {
                     "name": "asset",
-                    "pattern": "\\.(br|css|gz|ico|jpg|js|mp3|mp4|png|svg)$"
+                    "pattern": "\\.(br|css|gz|ico|jpg|js|mp3|mp4|png|svg|md|woff2|ttf)$"
                   }
                 }
               ],

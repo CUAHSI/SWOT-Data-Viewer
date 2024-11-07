@@ -8,7 +8,7 @@
           max-width="100%"
           min-width="500px"
         >
-          <Line :data="chartData" :options="options" ref="line" :plugins="[Filler]" />
+          <Line :data="nodeChartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
           <TimeRangeSlider
@@ -39,9 +39,7 @@
                 </div>
 
                 <DataQuality
-                  v-model="dataQuality"
                   id="dataQuality"
-                  :data="chartStore.chartData"
                   @qualityUpdated="filterAllDatasets"
                 />
               </v-expansion-panel-text>
@@ -49,9 +47,9 @@
           </v-expansion-panels>
           <v-select
             label="Plot Style"
-            v-model="plotStyle"
-            :items="['Scatter', 'Connected']"
-            @update:modelValue="updateChartLine()"
+            v-model="showLine"
+            :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
+            @update:modelValue="chartStore.updateShowLine"
           >
           </v-select>
           <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
@@ -81,55 +79,70 @@
 </template>
 
 <script setup>
-import { capitalizeFirstLetter } from '@/_helpers/charts/plugins'
 import { Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns'
-import { ref } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 import DataQuality from '@/components/DataQuality.vue'
 import { useChartsStore } from '@/stores/charts'
+import { useFeaturesStore } from '@/stores/features'
 import { APP_API_URL } from '@/constants'
+import { storeToRefs } from 'pinia'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
+
 
 const { lgAndUp } = useDisplay()
 
 const chartStore = useChartsStore()
+const featureStore = useFeaturesStore()
 
-const props = defineProps({ data: Object, chosenVariable: Object })
-const line = ref(null)
+const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
-const showStatistics = ref(false)
-const dataQuality = ref([0, 1, 2, 3])
-const plotStyle = ref('Connected')
+const { nodeChartData, showStatistics, showLine } = storeToRefs(chartStore)
 const chartStatistics = ref(null)
+const nodeChart = ref(null)
 const timeRef = ref()
-let chartData = ref(chartStore.nodeChartData)
+
+let xLabel = 'Distance from outlet (m)'
+let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
+let title = `${props.data.title}: ${props.chosenPlot?.name} vs Distance`
+
+let plt = props.chosenPlot
+xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
+yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
+title = `${props.data.title}\n${plt.title}`
+
+onMounted(async () => {
+  // wait for chart to be available
+  await nextTick()
+
+  // push the chart to the store
+  chartStore.storeMountedChart(nodeChart.value)
+  chartStore.updateShowLine()
+})
 
 const setDefaults = () => {
   // sets page elements back to their default values.
 
-  // set statistics switch to off
+  // set statistics switch to off in the charts store
   showStatistics.value = false
+
 }
 
-const setParsing = (datasets) => {
-  datasets.forEach((dataset) => {
-    dataset.parsing.yAxisKey = props.chosenVariable.abbreviation
-  })
+const getParsing = () => {
+  let parsing = {}
+  parsing.xAxisKey = plt.xvar.abbreviation
+  parsing.yAxisKey = plt.yvar.abbreviation
+  return parsing
 }
-if (props.chosenVariable !== undefined && chartData.value.datasets !== undefined) {
-  setParsing(chartData.value.datasets)
-}
-
-const yLabel = `${props.chosenVariable?.name} (${props.chosenVariable?.unit})`
-const title = `${props.data.title}: ${props.chosenVariable?.name} vs Distance`
 
 const options = {
   responsive: true,
   maintainAspectRatio: false,
+  parsing: getParsing,
   plugins: {
     legend: {
       display: true,
@@ -149,9 +162,9 @@ const options = {
 
           // toggle the q0.75 data series that is not displayed in the legend. This will make
           // IQR appear as a patch instead of a line.
-          let isHidden = line.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden
-          line.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden = !isHidden
-          line.value.chart.update()
+          let isHidden = nodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden
+          nodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden = !isHidden
+          nodeChart.value.chart.update()
         } else {
           toggleByIndex(index)
         }
@@ -199,12 +212,12 @@ const options = {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       callbacks: {
         title: function (context) {
-          return `Distance: ${context[0].parsed.x} m`
+          let plt = props.chosenPlot
+          return `${plt.xvar.name}: ${context[0].parsed.x} (${plt.xvar.unit})`
         },
         label: function (context) {
-          // var label = context.dataset.label || '';
-          let selectedVariable = props.chosenVariable
-          let label = `${capitalizeFirstLetter(selectedVariable.abbreviation)}`
+          let plt = props.chosenPlot
+          let label = `${plt.yvar.name}`
           if (label) {
             label += ': '
           }
@@ -212,7 +225,7 @@ const options = {
             // label += new Intl.NumberFormat('en-US', { style: 'decimal', maximumFractionDigits: 5 }).format(context.parsed.y);
             label += context.parsed.y
           }
-          label += ` ${selectedVariable.unit}`
+          label += ` ${plt.yvar.unit}`
           // add the timestamp as well
           return label
         },
@@ -234,7 +247,7 @@ const options = {
       type: 'linear',
       title: {
         display: true,
-        text: 'Distance from outlet (m)'
+        text: xLabel
       },
       reverse: true
     },
@@ -247,18 +260,18 @@ const options = {
   }
 }
 
-const filterAllDatasets = (dataQualityValues) => {
-  chartStore.filterDataQuality(dataQualityValues, line.value.chart.data.datasets, 'node_q')
-  setParsing(line.value.chart.data.datasets)
-  line.value.chart.update()
+const filterAllDatasets = () => {
+  chartStore.dataQualityFilterAllDatasets()
+  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
+  chartStore.updateAllCharts()
 }
 
 const resetZoom = () => {
-  line.value.chart.resetZoom()
+  nodeChart.value.chart.resetZoom()
 }
 
 const getChartName = () => {
-  let identifier = `${props.data.datasets[0].label}-${props.chosenVariable.abbreviation}`
+  let identifier = `${nodeChartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
   identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
   return `${identifier}.png`
 }
@@ -267,9 +280,9 @@ const downloadChart = async () => {
   downloading.value.chart = true
   const filename = getChartName()
   // change the chart background color to white
-  line.value.chart.canvas.style.backgroundColor = 'white'
+  nodeChart.value.chart.canvas.style.backgroundColor = 'white'
 
-  const image = line.value.chart.toBase64Image('image/png', 1)
+  const image = nodeChart.value.chart.toBase64Image('image/png', 1)
   const link = document.createElement('a')
   link.href = image
   link.download = filename
@@ -289,18 +302,6 @@ const downJson = async () => {
   downloading.value.json = false
 }
 
-const updateChartLine = () => {
-  let showLine = false
-  if (plotStyle.value === 'Connected') {
-    showLine = true
-  }
-  line.value.chart.data.datasets.forEach((dataset) => {
-    dataset.showLine = showLine
-    setParsing(line.value.chart.data.datasets)
-  })
-  line.value.chart.update()
-}
-
 const resetData = () => {
   // Resets the node chart to its initial state. This requires
   // making all swot_node_series visible, removing any additional
@@ -309,7 +310,7 @@ const resetData = () => {
 
   // remove all non-swot series from the chart. This is necessary
   // to reset the chart to its initial state.
-  let datasets = chartData.value.datasets.filter((s) => s.seriesType == 'swot_node_series')
+  let datasets = nodeChartData.value.datasets.filter((s) => s.seriesType == 'swot_node_series')
 
   // turn on all hidden swot node series datasets
   datasets
@@ -322,22 +323,26 @@ const resetData = () => {
   chartStore.updateNodeChartData(datasets)
 
   // Reset timeslider extents to the full range of the data
-  timeRef.value.setInitialState()
+  // timeRef.value.setInitialState()
+  featureStore.resetTimeRange()
 
   // reset page components to their default state, e.g. statistics switch
   setDefaults()
 
   // update the chart
-  line.value.chart.data.datasets = chartData.value.datasets
-  line.value.chart.update()
+  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
+  nodeChart.value.chart.update()
 }
 
 const timeSliderUpdated = () => {
   // This function is called when the time slider is updated.
   // It filters the chart data to the data that are active in the time slider range.
-
-  line.value.chart.data.datasets = chartData.value.datasets
-  line.value.chart.update()
+  
+  if (!nodeChart?.value){
+    return
+  }
+  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
+  nodeChart.value.chart.update()
 }
 
 const timeRangeUpdateComplete = async () => {
@@ -363,8 +368,8 @@ const timeRangeUpdateComplete = async () => {
     chartStore.updateNodeChartData(datasets)
 
     // update the chart
-    line.value.chart.data.datasets = chartData.value.datasets
-    line.value.chart.update()
+    nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
+    nodeChart.value.chart.update()
   }
 }
 
@@ -372,7 +377,6 @@ async function getStatistics() {
   // compute statistics based on the node series that are visible
   // in the chart.
 
-  //let datasets = chartStore.nodeChartData.datasets
   let datasets = chartStore.nodeChartData.datasets
     .filter((s) => s.seriesType == 'swot_node_series')
     .filter((s) => s.hidden == false)
@@ -422,7 +426,7 @@ const generateStatisticsSeries = async () => {
 
   let statisticSeries = []
 
-  // build chart series for each statistic and set it in chartData.
+  // build chart series for each statistic and set it in nodeChartData.
   // set each of these to hidden.
   for (let stat in chartStatistics.value) {
     // skip Interquartile range because these will added later
@@ -430,7 +434,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenVariable.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         stat,
         { fill: false, hidden: false }
       )
@@ -440,7 +444,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenVariable.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         'IQR',
         { showLine: true, borderColor: 'gray', borderWidth: 1, pointRadius: 0 }
       )
@@ -450,7 +454,7 @@ const generateStatisticsSeries = async () => {
       let series = buildChartSeries(
         chartStatistics.value[stat],
         'p_dist_out',
-        props.chosenVariable.abbreviation,
+        props.chosenPlot.yvar.abbreviation,
         stat,
         {
           fill: '-1',
@@ -472,7 +476,7 @@ const toggleSeriesStatistics = async (visible = true) => {
   // adds and removes computed statistics from the chart
 
   // get the data from the chart
-  let updatedDatasets = line.value.chart.data.datasets
+  let updatedDatasets = nodeChart.value.chart.data.datasets
 
   if (visible) {
     let statisticSeries = await generateStatisticsSeries()
@@ -488,8 +492,8 @@ const toggleSeriesStatistics = async (visible = true) => {
   chartStore.updateNodeChartData(updatedDatasets)
 
   // update the chart
-  line.value.chart.data.datasets = chartData.value.datasets
-  // line.value.chart.data.datasets = updatedDatasets;
-  line.value.chart.update()
+  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
+  // nodeChart.value.chart.data.datasets = updatedDatasets;
+  nodeChart.value.chart.update()
 }
 </script>

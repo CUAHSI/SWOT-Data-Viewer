@@ -7,9 +7,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
   const swotVariables = ref([
     {
       abbreviation: 'time_str',
-      name: 'Time',
-      unit: '',
-      definition: 'Time of the measurement',
+      name: 'Date',
+      definition: 'Date and time of the measurement',
       default: false,
       always: true,
       selectable: false,
@@ -30,7 +29,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     },
     {
       abbreviation: 'slope',
-      name: 'Slope',
+      name: 'Reach Slope',
       unit: 'm/m',
       definition:
         'Fitted water surface slope, relative to the provided model of the geoid(geoid_hght), and with the same corrections and tidal effects applied as for wse. The units are m/m. The downstream direction is defined by the PRD. A positive slope means that the downstream WSE is lower.',
@@ -42,7 +41,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     },
     {
       abbreviation: 'width',
-      name: 'Width',
+      name: 'Reach Width',
       unit: 'm',
       definition: 'Reach width',
       default: true,
@@ -473,12 +472,6 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     return descriptions
   }
 
-  function getPlottableSwotVariables(fileType = 'node') {
-    return swotVariables.value.filter((variable) => {
-      return variable.plottable && (variable.fileType === fileType || variable.fileType === 'all')
-    })
-  }
-
   return {
     swotVariables,
     selectableVariables,
@@ -487,7 +480,6 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     defaultVariables,
     queryVariables,
     swordVariables,
-    getSwordDescriptions,
-    getPlottableSwotVariables
+    getSwordDescriptions
   }
 })

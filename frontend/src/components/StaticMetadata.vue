@@ -38,15 +38,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref,  } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { mdiSword } from '@mdi/js'
+
+const props = defineProps({
+  reachId: { type: Number, default: 0 },
+})
 
 const featureStore = useFeaturesStore()
 const hydrologicStore = useHydrologicStore()
 
 let extended = ref(false)
+
+if (props.reachId) {
+  featureStore.setActiveFeatureByReachId(props.reachId)
+}
 
 const extendMetadata = () => {
   if (!featureStore.activeFeature) return

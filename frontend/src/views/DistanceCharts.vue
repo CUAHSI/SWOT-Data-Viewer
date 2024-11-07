@@ -3,36 +3,36 @@
     <v-row>
       <v-col sm="2">
         <v-sheet class="elevation-1" color="input">
-          <v-card-title> Variables </v-card-title>
-          <v-tabs v-model="varTab" direction="vertical" color="primary">
-            <v-tab v-for="variable in nodeVariables" :value="variable" :key="variable.abbreviation">
+          <v-card-title> Plots </v-card-title>
+          <v-tabs v-model="pltTab" direction="vertical" color="primary" @update:model-value="changePlot">
+            <v-tab v-for="plt in chartStore.nodeCharts" :value="plt" :key="plt.abbreviation">
               <template v-if="lgAndUp">
-                {{ variable.name }}
+                {{ plt.name }}
               </template>
               <template v-else>
-                {{ variable.abbreviation }}
+                {{ plt.abbreviation }}
               </template>
             </v-tab>
           </v-tabs>
         </v-sheet>
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <v-card class="pa-2" v-if="lgAndUp">
-          {{ varTab.definition }}
+          {{ pltTab.help }}
         </v-card>
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
       <v-col sm="10">
-        <v-window v-model="varTab">
+        <v-window v-model="pltTab">
           <v-window-item
-            v-for="variable in nodeVariables"
-            :key="variable.abbreviation"
-            :value="variable"
+            v-for="plt in chartStore.nodeCharts"
+            :key="plt.abbreviation"
+            :value="plt"
           >
             <NodeChart
-              v-if="variable"
+              v-if="plt"
               class="chart"
               :data="chartStore.nodeChartData"
-              :chosenVariable="variable"
+              :chosenPlot="plt"
             />
           </v-window-item>
         </v-window>
@@ -51,17 +51,31 @@
 <script setup>
 import NodeChart from '@/components/NodeChart.vue'
 import { useChartsStore } from '../stores/charts'
-import { useHydrologicStore } from '@/stores/hydrologic'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useRouter } from 'vue-router'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
-const hydrologicStore = useHydrologicStore()
+const router = useRouter()
 
-// TODO:nodes on tab switch, update distance chart data by query nodes
-let nodeVariables = hydrologicStore.getPlottableSwotVariables('node')
-let varTab = ref(nodeVariables[0])
+let pltTab = ref(chartStore.nodeCharts[0])
+
+onMounted(() => {
+  // check for query params that determine the pltTab
+  const query = router.currentRoute.value.query
+  if (query.variables) {
+    const plt = chartStore.nodeCharts.find((plt) => plt.abbreviation === query.variables)
+    if (plt) {
+      pltTab.value = plt
+    }
+  }
+})
+
+const changePlot = (plt) => {
+  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
+}
+
 </script>
 
 <style scoped>

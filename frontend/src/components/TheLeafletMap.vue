@@ -22,33 +22,34 @@ import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { mdiMagnifyPlus } from '@mdi/js'
+import { storeToRefs } from 'pinia'
 
 const mapStore = useMapStore()
 const alertStore = useAlertStore()
 const featureStore = useFeaturesStore()
 const chartStore = useChartsStore()
 
-const Map = mapStore.mapObject
+const { mapObject } = storeToRefs(mapStore)
 const minReachSelectionZoom = 7
 const mapInitialZoom = 3
 let zoom = ref(mapInitialZoom)
 
 onUpdated(() => {
-  Map.leaflet.invalidateSize()
+  mapObject.value.leaflet.invalidateSize()
 })
 
 onMounted(() => {
   let leaflet = L.map('mapContainer').setView([0, 0], mapInitialZoom)
   zoom.value = leaflet.getZoom()
-  Map.leaflet = leaflet
-  Map.hucbounds = []
-  Map.popups = []
-  Map.buffer = 20
-  Map.huclayers = []
-  Map.reaches = {}
-  Map.reachesFeatures = ref({})
+  mapObject.value.leaflet = leaflet
+  mapObject.value.hucbounds = []
+  mapObject.value.popups = []
+  mapObject.value.buffer = 20
+  mapObject.value.huclayers = []
+  mapObject.value.reaches = {}
+  mapObject.value.reachesFeatures = ref({})
 
-  Map.bbox = [99999999, 99999999, -99999999, -99999999]
+  mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
 
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
@@ -227,7 +228,7 @@ onMounted(() => {
     })
     .addTo(leaflet)
 
-  Map.reachesFeatures = reachesFeatures
+  mapObject.value.reachesFeatures = reachesFeatures
 
   reachesFeatures.on('click', async function (e) {
     const feature = e.layer.feature
@@ -389,7 +390,7 @@ async function mapClick(e) {
   // exit early if not zoomed in enough.
   // this ensures that objects are not clicked until zoomed in
   let zoom = e.target.getZoom()
-  if (zoom < Map.selectable_zoom) {
+  if (zoom < mapObject.value.selectable_zoom) {
     return
   }
 
@@ -402,8 +403,8 @@ async function mapClick(e) {
     // create map info object here
 
     // close all popups
-    if (Map.popups.length > 0) {
-      Map.leaflet.closePopup()
+    if (mapObject.value.popups.length > 0) {
+      mapObject.value.leaflet.closePopup()
     }
 
     // create new popup containing gage info
@@ -411,7 +412,7 @@ async function mapClick(e) {
       .setLatLng([gage.y, gage.x])
       .setContent('<b>ID:</b> ' + gage.num + '<br>' + '<b>Name</b>: ' + gage.name + '<br>')
       //		             + '<b>Select</b>: <a onClick=traceUpstream("'+gage.num+'")>upstream</a>')
-      .openOn(Map.leaflet)
+      .openOn(mapObject.value.leaflet)
 
     // exit function without toggling HUC
     return
@@ -422,8 +423,8 @@ function traceUpstream(usgs_gage) {
   console.log('traceUpstream --> selected gage = ' + usgs_gage)
 
   // clear any existing reaches from the map
-  if (Map.reaches.obj != null) {
-    Map.reaches.obj.clearLayers()
+  if (mapObject.value.reaches.obj != null) {
+    mapObject.value.reaches.obj.clearLayers()
   }
 
   // query the upstream reaches via NLDI
@@ -439,10 +440,10 @@ function traceUpstream(usgs_gage) {
       // add the reaches to the map and replace the global reaches
       // object with the newly selected reaches.
       let reaches = L.geoJSON(response.features, { style: { color: 'green' } })
-      Map.reaches.start_id = reaches._leaflet_id
-      Map.reaches.count = response.features.length
-      Map.reaches.obj = reaches
-      reaches.addTo(Map.leaflet)
+      mapObject.value.reaches.start_id = reaches._leaflet_id
+      mapObject.value.reaches.count = response.features.length
+      mapObject.value.reaches.obj = reaches
+      reaches.addTo(mapObject.value.leaflet)
 
       // a list to store a single coordinate for each reach
       let centroids = []
@@ -489,13 +490,13 @@ function clearSelection() {
   // TODO: update clear selection function
   // Clears the selected features on the map
 
-  for (let key in Map.hucbounds) {
+  for (let key in mapObject.value.hucbounds) {
     // clear the huc boundary list
-    delete Map.hucbounds[key]
+    delete mapObject.value.hucbounds[key]
 
     // clear the polygon overlays
-    Map.huclayers[key].clearLayers()
-    delete Map.huclayers[key]
+    mapObject.value.huclayers[key].clearLayers()
+    delete mapObject.value.huclayers[key]
 
     // clear the hucs in the html template
   }
@@ -526,8 +527,8 @@ function updateMapBBox() {
   let ymin = 9999999
   let xmax = -9999999
   let ymax = -9999999
-  for (let key in Map.hucbounds) {
-    let bounds = Map.hucbounds[key].getBounds()
+  for (let key in mapObject.value.hucbounds) {
+    let bounds = mapObject.value.hucbounds[key].getBounds()
     if (bounds.getWest() < xmin) {
       xmin = bounds.getWest()
     }
@@ -543,7 +544,7 @@ function updateMapBBox() {
   }
 
   // save the map bbox
-  Map.bbox = [xmin, ymin, xmax, ymax]
+  mapObject.value.bbox = [xmin, ymin, xmax, ymax]
 
   removeBbox()
 
@@ -571,17 +572,17 @@ function updateMapBBox() {
   let json_polygon = L.geoJSON(polygon, { style: bbox.style })
 
   // save the layer
-  Map.huclayers['BBOX'] = json_polygon
+  mapObject.value.huclayers['BBOX'] = json_polygon
 
   return bbox.is_valid
 }
 
 function removeBbox() {
   // remove the bbox layer if it exists
-  if ('BBOX' in Map.huclayers) {
+  if ('BBOX' in mapObject.value.huclayers) {
     // remove the polygon overlay
-    Map.huclayers['BBOX'].clearLayers()
-    delete Map.huclayers['BBOX']
+    mapObject.value.huclayers['BBOX'].clearLayers()
+    delete mapObject.value.huclayers['BBOX']
   }
 }
 
@@ -591,7 +592,7 @@ function removeBbox() {
  */
 function validate_bbox_size() {
   // todo: turn the bounding box red and deactivate the submit button.
-  let bbox = Map.bbox
+  let bbox = mapObject.value.bbox
 
   let londiff = Math.abs(bbox[2] - bbox[0])
   let latdiff = Math.abs(bbox[3] - bbox[1])

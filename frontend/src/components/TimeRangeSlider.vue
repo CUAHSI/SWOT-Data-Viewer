@@ -2,7 +2,7 @@
   <v-form>
     <v-container>
       <v-range-slider
-        v-model="sliderRange"
+        v-model="timeRange"
         :min="featuresStore.minTime"
         :max="featuresStore.maxTime"
         class="align-center"
@@ -18,7 +18,7 @@
             variant="outlined"
             hide-details
             single-line
-            @update:modelValue="updateSliderRange"
+            @update:modelValue="updatetimeRange"
             :rules="[rules.min]"
           ></v-text-field>
         </template>
@@ -30,7 +30,7 @@
             variant="outlined"
             hide-details
             single-line
-            @update:modelValue="updateSliderRange"
+            @update:modelValue="updatetimeRange"
             :rules="[rules.max]"
           ></v-text-field>
         </template>
@@ -43,6 +43,7 @@
 import { ref } from 'vue'
 import { useFeaturesStore } from '../stores/features'
 import { useChartsStore } from '@/stores/charts'
+import { storeToRefs } from 'pinia';
 
 // define an update event that emits the new range
 const emit = defineEmits(['update', 'updateComplete'])
@@ -58,9 +59,13 @@ const convertDateStringToSeconds = (dateString) => {
   return new Date(dateString).getTime() / 1000
 }
 
+// There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
+const { timeRange } = storeToRefs(featuresStore)
+const dateRange = ref(timeRange.value.map((t) => convertSecondsToDateString(t)))
+
 // When the date range changes, update the slider range.
-const updateSliderRange = () => {
-  sliderRange.value = dateRange.value.map((dateString) => {
+const updatetimeRange = () => {
+  timeRange.value = dateRange.value.map((dateString) => {
     return convertDateStringToSeconds(dateString)
   })
   filterDatasetsToTimeRange()
@@ -68,15 +73,15 @@ const updateSliderRange = () => {
 
 // When the slider range changes, update the date range.
 const updateDateRange = () => {
-  dateRange.value = sliderRange.value.map((seconds) => {
+  dateRange.value = timeRange.value.map((seconds) => {
     return convertSecondsToDateString(seconds)
   })
-  filterDatasetsToTimeRange()
 }
 
 // When the user is done changing the slider range, emit event.
 const updateDateRangeComplete = () => {
-  emit('updateComplete', sliderRange.value)
+  filterDatasetsToTimeRange()
+  emit('updateComplete', timeRange.value)
 }
 
 async function filterDatasetsToTimeRange() {
@@ -85,7 +90,7 @@ async function filterDatasetsToTimeRange() {
     dateRange.value[0],
     dateRange.value[1]
   )
-  emit('update', sliderRange.value)
+  emit('update', timeRange.value)
 }
 
 const setInitialState = () => {
@@ -94,26 +99,24 @@ const setInitialState = () => {
 
   // set the initial state for the time ranges based
   // off available data.
-  let offset = 2 * 86400 // 2 days in seconds. This is chosen arbitrarily
-  let minDateSec =
-    Math.min(...chartStore.nodeChartData.datasets.map((series) => series.minDateTime)) / 1000 -
+  const offset = 2 * 86400 // 2 days in seconds. This is chosen arbitrarily
+
+  // compute min/max date based on the datasets, omitting computed_series (i.e. derived data)
+  const minDateSec =
+    Math.min(...chartStore.nodeChartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.minDateTime)) / 1000 -
     offset
-  let maxDateSec =
-    Math.max(...chartStore.nodeChartData.datasets.map((series) => series.maxDateTime)) / 1000 +
+  const maxDateSec =
+    Math.max(...chartStore.nodeChartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.maxDateTime)) / 1000 +
     offset
-  featuresStore.timeRange = [minDateSec, maxDateSec]
+
   featuresStore.minTime = minDateSec
   featuresStore.maxTime = maxDateSec
 
-  sliderRange.value = featuresStore.timeRange
-  dateRange.value = featuresStore.timeRange.map((seconds) => {
+  dateRange.value = timeRange.value.map((seconds) => {
     return convertSecondsToDateString(seconds)
   })
+  filterDatasetsToTimeRange()
 }
-
-// There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
-const sliderRange = ref(featuresStore.timeRange)
-const dateRange = ref(featuresStore.timeRange.map((t) => convertSecondsToDateString(t)))
 
 // set the min/max time range for the time slider component
 setInitialState()
