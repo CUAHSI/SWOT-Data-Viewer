@@ -13,20 +13,9 @@
       </v-col>
       <v-col xs="12" lg="3">
         <v-expansion-panels with="100%" v-model="panel" multiple>
-          <v-expansion-panel value="plotOptions">
-            <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
+          <v-expansion-panel value="plotActions">
+            <v-expansion-panel-title>Plot Actions</v-expansion-panel-title>
             <v-expansion-panel-text>
-              <DataQuality
-                id="dataQuality"
-                @qualityUpdated="filterAllDatasets"
-              />
-
-              <v-select
-                label="Plot Style"
-                v-model="showLine"
-                :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
-                @update:modelValue="chartStore.updateShowLine"
-              ></v-select>
               <v-btn
                 :loading="downloading.chart"
                 @click="downloadChart()"
@@ -113,18 +102,17 @@ import {
 } from '@mdi/js'
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
-import DataQuality from '@/components/DataQuality.vue'
 import { onMounted, nextTick } from 'vue'
 
 const { lgAndUp } = useDisplay()
-const panel = ref(['plotOptions'])
+const panel = ref(['plotActions'])
 const selectedTimeseriesPoints = ref([])
 
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { showLine, chartData } = storeToRefs(chartStore)
+const { chartData } = storeToRefs(chartStore)
 const lineChart = ref(null)
 const downloading = ref({ csv: false, json: false, chart: false })
 
@@ -314,7 +302,7 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
   }
 
   if (selectedTimeseriesPoints.value.length === 0) {
-    panel.value = ['plotOptions']
+    panel.value = ['plotActions']
   }
 }
 
@@ -352,11 +340,5 @@ const downJson = async () => {
   downloading.value.json = true
   await downloadFeatureJson()
   downloading.value.json = false
-}
-
-const filterAllDatasets = () => {
-  chartStore.dataQualityFilterAllDatasets()
-  lineChart.value.chart.data.datasets = chartData.value.datasets
-  chartStore.updateAllCharts()
 }
 </script>

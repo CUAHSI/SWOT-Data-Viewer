@@ -36,12 +36,15 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia';
 
 const chartStore = useChartsStore()
-const emit = defineEmits(['qualityUpdated'])
 const { dataQualityFlags } = storeToRefs(chartStore)
 const panel = ref('0')
 
 function qualityHasChanged() {
   // emit the qualityUpdated event when the ndataQuality value changes
-  emit('qualityUpdated', dataQualityFlags.value)
+  chartStore.dataQualityFilterAllDatasets()
+
+  // apply the time slider filter to the data
+  chartStore.filterDatasetsToTimeRange()
+  chartStore.updateAllCharts()
 }
 </script>
