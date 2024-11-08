@@ -88,7 +88,7 @@ export const useStatsStore = defineStore('stats', () => {
         let series = buildChartSeries(
           chartStatistics.value[stat],
           'p_dist_out',
-          activePlt.value.chosenPlot.yvar.abbreviation,
+          activePlt.value.yvar.abbreviation,
           stat,
           {
             fill: '-1',
@@ -130,6 +130,7 @@ export const useStatsStore = defineStore('stats', () => {
   }
 
   return {
-    toggleSeriesStatistics
+    toggleSeriesStatistics,
+    generateStatisticsSeries
   }
 })
