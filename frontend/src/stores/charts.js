@@ -81,6 +81,8 @@ export const useChartsStore = defineStore('charts', () => {
     }
   ])
 
+  const activePlt = ref(nodeCharts.value[0])
+
   // a collection of charts that can be created in the reach view
   const reachCharts = ref([
     {
@@ -706,6 +708,7 @@ export const useChartsStore = defineStore('charts', () => {
     showStatistics,
     showLine,
     updateShowLine,
-    storeMountedChart
+    storeMountedChart,
+    activePlt
   }
 })
