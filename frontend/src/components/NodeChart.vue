@@ -119,7 +119,7 @@ const options = {
   parsing: getParsing,
   plugins: {
     legend: {
-      display: true,
+      display: false,
       position: 'bottom',
       labels: {
         // hide the q0.75 series from the legend. This is because the interquartile range
@@ -204,13 +204,14 @@ const options = {
           return label
         },
         footer: function (context) {
+          let footer = `\nDate: ${context[0].dataset.label}`
           const dataQualityOption = chartStore.dataQualityOptions.find(
             (option) => option.value == context[0]?.raw?.node_q
           )
           if (dataQualityOption) {
-            return `\n Data Quality: ${dataQualityOption.label}`
+            footer += `\nData Quality: ${dataQualityOption.label}`
           }
-          return ''
+          return footer
         }
       },
       displayColors: false
