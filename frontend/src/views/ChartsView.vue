@@ -30,6 +30,7 @@
     </h2>
     <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
   </v-container>
+  <!-- TODO: add the option to refresh data -->
 </template>
 
 <script setup>
@@ -51,7 +52,7 @@ const router = useRouter()
 
 const chartStore = useChartsStore()
 const featuresStore = useFeaturesStore()
-const { querying, activeFeature, selectedFeatures, nodes } = storeToRefs(featuresStore)
+const { querying, activeFeature, selectedFeatures } = storeToRefs(featuresStore)
 
 // use a watcher to run the query once the active feature is set
 // we do this because it seems that async queries from esri leaflet
@@ -97,17 +98,50 @@ const changePlotType = (plot) => {
 }
 
 const runHydrocronQuery = async () => {
-  if (activeFeature.value?.queries == undefined) {
+  // we check to see if we already have data for this feature
+  // we check not only for activeFeature.value.queries,
+  // but also if there are data in any matching selectedFeatures
+
+  // also in addition to seeing if queries exist, 
+  // we should make sure that the data is complete
+  // for instance if browser was refreshed during fetch
+
+  const query_completed_date = activeFeature.value.query_completed_date
+  if (!query_completed_date || 
+    activeFeature.value?.queries == undefined ||
+    query_completed_date < Date.now() - 604800000) {
+    console.log('Missing or stale reach data, running query')
     querying.value.hydrocron = true
     await queryHydroCron(activeFeature.value)
     querying.value.hydrocron = false
     chartStore.buildChart(selectedFeatures.value)
   }
-  if (nodes.value.length == 0) {
+
+  const runNodeQuery = async () => {
     querying.value.nodes = true
     await getNodeDataForReach(activeFeature.value)
     querying.value.nodes = false
     chartStore.buildDistanceChart(featuresStore.nodes)
+  }
+  // every activeFeature.value.nodes should have a queries_completed_date
+  // check that all of these queries_completed_date are within the last week
+  const nodes = activeFeature.value?.nodes
+  if (nodes == undefined || nodes.length == 0) {
+    console.log('No nodes data found, running query')
+    runNodeQuery()
+  }else{
+    let shouldRunQuery = false
+    console.log('Found existing nodes data, checking how recent they are')
+    nodes.forEach(async (node) => {
+      if (!node.query_completed_date || 
+        node.query_completed_date < Date.now() - 604800000) {
+        shouldRunQuery = true
+      }
+    })
+    if (shouldRunQuery) {
+      console.log('Nodes data is stale, running query')
+      runNodeQuery()
+    }
   }
 }
 

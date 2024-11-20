@@ -128,6 +128,7 @@ const processHydroCronResult = async (response, params, swordFeature) => {
       swordFeature.queries = []
     }
     swordFeature.queries.push(query)
+    swordFeature.query_completed_date = new Date()
     return query
   } else {
     alertStore.displayAlert({
