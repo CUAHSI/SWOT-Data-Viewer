@@ -662,7 +662,7 @@ export const useChartsStore = defineStore('charts', () => {
       // color: styles.colors,
       // borderWidth: 1,
       backgroundColor: colors,
-      pointBorderColor: colors,
+      pointBorderColor: ctx => getPointBorderColors(ctx.dataset),
       pointStyle: ctx => getPointStyles(ctx.dataset),
       // borderColor: styles.dynamicColors, // The line fill color.
       borderColor: colors,
