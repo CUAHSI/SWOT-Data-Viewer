@@ -757,4 +757,7 @@ export const useChartsStore = defineStore('charts', () => {
     storeMountedChart,
     activePlt
   }
+},
+{
+  persist: true
 })

@@ -95,8 +95,6 @@ export const useFeaturesStore = defineStore(
       // it doesn't seem that this query.run is awaitable
       query.run(function (error, featureCollection) {
         let message = ''
-        console.log('FeatureCollection:', featureCollection)
-        console.log('Error:', error)
         if (error) {
           message = `Error querying features: ${error}`
         }

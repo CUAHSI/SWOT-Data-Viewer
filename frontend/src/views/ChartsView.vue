@@ -67,14 +67,14 @@ onMounted(() => {
     // set the reach id in the url from the active feature
     if (props.reachId === "") {
       router.replace({ params: { reachId: activeFeature.value.properties.reach_id } })
+      runHydrocronQuery()
     }else{
       // check that the activeFeature matches the reachId prop
       // if not, the reachId prop takes precedence
-      if (activeFeature.value.properties.reach_id !== props.reachId) {
+      if (activeFeature.value.properties.reach_id !== Number(props.reachId)) {
         featuresStore.setActiveFeatureByReachId(props.reachId)
       }
     }
-    runHydrocronQuery()
   }
   else if (props.reachId !== "") {
     querying.value.hydrocron = true
@@ -101,14 +101,14 @@ const runHydrocronQuery = async () => {
     querying.value.hydrocron = true
     await queryHydroCron(activeFeature.value)
     querying.value.hydrocron = false
+    chartStore.buildChart(selectedFeatures.value)
   }
-  chartStore.buildChart(selectedFeatures.value)
   if (nodes.value.length == 0) {
     querying.value.nodes = true
     await getNodeDataForReach(activeFeature.value)
     querying.value.nodes = false
+    chartStore.buildDistanceChart(featuresStore.nodes)
   }
-  chartStore.buildDistanceChart(featuresStore.nodes)
 }
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
