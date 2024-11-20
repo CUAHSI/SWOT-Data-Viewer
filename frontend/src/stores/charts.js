@@ -20,6 +20,7 @@ export const useChartsStore = defineStore('charts', () => {
   const showStatistics = ref(false)
   const showLine = ref(true)
   const dataQualityFlags = ref([0, 1])  // by default don't show degraded or bad data
+  let colorScale = chroma.scale('YlGnBu').mode('lch').colors(3)
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -429,6 +430,30 @@ export const useChartsStore = defineStore('charts', () => {
     })
   }
 
+  /**
+   * Updates the color scale based on the time range from the feature store.
+   * 
+   * This function retrieves the time range from the feature store, calculates
+   * the minimum, median, and maximum date times, and then creates a new color
+   * scale using the chroma library.
+   * 
+   * @function
+   * @returns {void}
+   */
+  const updateColorScale = () => {
+    const featureStore = useFeaturesStore()
+    const { timeRange } = storeToRefs(featureStore)
+    const chartDates = {
+      minDateTime: new Date(timeRange.value[0] * 1000),
+      medianDateTime: new Date(timeRange.value[0] * 1000 + (timeRange.value[1] - timeRange.value[0]) * 1000 / 2),
+      maxDateTime: new Date(timeRange.value[1] * 1000),
+    }
+    const newColorScale = chroma
+      .scale('YlGnBu').mode('lch')
+      .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
+    colorScale = newColorScale
+  }
+
   const getNodeChartDatasets = (nodes) => {
     // builds the datasets for the long-profile chart. These are labeled
     // using seriesType='swot_node_series' to differentiate them from
@@ -453,13 +478,6 @@ export const useChartsStore = defineStore('charts', () => {
     // instead of creating a single dataset, create a dataset for each timestamp
     const timeStampGroups = getNodeTimeStamps(measurements)
 
-    // get the min and max dates and define a chroma scale
-    const chartDates = getChartMinMaxDateTimes(timeStampGroups)
-    const colorScale = chroma
-      .scale(['blue', 'purple', 'black'])
-      .mode('lch')
-      .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
-
     const datasets = []
     for (const date in timeStampGroups) {
       const timeStampGroup = timeStampGroups[date]
@@ -467,7 +485,7 @@ export const useChartsStore = defineStore('charts', () => {
         label: timeStampGroup[0].datetime.toDateString(),
         data: timeStampGroup,
         seriesType: 'swot_node_series',
-        ...getNodeDataSetStyle(timeStampGroup, colorScale),
+        ...getNodeDataSetStyle(timeStampGroup),
         ...getDatasetMinMaxDateTimes(timeStampGroup)
       })
     }
@@ -511,19 +529,25 @@ export const useChartsStore = defineStore('charts', () => {
     return 'rgb(' + r + ',' + g + ',' + b + ')'
   }
 
-  const dateGradientColors = function (date, colorScale) {
+  const dateGradientColors = function (date) {
     // https://www.chartjs.org/docs/latest/general/colors.html
     // https://github.com/kurkle/chartjs-plugin-gradient
+
+    // check if the date is a Date object, if not, convert it
+    if (!(date instanceof Date)) {
+      date = new Date(date)
+    }
     return colorScale(date).hex()
   }
 
-  const getDateGradientColors = (dataSet, colorScale) => {
-    const colors = []
-    dataSet.forEach((dataPoint) => {
-      const color = dateGradientColors(dataPoint.datetime, colorScale)
-      colors.push(color)
-    })
-    return colors
+  const getDateGradientColors = (dataSet) => {
+    updateColorScale()
+    if (dataSet.length == 0) {
+      return []
+    }
+    const firstColor = dateGradientColors(dataSet[0].datetime)
+    // fill an arry with the same color for each data point
+    return Array(dataSet.length).fill(firstColor)
   }
 
   const getPointBorderColors = (dataSet) => {
@@ -627,7 +651,8 @@ export const useChartsStore = defineStore('charts', () => {
     return 1
   }
 
-  const getNodeDataSetStyle = (dataSet, colorScale) => {
+  const getNodeDataSetStyle = (dataSet) => {
+    const colors = getDateGradientColors(dataSet)
     return {
       showLine: showLine.value,
       pointRadius: 5,
@@ -636,14 +661,24 @@ export const useChartsStore = defineStore('charts', () => {
       fill: false,
       // color: styles.colors,
       // borderWidth: 1,
-      backgroundColor: getDateGradientColors(dataSet, colorScale),
-      pointBorderColor: ctx => getPointBorderColors(ctx.dataset),
+      backgroundColor: colors,
+      pointBorderColor: colors,
       pointStyle: ctx => getPointStyles(ctx.dataset),
       // borderColor: styles.dynamicColors, // The line fill color.
-      borderColor: getDateGradientColors(dataSet, colorScale),
+      borderColor: colors,
       pointBorderWidth: 1,
       pointHoverBorderWidth: 5,
     }
+  }
+
+  const updateNodeDataSetStyles = () => {
+    nodeChartData.value.datasets.forEach((dataset) => {
+      // replace the dataset properties with those from getNodeDataSetStyle
+      const updatedStyles = getNodeDataSetStyle(dataset.data)
+      for (const key in updatedStyles) {
+        dataset[key] = updatedStyles[key]
+      }
+    })
   }
 
   const updateShowLine = () => {
@@ -661,6 +696,7 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const updateAllCharts = () => {
+    updateNodeDataSetStyles()
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
