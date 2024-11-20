@@ -44,7 +44,7 @@ export const useChartsStore = defineStore('charts', () => {
   // load the swot variables from the hydrologic store.
   // these are used to build the charts for the node and reach views.
   const hydrologicStore = useHydrologicStore()
-  let swotVariables = ref(hydrologicStore.swotVariables)
+  const { swotVariables } = storeToRefs(hydrologicStore)
 
   // a collection of charts that can be created in the node view
   const nodeCharts = ref([

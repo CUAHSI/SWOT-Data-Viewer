@@ -482,4 +482,5 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     swordVariables,
     getSwordDescriptions
   }
-})
+},
+{ persist: true })

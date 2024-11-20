@@ -138,8 +138,6 @@ export const useFeaturesStore = defineStore(
     }
   },
   {
-    persist: {
-      pick: ['selectedFeatures', 'activeFeature', 'nodes', 'timeRange']
-    }
+    persist: true
   }
 )

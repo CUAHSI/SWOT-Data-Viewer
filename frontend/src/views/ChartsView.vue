@@ -67,7 +67,6 @@ onMounted(() => {
     // set the reach id in the url from the active feature
     if (props.reachId === "") {
       router.replace({ params: { reachId: activeFeature.value.properties.reach_id } })
-      runHydrocronQuery()
     }else{
       // check that the activeFeature matches the reachId prop
       // if not, the reachId prop takes precedence
@@ -75,6 +74,7 @@ onMounted(() => {
         featuresStore.setActiveFeatureByReachId(props.reachId)
       }
     }
+    runHydrocronQuery()
   }
   else if (props.reachId !== "") {
     querying.value.hydrocron = true
