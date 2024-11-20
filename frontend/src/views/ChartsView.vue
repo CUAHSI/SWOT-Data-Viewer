@@ -51,14 +51,14 @@ const router = useRouter()
 
 const chartStore = useChartsStore()
 const featuresStore = useFeaturesStore()
-const { querying, activeFeature, selectedFeatures } = storeToRefs(featuresStore)
+const { querying, activeFeature, selectedFeatures, nodes } = storeToRefs(featuresStore)
 
 // use a watcher to run the query once the active feature is set
 // we do this because it seems that async queries from esri leaflet
 // are not properly returning a promise to await
 watch(activeFeature, async(newActiveFeature) => {
   if (newActiveFeature) {
-    runQuery()
+    runHydrocronQuery()
   }
 })
 
@@ -67,8 +67,14 @@ onMounted(() => {
     // set the reach id in the url from the active feature
     if (props.reachId === "") {
       router.replace({ params: { reachId: activeFeature.value.properties.reach_id } })
+    }else{
+      // check that the activeFeature matches the reachId prop
+      // if not, the reachId prop takes precedence
+      if (activeFeature.value.properties.reach_id !== props.reachId) {
+        featuresStore.setActiveFeatureByReachId(props.reachId)
+      }
     }
-    runQuery()
+    runHydrocronQuery()
   }
   else if (props.reachId !== "") {
     querying.value.hydrocron = true
@@ -90,15 +96,18 @@ const changePlotType = (plot) => {
   router.push({ query: { plot } })
 }
 
-const runQuery = async () => {
-  querying.value.hydrocron = true
-  await queryHydroCron(activeFeature.value)
+const runHydrocronQuery = async () => {
+  if (activeFeature.value?.queries == undefined) {
+    querying.value.hydrocron = true
+    await queryHydroCron(activeFeature.value)
+    querying.value.hydrocron = false
+  }
   chartStore.buildChart(selectedFeatures.value)
-  querying.value.hydrocron = false
-
-  querying.value.nodes = true
-  await getNodeDataForReach(activeFeature.value)
-  querying.value.nodes = false
+  if (nodes.value.length == 0) {
+    querying.value.nodes = true
+    await getNodeDataForReach(activeFeature.value)
+    querying.value.nodes = false
+  }
   chartStore.buildDistanceChart(featuresStore.nodes)
 }
 

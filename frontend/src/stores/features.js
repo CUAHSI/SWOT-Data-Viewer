@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useChartsStore } from '@/stores/charts'
+import { useAlertStore } from './alerts'
+import { useRouter } from 'vue-router'
 
 export const useFeaturesStore = defineStore('features', () => {
   const selectedFeatures = ref([])
@@ -19,6 +21,8 @@ export const useFeaturesStore = defineStore('features', () => {
 
   const mapStore = useMapStore()
   const chartStore = useChartsStore()
+  const alertStore = useAlertStore()
+  const router = useRouter()
 
   function resetTimeRange() {
     timeRange.value = initialTimeRange
@@ -66,7 +70,8 @@ export const useFeaturesStore = defineStore('features', () => {
   }
 
   const checkFeatureSelected = (feature) => {
-    return selectedFeatures.value.some((f) => f.id === feature.id)
+    if (!selectedFeatures.value || !feature) return false
+    return selectedFeatures.value.some((f) => f?.id === feature.id)
   }
 
   const getFeatureName = (feature = null) => {
@@ -88,6 +93,26 @@ export const useFeaturesStore = defineStore('features', () => {
     // it doesn't seem that this query.run is awaitable
     query.run(
       function(error, featureCollection){
+        let message = ""
+        console.log('FeatureCollection:', featureCollection)
+        console.log('Error:', error)
+        if (error ) {
+          message = `Error querying features: ${error}`
+        }
+        if (!featureCollection || !featureCollection?.features?.length > 0) {
+          message = 'No features found matching reach ID'
+        }
+        if (message) {
+          alertStore.displayAlert({
+            title: 'Error Getting Feature by Reach ID',
+            text: message,
+            type: 'error',
+            closable: true,
+            duration: 6
+          })
+          router.push('/map')
+          return
+        }
         features = featureCollection.features
         let feature = features[0]
         selectedFeatures.value.push(feature)
@@ -113,4 +138,8 @@ export const useFeaturesStore = defineStore('features', () => {
     maxTime,
     querying
   }
-})
+},
+{ persist: {
+    pick: ['selectedFeatures', 'activeFeature', 'nodes', 'timeRange'],
+} }
+)

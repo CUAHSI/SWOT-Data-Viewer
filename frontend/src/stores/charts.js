@@ -225,6 +225,7 @@ export const useChartsStore = defineStore('charts', () => {
       }
       // loop over each point in the swot datasets and update the point style
       datasets.forEach((dataset) => {
+        if (!dataset) return
         dataQualityFilterSingleDataset(dataset)
         // update the line visibility
         dataset.showLine = showLine.value
@@ -402,7 +403,14 @@ export const useChartsStore = defineStore('charts', () => {
     return selectedFeatures.map((feature) => {
       // TODO: for now we just use the first query
       // with compact = true, there will only be a single feature and properties is an object of arrays
-      let propertyObject = feature.queries[0].results.geojson.features[0].properties
+      let propertyObject = {}
+      try{
+        propertyObject = feature.queries[0].results.geojson.features[0].properties
+      }
+      catch (error){
+        console.error('Error getting properties from feature', feature)
+        return
+      }
 
       // each property of the propertyObject contains an array of measurements.
       // the key in the propertyObject is the variable abbreviation
@@ -688,6 +696,7 @@ export const useChartsStore = defineStore('charts', () => {
         storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
           dataset.showLine = showLine.value
         })
+        if (!storedChart?.chart) return
         storedChart.chart.update()
       } catch (error) {
         console.error('Error updating chart lines', error)
@@ -700,6 +709,7 @@ export const useChartsStore = defineStore('charts', () => {
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
+        if (!storedChart?.chart) return
         storedChart.chart.update()
       } catch (error) {
         console.error('Error updating chart', error)
