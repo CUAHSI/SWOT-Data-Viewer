@@ -35,9 +35,9 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const additional = hydrologicStore
     .queryVariables(feature_type, true)
     .map((variable) => variable.abbreviation)
-    .join(',')
   if (additional !== '') {
-    fields += ',' + additional
+    // concatenate the additional fields with the selected fields
+    fields = fields.concat(additional)
   }
 
   if (fields === '') {
@@ -52,6 +52,10 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     return
   }
 
+  // check to make sure that none of the fields are duplicated
+  fields = [...new Set(fields)]
+  fields.join(',')
+  
   const start_time = '2024-01-01T00:00:00Z'
   const end_time = new Date().toISOString().split('.')[0] + 'Z'
 

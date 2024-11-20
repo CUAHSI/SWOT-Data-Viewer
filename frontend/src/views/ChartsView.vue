@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="hasData" fluid fill-height>
+  <v-container v-if="hasChartData" fluid fill-height>
     <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow @update:model-value="changePlotType">
       <v-tab value="timeseries">
         <v-icon :icon="mdiTimelineClock"></v-icon>
@@ -14,7 +14,7 @@
     <DistanceCharts v-if="chartStore.chartTab === 'distance'" />
   </v-container>
 
-  <v-container v-if="!hasData && !fetchingData">
+  <v-container v-if="!hasChartData && !fetchingData">
     <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
       <span>
         You don't have any data to view yet. Use the
@@ -30,14 +30,13 @@
     </h2>
     <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
   </v-container>
-  <!-- TODO: add the option to refresh data -->
 </template>
 
 <script setup>
 import { useChartsStore } from '../stores/charts'
 import { useFeaturesStore } from '../stores/features'
 import { RouterLink, useRouter } from 'vue-router'
-import { computed, watch, onMounted } from 'vue'
+import { computed, watch, onMounted, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { mdiTimelineClock, mdiMapMarkerDistance } from '@mdi/js'
 import TimeSeriesCharts from './TimeSeriesCharts.vue'
@@ -99,7 +98,7 @@ const changePlotType = (plot) => {
 
 const runHydrocronQuery = async () => {
   // we check to see if we already have data for this feature
-  // we check not only for activeFeature.value.queries,
+  // TODO: cam482 we should check not only for activeFeature.value.queries,
   // but also if there are data in any matching selectedFeatures
 
   // also in addition to seeing if queries exist, 
@@ -128,7 +127,7 @@ const runHydrocronQuery = async () => {
   const nodes = activeFeature.value?.nodes
   if (nodes == undefined || nodes.length == 0) {
     console.log('No nodes data found, running query')
-    runNodeQuery()
+    await runNodeQuery()
   }else{
     let shouldRunQuery = false
     console.log('Found existing nodes data, checking how recent they are')
@@ -140,11 +139,19 @@ const runHydrocronQuery = async () => {
     })
     if (shouldRunQuery) {
       console.log('Nodes data is stale, running query')
-      runNodeQuery()
+      await runNodeQuery()
     }
+  }
+
+  // check the case that we have complete data, but the chart is not built
+  await nextTick()
+  if (!hasChartData.value) {
+    console.log('Building chart')
+    chartStore.buildChart(selectedFeatures.value)
+    chartStore.buildDistanceChart(featuresStore.nodes)
   }
 }
 
-let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-let fetchingData = computed(() => !hasData.value && (querying.value.hydrocron || querying.value.nodes))
+let hasChartData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
+let fetchingData = computed(() => !hasChartData.value && (querying.value.hydrocron || querying.value.nodes))
 </script>
