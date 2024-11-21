@@ -137,7 +137,17 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
       }
       data = await response.json()
       data.cached_at = new Date().toISOString()
-      localStorage.setItem(hash, JSON.stringify(data))
+      try {
+        localStorage.setItem(hash, JSON.stringify(data))
+      } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+          console.warn('LocalStorage quota exceeded. Clearing storage and retrying...')
+          localStorage.clear()
+          localStorage.setItem(hash, JSON.stringify(data))
+        } else {
+          throw e
+        }
+      }
     }else{
       data = JSON.parse(data)
     }
@@ -295,7 +305,17 @@ async function getNodesFromReach(reachFeature) {
     const response = await fetch(query)
     data = await response.json()
     data.cached_at = new Date().toISOString()
-    localStorage.setItem(query, JSON.stringify(data))
+    try {
+      localStorage.setItem(query, JSON.stringify(data))
+    } catch (e) {
+      if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+        console.warn('LocalStorage quota exceeded. Clearing storage and retrying...')
+        localStorage.clear()
+        localStorage.setItem(query, JSON.stringify(data))
+      } else {
+        throw e
+      }
+    }
   }else{
     data = JSON.parse(data)
   }
