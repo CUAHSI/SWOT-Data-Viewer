@@ -16,26 +16,37 @@ import L, { canvas } from 'leaflet'
 import * as esriLeaflet from 'esri-leaflet'
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import 'leaflet-easybutton/src/easy-button'
-import { onMounted, onUpdated, ref } from 'vue'
+import { nextTick, onMounted, onUpdated, ref } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { mdiMagnifyPlus } from '@mdi/js'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 
 const mapStore = useMapStore()
 const alertStore = useAlertStore()
 const featureStore = useFeaturesStore()
 const chartStore = useChartsStore()
 
+const router = useRouter()
+
 const { mapObject } = storeToRefs(mapStore)
+const { activeFeature } = storeToRefs(featureStore)
 const minReachSelectionZoom = 7
 const mapInitialZoom = 3
 let zoom = ref(mapInitialZoom)
 
-onUpdated(() => {
-  mapObject.value.leaflet.invalidateSize()
+onUpdated(async () => {
+  if (router?.currentRoute?.value.meta.showMap) {
+    mapObject.value.leaflet.invalidateSize()
+    if (activeFeature.value) {
+      mapStore.selectFeature(activeFeature.value)
+      // zoom to the active feature
+      // mapObject.value.leaflet.fitBounds(activeFeature.value.getBounds())
+    }
+  }
 })
 
 onMounted(() => {
@@ -232,11 +243,9 @@ onMounted(() => {
 
   reachesFeatures.on('click', async function (e) {
     const feature = e.layer.feature
-    if (featureStore.checkFeatureSelected(feature)) {
-      featureStore.clearSelectedFeatures()
-    } else {
+    featureStore.clearSelectedFeatures()
+    if (!featureStore.checkFeatureSelected(feature)) {
       // Only allow one feature to be selected at a time
-      featureStore.clearSelectedFeatures()
       featureStore.selectFeature(feature)
     }
   })
