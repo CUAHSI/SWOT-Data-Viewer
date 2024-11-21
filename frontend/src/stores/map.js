@@ -12,17 +12,25 @@ export const useMapStore = defineStore('map', () => {
   })
 
   const deselectFeature = (feature) => {
-    mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
-      color: featureOptions.value.defaultColor,
-      weight: featureOptions.value.defaultWeight
-    })
+    try{
+      mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
+        color: featureOptions.value.defaultColor,
+        weight: featureOptions.value.defaultWeight
+      })
+    } catch (error) {
+      console.warn('Attempted to deselect feature:', error)
+    }
   }
 
   const selectFeature = (feature) => {
-    mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
+    try {
+      mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
       color: featureOptions.value.selectedColor,
       weight: featureOptions.value.selectedWeight
-    })
+      })
+    } catch (error) {
+      console.warn('Attempted to select feature:', error)
+    }
   }
 
   const clearAllFeatures = () => {

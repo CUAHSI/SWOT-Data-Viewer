@@ -27,18 +27,16 @@ export const useFeaturesStore = defineStore('features', () => {
 
   function selectFeature(feature) {
     mapStore.selectFeature(feature)
-    this.selectedFeatures.push(feature)
-    this.activeFeature = feature
-    console.log('Feature selected: ', feature)
+    selectedFeatures.value.push(feature)
+    activeFeature.value = feature
   }
 
   function deselectFeature(feature) {
     mapStore.deselectFeature(feature)
-    this.selectedFeatures = this.selectedFeatures.filter((f) => f.id !== feature.id)
-    if (this.activeFeature.id === feature.id) {
-      this.activeFeature = null
+    selectedFeatures.value = selectedFeatures.value.filter((f) => f.id !== feature.id)
+    if (activeFeature.value.id === feature.id) {
+      activeFeature.value = null
     }
-    console.log('Feature deselected: ', feature)
   }
 
   function mergeFeature(feature) {
@@ -51,12 +49,11 @@ export const useFeaturesStore = defineStore('features', () => {
       console.log('Feature does not exist in selected features')
       selectedFeatures.value.push(feature)
     }
-    this.activeFeature = feature
+    activeFeature.value = feature
   }
 
   const clearSelectedFeatures = () => {
     for (const feature of selectedFeatures.value) {
-      console.log('Deselecting feature', feature)
       mapStore.deselectFeature(feature)
     }
     selectedFeatures.value = []
@@ -90,8 +87,8 @@ export const useFeaturesStore = defineStore('features', () => {
       function(error, featureCollection){
         features = featureCollection.features
         let feature = features[0]
-        selectedFeatures.value.push(feature)
-        activeFeature.value = feature
+        clearSelectedFeatures()
+        selectFeature(feature)
       }
     )
   }
