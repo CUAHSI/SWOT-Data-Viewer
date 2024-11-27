@@ -426,6 +426,7 @@ export const useChartsStore = defineStore('charts', () => {
         data: measurements,
         seriesType: 'swot_reach_series',
         ...getDataSetStyle(),
+        pointRadius: 6,
       }
     })
   }
@@ -635,7 +636,7 @@ export const useChartsStore = defineStore('charts', () => {
     if (dataPoint.selected) {
       return 10
     }
-    return 5
+    return 8
   }
 
   function getBorderWidth(context) {
