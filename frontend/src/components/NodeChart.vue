@@ -22,56 +22,31 @@
         <v-sheet>
           <v-expansion-panels>
             <v-expansion-panel>
-              <v-expansion-panel-title> Series Options </v-expansion-panel-title>
+              <v-expansion-panel-title> Plot Actions </v-expansion-panel-title>
               <v-expansion-panel-text>
-                <div>
-                  <v-switch
-                    label="Statistics"
-                    v-model="showStatistics"
-                    color="primary"
-                    @change="toggleSeriesStatistics(showStatistics)"
-                  >
-                    ></v-switch
-                  >
-                  <v-tooltip activator="parent" location="start"
-                    >Enable/Disable computed statistics in the long-profile plot.</v-tooltip
-                  >
-                </div>
-
-                <DataQuality
-                  id="dataQuality"
-                  @qualityUpdated="filterAllDatasets"
-                />
+                <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
+                  <v-icon :icon="mdiDownloadBox"></v-icon>
+                  Download Chart
+                </v-btn>
+                <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
+                  <v-icon :icon="mdiFileDelimited"></v-icon>
+                  Download CSV
+                </v-btn>
+                <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
+                  <v-icon :icon="mdiCodeJson"></v-icon>
+                  Download JSON
+                </v-btn>
+                <v-btn @click="resetZoom()" color="input" class="ma-1">
+                  <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
+                  Zoom to Exent
+                </v-btn>
+                <v-btn @click="resetData()" color="input" class="ma-1">
+                  <v-icon :icon="mdiEraser"></v-icon>
+                  Reset Data
+                </v-btn>
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
-          <v-select
-            label="Plot Style"
-            v-model="showLine"
-            :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
-            @update:modelValue="chartStore.updateShowLine"
-          >
-          </v-select>
-          <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
-            <v-icon :icon="mdiDownloadBox"></v-icon>
-            Download Chart
-          </v-btn>
-          <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
-            <v-icon :icon="mdiFileDelimited"></v-icon>
-            Download CSV
-          </v-btn>
-          <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
-            <v-icon :icon="mdiCodeJson"></v-icon>
-            Download JSON
-          </v-btn>
-          <v-btn @click="resetZoom()" color="input" class="ma-1">
-            <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
-            Zoom to Exent
-          </v-btn>
-          <v-btn @click="resetData()" color="input" class="ma-1">
-            <v-icon :icon="mdiEraser"></v-icon>
-            Reset Data
-          </v-btn>
         </v-sheet>
       </v-col>
     </v-row>
@@ -86,10 +61,9 @@ import { ref, nextTick, onMounted } from 'vue'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
 import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
-import DataQuality from '@/components/DataQuality.vue'
 import { useChartsStore } from '@/stores/charts'
 import { useFeaturesStore } from '@/stores/features'
-import { APP_API_URL } from '@/constants'
+import { useStatsStore } from '../stores/stats'
 import { storeToRefs } from 'pinia'
 import { mdiEraser, mdiFileDelimited, mdiCodeJson, mdiDownloadBox, mdiMagnifyMinusOutline } from '@mdi/js'
 
@@ -98,11 +72,11 @@ const { lgAndUp } = useDisplay()
 
 const chartStore = useChartsStore()
 const featureStore = useFeaturesStore()
+const statsStore = useStatsStore()
 
 const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
-const { nodeChartData, showStatistics, showLine } = storeToRefs(chartStore)
-const chartStatistics = ref(null)
+const { nodeChartData, showStatistics } = storeToRefs(chartStore)
 const nodeChart = ref(null)
 const timeRef = ref()
 
@@ -145,7 +119,7 @@ const options = {
   parsing: getParsing,
   plugins: {
     legend: {
-      display: true,
+      display: false,
       position: 'bottom',
       labels: {
         // hide the q0.75 series from the legend. This is because the interquartile range
@@ -230,13 +204,14 @@ const options = {
           return label
         },
         footer: function (context) {
+          let footer = `\nDate: ${context[0].dataset.label}`
           const dataQualityOption = chartStore.dataQualityOptions.find(
             (option) => option.value == context[0]?.raw?.node_q
           )
           if (dataQualityOption) {
-            return `\n Data Quality: ${dataQualityOption.label}`
+            footer += `\nData Quality: ${dataQualityOption.label}`
           }
-          return ''
+          return footer
         }
       },
       displayColors: false
@@ -258,12 +233,6 @@ const options = {
       }
     }
   }
-}
-
-const filterAllDatasets = () => {
-  chartStore.dataQualityFilterAllDatasets()
-  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
-  chartStore.updateAllCharts()
 }
 
 const resetZoom = () => {
@@ -359,7 +328,7 @@ const timeRangeUpdateComplete = async () => {
     )
 
     // recompute statistics
-    let statisticSeries = await generateStatisticsSeries()
+    let statisticSeries = await statsStore.generateStatisticsSeries()
 
     // push statisticSeries elements into the datasets array
     datasets = datasets.concat(statisticSeries)
@@ -373,127 +342,4 @@ const timeRangeUpdateComplete = async () => {
   }
 }
 
-async function getStatistics() {
-  // compute statistics based on the node series that are visible
-  // in the chart.
-
-  let datasets = chartStore.nodeChartData.datasets
-    .filter((s) => s.seriesType == 'swot_node_series')
-    .filter((s) => s.hidden == false)
-
-  // upate datasets so that is just an array arrays of the datasets.data objects
-  datasets = datasets.map((dataset) => {
-    return dataset.data
-  })
-
-  let stats = await fetch(`${APP_API_URL}/data/compute_node_series`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(datasets)
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      return data
-    })
-
-  // save computed statistics to a reactive variable
-  chartStatistics.value = stats
-}
-
-function buildChartSeries(data, xkey = 'p_dist_out', ykey, series_label, props = {}) {
-  let dat = {
-    label: series_label,
-    data: data,
-    parsing: {
-      yAxisKey: ykey,
-      xAxisKey: xkey
-    },
-    fill: props.fill || false,
-    hidden: props.hidden || false,
-    showLine: props.showLine || true,
-    borderColor: props.borderColor || 'blue',
-    borderWidth: props.borderWidth || 1,
-    pointRadius: props.pointRadius || 0,
-    seriesType: props.seriesType || 'computed_series'
-  }
-  return dat
-}
-
-const generateStatisticsSeries = async () => {
-  // compute statistics and return them as chart series
-
-  await getStatistics()
-
-  let statisticSeries = []
-
-  // build chart series for each statistic and set it in nodeChartData.
-  // set each of these to hidden.
-  for (let stat in chartStatistics.value) {
-    // skip Interquartile range because these will added later
-    if (stat != 'q0.25' && stat != 'q0.75') {
-      let series = buildChartSeries(
-        chartStatistics.value[stat],
-        'p_dist_out',
-        props.chosenPlot.yvar.abbreviation,
-        stat,
-        { fill: false, hidden: false }
-      )
-      statisticSeries.push(series)
-    }
-    if (stat == 'q0.25') {
-      let series = buildChartSeries(
-        chartStatistics.value[stat],
-        'p_dist_out',
-        props.chosenPlot.yvar.abbreviation,
-        'IQR',
-        { showLine: true, borderColor: 'gray', borderWidth: 1, pointRadius: 0 }
-      )
-      statisticSeries.push(series)
-    }
-    if (stat == 'q0.75') {
-      let series = buildChartSeries(
-        chartStatistics.value[stat],
-        'p_dist_out',
-        props.chosenPlot.yvar.abbreviation,
-        stat,
-        {
-          fill: '-1',
-          showLine: true,
-          borderColor: 'gray',
-          backgroundColor: 'lightgray',
-          borderWidth: 1,
-          pointRadius: 0
-        }
-      )
-      statisticSeries.push(series)
-    }
-  }
-
-  return statisticSeries
-}
-
-const toggleSeriesStatistics = async (visible = true) => {
-  // adds and removes computed statistics from the chart
-
-  // get the data from the chart
-  let updatedDatasets = nodeChart.value.chart.data.datasets
-
-  if (visible) {
-    let statisticSeries = await generateStatisticsSeries()
-
-    // push statisticSeries elements into the updatedDatasets array
-    updatedDatasets = updatedDatasets.concat(statisticSeries)
-  } else {
-    // remove the computed statistics from the chart
-    updatedDatasets = updatedDatasets.filter((s) => s.seriesType != 'computed_series')
-  }
-
-  // save these data to the chartStore
-  chartStore.updateNodeChartData(updatedDatasets)
-
-  // update the chart
-  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
-  // nodeChart.value.chart.data.datasets = updatedDatasets;
-  nodeChart.value.chart.update()
-}
 </script>

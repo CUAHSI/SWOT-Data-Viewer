@@ -3,6 +3,20 @@ import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
 
+String.prototype.hashCode = function() {
+  var hash = 0,
+    i, chr;
+  if (this.length === 0) return hash;
+  for (i = 0; i < this.length; i++) {
+    chr = this.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
+
+const MS_TO_KEEP_CACHE = 1000 * 60 * 60 * 24 * 7 // 7 days
+
 const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const hydrologicStore = useHydrologicStore()
   const alertStore = useAlertStore()
@@ -53,8 +67,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   }
 
   const start_time = '2024-01-01T00:00:00Z'
-  const end_time = new Date().toISOString().split('.')[0] + 'Z'
-
+  const end_time = new Date(Date.now() + MS_TO_KEEP_CACHE).toISOString().split('.')[0] + 'Z'
 
   params = {
     feature: feature_type,
@@ -79,17 +92,66 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
 
 const fetchHydroCronData = async (url, params, swordFeature) => {
   const alertStore = useAlertStore()
-  const searchParams = new URLSearchParams(params)
-  let query = url + '?' + searchParams.toString()
+
+  // create a hash based on this unique url and params, to use as the key in local storage
+  // we must remove the "end_time" parameter from the hash, as it will change with each request
+  let paramsStringWithoutEndTime = { ...params }
+  delete paramsStringWithoutEndTime.end_time
+  let hash = `${url}?${JSON.stringify(paramsStringWithoutEndTime)}`.hashCode()
+
+  let paramString = Object.keys(params)
+    .map((key) => key + '=' + params[key])
+    .join('&')
+  let query = `${url}?${paramString}`
   try {
-    let result = await fetch(query, {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json'
+    // first check local storage for the query
+    let data = localStorage.getItem(hash) || null
+    if (!data || new Date() - new Date(JSON.parse(data).cached_at) > MS_TO_KEEP_CACHE) {
+      let response = await fetch(query, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (response.status < 500) {
+        if (response.status == 400) {
+          alertStore.displayAlert({
+            title: 'No data found',
+            text: `No data found for ${JSON.stringify(params)}`,
+            type: 'warning',
+            closable: true,
+            duration: 6
+          })
+          return null
+        }
+      } else {
+        alertStore.displayAlert({
+          title: 'Error fetching SWOT data',
+          text: `Error while fetching SWOT data: ${response.statusText}`,
+          type: 'error',
+          closable: true,
+          duration: 3
+        })
+        return null
       }
-    })
-    const processedResult = await processHydroCronResult(result, params, swordFeature)
+      data = await response.json()
+      data.cached_at = new Date().toISOString()
+      try {
+        localStorage.setItem(hash, JSON.stringify(data))
+      } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+          console.warn('LocalStorage quota exceeded. Clearing storage and retrying...')
+          localStorage.clear()
+          localStorage.setItem(hash, JSON.stringify(data))
+        } else {
+          throw e
+        }
+      }
+    }else{
+      data = JSON.parse(data)
+    }
+    const processedResult = await processHydroCronResult(data, params, swordFeature)
     return processedResult
   } catch (e) {
     console.error('Error fetching data', e)
@@ -103,15 +165,13 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
   }
 }
 
-const processHydroCronResult = async (response, params, swordFeature) => {
+const processHydroCronResult = async (data, params, swordFeature) => {
   // TODO check the content type and handle it
   // application/json
   // console.log(response.headers.get('Content-Type'))
   const alertStore = useAlertStore()
   // https://podaac.github.io/hydrocron/timeseries.html#response-codes
-  if (response.status < 500) {
-    let query = await response.json()
-    if (response.status == 400 || query.hits == undefined || query.hits < 1) {
+    if (data.hits == undefined || data.hits < 1) {
       alertStore.displayAlert({
         title: 'No data found',
         text: `No data found for ${JSON.stringify(params)}`,
@@ -122,22 +182,13 @@ const processHydroCronResult = async (response, params, swordFeature) => {
       return null
     }
 
-    query.params = params
+    data.params = params
     // check if the feature already has queries
     if (swordFeature.queries === undefined) {
       swordFeature.queries = []
     }
-    swordFeature.queries.push(query)
-    return query
-  } else {
-    alertStore.displayAlert({
-      title: 'Error fetching SWOT data',
-      text: `Error while fetching SWOT data: ${response.statusText}`,
-      type: 'error',
-      closable: true,
-      duration: 3
-    })
-  }
+    swordFeature.queries.push(data)
+    return data
 }
 
 async function downloadBlob(blob, filename) {
@@ -245,12 +296,29 @@ async function getNodesFromReach(reachFeature) {
     // spatialRel: 'esriSpatialRelIntersects',
     // outSR: 4326
   }
-  let query = Object.keys(params)
+  let paramString = Object.keys(params)
     .map((key) => key + '=' + params[key])
     .join('&')
-  let response = await fetch(`${url}?${query}`)
-  let data = await response.json()
-
+  let query = `${url}?${paramString}`
+  let data = localStorage.getItem(query) || null
+  if (!data) {
+    const response = await fetch(query)
+    data = await response.json()
+    data.cached_at = new Date().toISOString()
+    try {
+      localStorage.setItem(query, JSON.stringify(data))
+    } catch (e) {
+      if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+        console.warn('LocalStorage quota exceeded. Clearing storage and retrying...')
+        localStorage.clear()
+        localStorage.setItem(query, JSON.stringify(data))
+      } else {
+        throw e
+      }
+    }
+  }else{
+    data = JSON.parse(data)
+  }
   // SWORD Nodes have attributes, insteady of properties. For consistency, we rename attributes to properties
   data.features.forEach((node) => {
     Object.defineProperty(node, 'properties', Object.getOwnPropertyDescriptor(node, 'attributes'))
