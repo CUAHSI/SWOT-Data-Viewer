@@ -250,7 +250,7 @@ export const useChartsStore = defineStore('charts', () => {
     dataset.pointBorderColor = getPointBorderColors(dataset)
   }
 
-  const filterDatasetsToTimeRange = (datasets, start, end, tolerance) => {
+  const filterDatasetsToTimeRange = (start, end, tolerance) => {
     // if end is null, use now
     const featureStore = useFeaturesStore()
     const { timeRange } = storeToRefs(featureStore)
@@ -276,20 +276,31 @@ export const useChartsStore = defineStore('charts', () => {
     end = addMinutes(end, tolerance)
     console.log('Filtering time range', start, end)
 
-    if (datasets == null) {
-      console.log('Filtering using all datasets')
-      datasets = nodeChartData.value.datasets
+    const reachDataSets = chartData.value.datasets
+    if (reachDataSets) {
+      // TODO cam-462 this doesn't work to filter reach points because they are all in a single dataset
+      // we need to filter the points individually
+      reachDataSets.forEach((dataset) => {
+        console.log('Checking dataset', dataset)
+        if (dataset.minDateTime > end || dataset.maxDateTime < start) {
+          dataset.hidden = true
+        } else {
+          dataset.hidden = false
+        }
+      })
     }
-
-    datasets.forEach((dataset) => {
-      // determine whether the dataset is within the time range
-      // https://github.com/chartjs/Chart.js/issues/689
-      if (dataset.minDateTime > end || dataset.maxDateTime < start) {
-        dataset.hidden = true
-      } else {
-        dataset.hidden = false
-      }
-    })
+    const nodeDataSets = nodeChartData.value.datasets
+    if (nodeDataSets) {
+      nodeDataSets.forEach((dataset) => {
+        // determine whether the dataset is within the time range
+        // https://github.com/chartjs/Chart.js/issues/689
+        if (dataset.minDateTime > end || dataset.maxDateTime < start) {
+          dataset.hidden = true
+        } else {
+          dataset.hidden = false
+        }
+      })
+    }
     updateAllCharts()
   }
 
@@ -403,14 +414,24 @@ export const useChartsStore = defineStore('charts', () => {
       // TODO: for now we just use the first query
       // with compact = true, there will only be a single feature and properties is an object of arrays
       let propertyObject = feature.queries[0].results.geojson.features[0].properties
+      console.log('Property Object', propertyObject)
 
       // each property of the propertyObject contains an array of measurements.
       // the key in the propertyObject is the variable abbreviation
       // we need to convert this to a single array of objects
       // https://www.chartjs.org/docs/latest/general/data-structures.html#object
       let measurements = []
+      let minDateTime = null
+      let maxDateTime = null
       for (const key in propertyObject) {
         let values = propertyObject[key]
+        if (key == 'time_str') {
+          // set the min and max date times
+          // time_str should be in order but we make sure
+          values.sort()
+          minDateTime = new Date(values[0])
+          maxDateTime = new Date(values[values.length - 1])
+        }
         values.forEach((value, i) => {
           if (measurements[i] == null) {
             measurements[i] = {}
@@ -427,6 +448,8 @@ export const useChartsStore = defineStore('charts', () => {
         seriesType: 'swot_reach_series',
         ...getDataSetStyle(),
         pointRadius: 6,
+        minDateTime,
+        maxDateTime
       }
     })
   }

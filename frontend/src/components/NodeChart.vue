@@ -10,13 +10,6 @@
         >
           <Line :data="nodeChartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
-        <v-sheet class="pa-2" color="input">
-          <TimeRangeSlider
-            ref="timeRef"
-            @update="timeSliderUpdated"
-            @updateComplete="timeRangeUpdateComplete"
-          />
-        </v-sheet>
       </v-col>
       <v-col>
         <v-sheet>
@@ -60,7 +53,6 @@ import 'chartjs-adapter-date-fns'
 import { ref, nextTick, onMounted } from 'vue'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
-import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 import { useChartsStore } from '@/stores/charts'
 import { useFeaturesStore } from '@/stores/features'
 import { useStatsStore } from '../stores/stats'
@@ -78,7 +70,6 @@ const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
 const { nodeChartData, showStatistics } = storeToRefs(chartStore)
 const nodeChart = ref(null)
-const timeRef = ref()
 
 let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
