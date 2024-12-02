@@ -11,7 +11,7 @@
         <div v-for="metadataObject in defaultSwordMetadata()" :key="metadataObject.id">
           <v-divider />
           <div>
-            <strong>{{ metadataObject.short_definition }}:</strong> {{ metadataObject.value }}
+            <strong>{{ metadataObject.displayKey }}:</strong> {{ metadataObject.value }}
           </div>
         </div>
         <template v-if="extended">
@@ -21,7 +21,7 @@
           >
             <v-divider />
             <div>
-              <strong>{{ extendedMetadataObject.short_definition }}:</strong>
+              <strong>{{ extendedMetadataObject.displayKey }}:</strong>
               {{ extendedMetadataObject.value }}
             </div>
           </div>
