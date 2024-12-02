@@ -493,8 +493,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         const isNumber = !isNaN(parseFloat(val)) && isFinite(val)
         const significantFigures = found.significant_figures 
         found.value = isNumber
-        ? `${parseFloat(val).toFixed(significantFigures)} ${found.units || ''}`
-        : `${val} ${found.units || ''}`
+        ? `${parseFloat(val).toFixed(significantFigures)} ${found.units}`
+        : `${val} ${found.units}`
         descriptions.push(found)
       }
     }
