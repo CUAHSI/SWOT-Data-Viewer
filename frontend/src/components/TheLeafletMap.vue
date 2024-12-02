@@ -1,12 +1,12 @@
 <template>
   <div v-show="$route.meta.showMap" id="mapContainer"></div>
-  <v-card
+  <!-- <v-card
     v-if="$route.meta.showMap && zoom < minReachSelectionZoom"
     id="zoomIndicator"
     color="info"
   >
-    <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
-  </v-card>
+  <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
+  </v-card> -->
 </template>
 
 <script setup>
@@ -14,6 +14,7 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet-easybutton/src/easy-button.css'
 import L, { canvas } from 'leaflet'
 import * as esriLeaflet from 'esri-leaflet'
+import * as esriLeafletGeocoder from 'esri-leaflet-geocoder'
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import 'leaflet-easybutton/src/easy-button'
 import { onMounted, onUpdated, ref } from 'vue'
@@ -32,6 +33,7 @@ const chartStore = useChartsStore()
 const { mapObject } = storeToRefs(mapStore)
 const minReachSelectionZoom = 7
 const mapInitialZoom = 3
+const accessToken = "AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX"
 let zoom = ref(mapInitialZoom)
 
 onUpdated(() => {
@@ -97,7 +99,7 @@ onMounted(() => {
   let Position = L.Control.extend({
     _container: null,
     options: {
-      position: 'bottomleft'
+      position: 'bottomright'
     },
 
     onAdd: function () {
@@ -117,6 +119,8 @@ onMounted(() => {
     const [lat, lng] = getLatLong(e)
     position.updateHTML(lat, lng)
   })
+
+
 
   function getLatLong(e) {
     let lat = Math.round(e.latlng.lat * 100000) / 100000
@@ -328,6 +332,79 @@ onMounted(() => {
 
   // validate the map
   validate_bbox_size()
+  
+  const swotriverMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+            label: "River names",
+            url: "https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer",
+            layers: [0],
+            searchFields: ["river_name "]
+          })
+
+  const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+    label: "HUC 10",
+    url: "https://arcgis.cuahsi.org/arcgis/rest/services/hucs/WBDHU10/MapServer",
+    layers: [0],
+    searchFields: ["name"]
+  })
+
+
+  const featureLayerProvider  = esriLeafletGeocoder.featureLayerProvider({
+        url:
+          "https://arcgis.cuahsi.org/arcgis/rest/services/hucs/huc_2_test/FeatureServer/0",
+        searchFields: ["name"],
+        label: "SampleWorldCities",
+        //bufferRadius: 5000,
+        formatSuggestion: function (feature) {
+          return feature.properties.name;
+        }
+      });
+
+  const addressSearchProvider = esriLeafletGeocoder.arcgisOnlineProvider({
+        apikey: accessToken,
+        nearby: {
+            lat: -33.8688,
+            lng: 151.2093
+        }
+    });
+  /**/
+
+  const gisDayProvider = esriLeafletGeocoder.featureLayerProvider({
+        url:
+          "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/GIS_DAY_Registration/FeatureServer/0",
+        searchFields: ["event_name", "host_organization"],
+        label: "GIS Day Events 2019",
+        //bufferRadius: 5000,
+        formatSuggestion: function (feature) {
+          return feature.properties.event_name + " - " + feature.properties.host_organization;
+        }
+      });
+      
+      const searchControl = esriLeafletGeocoder.geosearch({
+        position: "bottomleft",
+        placeholder: "Search for a Huc 10 or river name",
+        useMapBounds: false,
+        expanded: true,
+        title: " search",
+
+        providers: [
+          swotriverMapServiceProvider, 
+          hucMapServiceProvider
+        ]
+    }).addTo(leaflet);
+
+    const addressSearchControl = esriLeafletGeocoder.geosearch({
+        position: "bottomleft",
+        placeholder: "Search for a location",
+        useMapBounds: false,
+        expanded: true,
+        title: " search",
+
+        providers: [
+          addressSearchProvider
+        ]
+    }).addTo(leaflet);
+
+
 })
 
 async function getGageInfo(e) {
@@ -629,12 +706,12 @@ function validate_bbox_size() {
   return { style: style, is_valid: valid }
 }
 </script>
-<style scoped>
+<style >
 #mapContainer {
   width: 100%;
   height: 100%;
+   
 }
-
 #zoomIndicator {
   position: fixed;
   bottom: 10%;
@@ -645,4 +722,6 @@ function validate_bbox_size() {
   /* border: 1px solid black; */
   z-index: 1000;
 }
+
+
 </style>
