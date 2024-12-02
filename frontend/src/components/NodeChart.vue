@@ -10,13 +10,6 @@
         >
           <Line :data="nodeChartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
-        <v-sheet class="pa-2" color="input">
-          <TimeRangeSlider
-            ref="timeRef"
-            @update="timeSliderUpdated"
-            @updateComplete="timeRangeUpdateComplete"
-          />
-        </v-sheet>
       </v-col>
       <v-col>
         <v-sheet>
@@ -60,7 +53,6 @@ import 'chartjs-adapter-date-fns'
 import { ref, nextTick, onMounted } from 'vue'
 import { downloadMultiNodesCsv, downloadMultiNodesJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
-import TimeRangeSlider from '@/components/TimeRangeSlider.vue'
 import { useChartsStore } from '@/stores/charts'
 import { useFeaturesStore } from '@/stores/features'
 import { useStatsStore } from '../stores/stats'
@@ -78,7 +70,6 @@ const props = defineProps({ data: Object, chosenPlot: Object })
 const downloading = ref({ csv: false, json: false, chart: false })
 const { nodeChartData, showStatistics } = storeToRefs(chartStore)
 const nodeChart = ref(null)
-const timeRef = ref()
 
 let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -301,45 +292,6 @@ const resetData = () => {
   // update the chart
   nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   nodeChart.value.chart.update()
-}
-
-const timeSliderUpdated = () => {
-  // This function is called when the time slider is updated.
-  // It filters the chart data to the data that are active in the time slider range.
-  
-  if (!nodeChart?.value){
-    return
-  }
-  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
-  nodeChart.value.chart.update()
-}
-
-const timeRangeUpdateComplete = async () => {
-  // This function is called when the time slider update is complete,
-  // and is used to update the chart with series that need to be
-  // recomputed.
-
-  console.log('Time range update complete')
-  // TODO: re-compute statistics if they have been enabled
-  if (showStatistics.value == true) {
-    // remove statistics from the chart
-    let datasets = chartStore.nodeChartData.datasets.filter(
-      (s) => s.seriesType != 'computed_series'
-    )
-
-    // recompute statistics
-    let statisticSeries = await statsStore.generateStatisticsSeries()
-
-    // push statisticSeries elements into the datasets array
-    datasets = datasets.concat(statisticSeries)
-
-    // save these data to the chartStore
-    chartStore.updateNodeChartData(datasets)
-
-    // update the chart
-    nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
-    nodeChart.value.chart.update()
-  }
 }
 
 </script>

@@ -171,7 +171,7 @@ export const useChartsStore = defineStore('charts', () => {
     }
     // https://github.com/apertureless/vue-chartjs/issues/1040
     unfilteredChartData.value = data
-    dataQualityFilterAllDatasets()
+    filterDatasetsToTimeRange()
     return data
   }
 
@@ -184,7 +184,7 @@ export const useChartsStore = defineStore('charts', () => {
     }
     // https://github.com/apertureless/vue-chartjs/issues/1040
     unfilteredNodeChartData.value = data
-    dataQualityFilterAllDatasets()
+    filterDatasetsToTimeRange()
     hasNodeData.value = true
     return data
   }
@@ -250,7 +250,7 @@ export const useChartsStore = defineStore('charts', () => {
     dataset.pointBorderColor = getPointBorderColors(dataset)
   }
 
-  const filterDatasetsToTimeRange = (datasets, start, end, tolerance) => {
+  const filterDatasetsToTimeRange = (start, end, tolerance) => {
     // if end is null, use now
     const featureStore = useFeaturesStore()
     const { timeRange } = storeToRefs(featureStore)
@@ -276,20 +276,58 @@ export const useChartsStore = defineStore('charts', () => {
     end = addMinutes(end, tolerance)
     console.log('Filtering time range', start, end)
 
-    if (datasets == null) {
-      console.log('Filtering using all datasets')
-      datasets = nodeChartData.value.datasets
-    }
+    // make a copy of the unfiltered reach data
+    chartData.value = JSON.parse(JSON.stringify(unfilteredChartData.value))
+    // because we copied the data, 
+    // need to apply the data quality filter before filtering the time range
+    dataQualityFilterAllDatasets()
 
-    datasets.forEach((dataset) => {
-      // determine whether the dataset is within the time range
-      // https://github.com/chartjs/Chart.js/issues/689
-      if (dataset.minDateTime > end || dataset.maxDateTime < start) {
-        dataset.hidden = true
-      } else {
-        dataset.hidden = false
-      }
+    const reachDataSets = chartData.value.datasets
+    if (reachDataSets) {
+      reachDataSets.forEach((dataset) => {
+        if(dataset.seriesType !== 'swot_reach_series') {
+          return
+        }
+        // reach points are all in a single dataset
+        // we need to filter the points individually
+        dataset.data = dataset.data.filter((dataPoint) => {
+          const datetime = new Date(dataPoint.time_str)
+          if (datetime < start || datetime > end) {
+            return false
+          }
+          return true
+        })
+        // calculate a new min/max date time for the dataset
+        dataset.minDateTime = Math.min(...dataset.data.map((m) => {
+          return new Date(m.datetime)
+        }))
+        dataset.maxDateTime = Math.max(...dataset.data.map((m) => {
+          return new Date(m.datetime)
+        }))
+        dataset.pointStyle = getPointStyles(dataset)
+        dataset.pointBorderColor = getPointBorderColors(dataset)
+      })
+    }
+    // update the chartData.value.labels to match the new time range
+    chartData.value.labels = chartData.value.datasets[0].data.map((dataPoint) => {
+      return dataPoint.time_str
     })
+
+    const nodeDataSets = nodeChartData.value.datasets
+    if (nodeDataSets) {
+      nodeDataSets.forEach((dataset) => {
+        if(dataset.seriesType !== 'swot_node_series') {
+          return
+        }
+        // determine whether the dataset is within the time range
+        // https://github.com/chartjs/Chart.js/issues/689
+        if (dataset.minDateTime > end || dataset.maxDateTime < start) {
+          dataset.hidden = true
+        } else {
+          dataset.hidden = false
+        }
+      })
+    }
     updateAllCharts()
   }
 
@@ -409,8 +447,17 @@ export const useChartsStore = defineStore('charts', () => {
       // we need to convert this to a single array of objects
       // https://www.chartjs.org/docs/latest/general/data-structures.html#object
       let measurements = []
+      let minDateTime = null
+      let maxDateTime = null
       for (const key in propertyObject) {
         let values = propertyObject[key]
+        if (key == 'time_str') {
+          // set the min and max date times
+          // time_str should be in order but we make sure
+          values.sort()
+          minDateTime = new Date(values[0])
+          maxDateTime = new Date(values[values.length - 1])
+        }
         values.forEach((value, i) => {
           if (measurements[i] == null) {
             measurements[i] = {}
@@ -427,6 +474,8 @@ export const useChartsStore = defineStore('charts', () => {
         seriesType: 'swot_reach_series',
         ...getDataSetStyle(),
         pointRadius: 6,
+        minDateTime,
+        maxDateTime
       }
     })
   }
@@ -673,6 +722,10 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const updateNodeDataSetStyles = () => {
+    // check if there is node data
+    if (!hasNodeData.value) {
+      return
+    }
     nodeChartData.value.datasets.forEach((dataset) => {
       // replace the dataset properties with those from getNodeDataSetStyle
       const updatedStyles = getNodeDataSetStyle(dataset.data)
@@ -701,6 +754,13 @@ export const useChartsStore = defineStore('charts', () => {
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
+        // check if the chart is a node chart or a reach chart
+        // and refresh the data accordingly
+        if (storedChart.chart.data.datasets[0].seriesType == 'swot_node_series') {
+          storedChart.chart.data.datasets = nodeChartData.value.datasets
+        } else {
+          storedChart.chart.data.datasets = chartData.value.datasets
+        }
         storedChart.chart.update()
       } catch (error) {
         console.error('Error updating chart', error)
