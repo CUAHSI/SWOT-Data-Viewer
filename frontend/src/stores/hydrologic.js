@@ -471,7 +471,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       significant_figures: 0 
     },
     {
-      abbreviation: 'swot_orbits',
+      abbreviation: 'swot_orbit',
       definition:
         'A list of the SWOT orbit tracks that intersect each reach during the 21 day orbit cycle',
       fileType: 'reach',
