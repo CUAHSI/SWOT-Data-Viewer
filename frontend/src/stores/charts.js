@@ -19,7 +19,7 @@ export const useChartsStore = defineStore('charts', () => {
   const chartTab = ref('timeseries')
   const showStatistics = ref(false)
   const showLine = ref(true)
-  const dataQualityFlags = ref([0, 1])  // by default don't show degraded or bad data
+  const dataQualityFlags = ref([0, 1, 2])  // by default don't show bad data
   let colorScale = chroma.scale('YlGnBu').mode('lch').colors(3)
 
   const dataQualityOptions = [
