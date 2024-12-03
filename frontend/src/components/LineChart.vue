@@ -12,72 +12,7 @@
         </v-sheet>
       </v-col>
       <v-col xs="12" lg="3">
-        <v-expansion-panels with="100%" v-model="panel" multiple>
-          <v-expansion-panel value="plotActions">
-            <v-expansion-panel-title>Plot Actions</v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <v-btn
-                :loading="downloading.chart"
-                @click="downloadChart()"
-                class="ma-1"
-                color="input"
-              >
-                <v-icon :icon="mdiDownloadBox"></v-icon>
-                Download Chart
-              </v-btn>
-              <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
-                <v-icon :icon="mdiFileDelimited"></v-icon>
-                Download CSV
-              </v-btn>
-              <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
-                <v-icon :icon="mdiCodeJson"></v-icon>
-                Download JSON
-              </v-btn>
-              <v-btn @click="resetZoom()" color="input" class="ma-1">
-                <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
-                Reset Zoom
-              </v-btn>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-          <v-expansion-panel
-            :disabled="selectedTimeseriesPoints.length == 0"
-            value="selectedTimeseriesPoints"
-          >
-            <v-expansion-panel-title>Selected Timestamps</v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <v-list>
-                <v-list-item
-                  v-for="timeSeriesPoint in selectedTimeseriesPoints"
-                  :key="timeSeriesPoint.datetime"
-                >
-                  <template v-slot:append>
-                    <v-icon
-                      :icon="mdiCloseBox"
-                      color="error"
-                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
-                    ></v-icon>
-                  </template>
-                    <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-                    <v-list-item-subtitle
-                      >Average {{ props.chosenPlot?.abbreviation }}:
-                      {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
-                    >
-                </v-list-item>
-              </v-list>
-            </v-expansion-panel-text>
-            <v-btn
-              v-if="selectedTimeseriesPoints.length > 0"
-              :loading="!chartStore.hasNodeData"
-              :disabled="!chartStore.hasNodeData"
-              class="ma-1 float-right"
-              color="input"
-              @click="viewLongProfileByDates"
-            >
-              <v-icon :icon="mdiChartBellCurveCumulative"></v-icon>
-              View Long Profile
-            </v-btn>
-          </v-expansion-panel>
-        </v-expansion-panels>
+        <PlotActions :chosenPlot="lineChart"/>
       </v-col>
     </v-row>
   </v-container>
@@ -89,20 +24,11 @@ import 'chartjs-adapter-date-fns'
 import { enUS } from 'date-fns/locale'
 import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
-import { useFeaturesStore } from '@/stores/features'
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import {
-  mdiDownloadBox,
-  mdiFileDelimited,
-  mdiCodeJson,
-  mdiMagnifyMinusOutline,
-  mdiChartBellCurveCumulative,
-  mdiCloseBox
-} from '@mdi/js'
-import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
+import PlotActions from './PlotActions.vue'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])
@@ -110,11 +36,9 @@ const selectedTimeseriesPoints = ref([])
 
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
-const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
 const { chartData } = storeToRefs(chartStore)
 const lineChart = ref(null)
-const downloading = ref({ csv: false, json: false, chart: false })
 
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -253,17 +177,6 @@ const handleTimeseriesPointClick = (e) => {
   addSelectedTimeseriesPoint(timeSeriesPoint)
 }
 
-const viewLongProfileByDates = () => {
-  chartStore.setDatasetVisibility(chartStore.nodeChartData.datasets, true)
-  chartStore.filterDatasetsBySetOfDates(null, selectedTimeseriesPoints.value)
-  chartStore.chartTab = 'distance'
-  // TODO: update the date range slider based on the selections
-  featuresStore.timeRange.value = [
-    selectedTimeseriesPoints.value[0].datetime,
-    selectedTimeseriesPoints.value[selectedTimeseriesPoints.value.length - 1].datetime
-  ]
-}
-
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
   // first make sure the node is not already selected
   if (selectedTimeseriesPoints.value.includes(timeSeriesPoint)) {
@@ -306,39 +219,4 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
   }
 }
 
-const resetZoom = () => {
-  lineChart.value.chart.resetZoom()
-}
-
-const getChartName = () => {
-  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
-  identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
-  return `${identifier}.png`
-}
-
-const downloadChart = async () => {
-  downloading.value.chart = true
-  const filename = getChartName()
-  // change the chart background color to white
-  lineChart.value.chart.canvas.style.backgroundColor = 'white'
-
-  const image = lineChart.value.chart.toBase64Image('image/png', 1)
-  const link = document.createElement('a')
-  link.href = image
-  link.download = filename
-  link.click()
-  downloading.value.chart = false
-}
-
-const downCsv = async () => {
-  downloading.value.csv = true
-  await downloadCsv()
-  downloading.value.csv = false
-}
-
-const downJson = async () => {
-  downloading.value.json = true
-  await downloadFeatureJson()
-  downloading.value.json = false
-}
 </script>
