@@ -150,6 +150,30 @@ const getParsing = () => {
   return parsing
 }
 
+const getXScale = () => {
+  let xvar_abbr = plt.xvar.abbreviation
+  if (xvar_abbr == 'time_str') {
+    return {
+      type: 'time',
+      time: {
+        locale: enUS
+      },
+      title: {
+        display: true,
+        text: xLabel
+      }
+    }
+  } else {
+    return {
+      type: 'linear',
+      title: {
+        display: true,
+        text: xLabel
+      }
+    }
+  }
+}
+
 const options = {
   responsive: true,
   maintainAspectRatio: false,
@@ -216,20 +240,7 @@ const options = {
     }
   },
   scales: {
-    x: {
-      type: 'time',
-      time: {
-        // unit: 'day',
-        // displayFormats: {
-        //   day: 'MM.dd'
-        // },
-        locale: enUS
-      },
-      title: {
-        display: true,
-        text: xLabel
-      }
-    },
+    x: getXScale(),
     y: {
       title: {
         display: true,
