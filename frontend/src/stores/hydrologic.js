@@ -292,10 +292,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019)',
-      swotviz_alias: 'Flow Accumulation',
+      swotviz_alias: 'Maximum Flow Accumulation',
         units: 'square kilometers',
       plottable: true,
-      plot_definition: 'Maximum Flow Accumulation',
+      plot_definition: 'Flow Accumulation',
       significant_figures: 0 //TODO: Check this
     },
     {
@@ -328,9 +328,17 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Type of obstruction for each node or reach based on the Globale Obstruction Database (GROD, Whittemore et al., 2020) and HydroFALLS data (http://wp.geog.mcgill.ca/hydrolab/hydrofalls). Obstr_type values: 0 - No Dam, 1 - Dam, 2 - Channel Dam, 3 - Lock, 4 - Low Permeable Dam, 5 - Waterfall',
-      swotviz_alias: 'Obstruction Type based on Global River Obstruction Database (GROD)',
+      swotviz_alias: 'Obstruction Type',
       units: '',
-      plottable: false
+      plottable: false,
+      mapping: {
+        0: 'No Dam',
+        1: 'Dam',
+        2: 'Channel Dam',
+        3: 'Lock',
+        4: 'Low Permeable Dam',
+        5: 'Waterfall'
+      }
     },
     {
       abbreviation: 'grod_id',
@@ -338,10 +346,13 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'The unique GROD ID for each node or reach with obstr_type values 1-4',
-      swotviz_alias: 'GROD ID',
+      swotviz_alias: 'Global River Obstruction Database (GROD) ID',
       units: '',
       plottable: false,
-      significant_figures: 0 //TODO: Check this
+      significant_figures: 0, //TODO: Check this
+      mapping: {
+        0: '-',
+      }
     },
     {
       abbreviation: 'hfalls_id',
@@ -352,7 +363,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'HydroFALLS ID',
       units: '',
       plottable: false,
-      significant_figures: 0 //TODO: Check this
+      significant_figures: 0, //TODO: Check this
+      mapping: {
+        0: '-',
+      }
     },
     {
       abbreviation: 'dist_out',
@@ -373,9 +387,17 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Type identifier for a node or reach: 1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost reach/node',
-      swotviz_alias: 'Type',
+      swotviz_alias: 'Reach Type',
       units: '',
-      plottable: false
+      plottable: false,
+      mapping: {
+        1: 'River',
+        2: 'Lake Off River',
+        3: 'Lake On River',
+        4: 'Dam or Waterfall',
+        5: 'Unreliable Topology',
+        6: 'Ghost Reach'
+      }
     },
     {
       abbreviation: 'lakeflag',
@@ -385,9 +407,15 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'GRWL water body identifier for each reach:  0=river, 1=lake/reservoir, 2=tidally influenced river,  3=canal',
-      swotviz_alias: 'Lake Flag based on Global River Widths from Landsat (GRWL)',
+      swotviz_alias: 'Lake Flag',
       units: '',
-      plottable: false
+      plottable: false,
+      mapping: {
+        0: 'River',
+        1: 'Lake/Reservoir',
+        2: 'Tidally Influenced River',
+        3: 'Canal'
+      }
     },
     {
       abbreviation: 'slope',
@@ -517,13 +545,17 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     for (const [abbreviation, val] of Object.entries(feature)) {
       const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)
       if (found) {
-        const isNumber = !isNaN(parseFloat(val)) && isFinite(val)
-        const significantFigures = found.significant_figures       
-        const displayKey = found.swotviz_alias // Use alias 
-        found.value = isNumber
-        ? `${parseFloat(val).toFixed(significantFigures)} ${found.units}`
-        : `${val} ${found.units}`
-        
+        let displayValue;
+        const displayKey = found.swotviz_alias || found.short_definition // Use alias if available
+        if (found.mapping && found.mapping[val]) {
+            displayValue = found.mapping[val];
+        } else {
+            const isNumber = !isNaN(parseFloat(val)) && isFinite(val)
+            displayValue = isNumber
+              ? `${parseFloat(val).toFixed(found.significant_figures)} ${found.units}`
+              : `${val} ${found.units}`
+        }
+        found.value = displayValue;           
         descriptions.push({...found, displayKey})
       }
     }
