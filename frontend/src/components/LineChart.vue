@@ -8,6 +8,46 @@
     >
       <Line :data="chartData" :options="options" ref="activeReachChart" />
     </v-sheet>
+    <v-expansion-panels>
+      <v-expansion-panel
+            :disabled="selectedTimeseriesPoints.length == 0"
+            value="selectedTimeseriesPoints"
+          >
+            <v-expansion-panel-title>Selected Timestamps</v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <v-list>
+                <v-list-item
+                  v-for="timeSeriesPoint in selectedTimeseriesPoints"
+                  :key="timeSeriesPoint.datetime"
+                >
+                  <template v-slot:append>
+                    <v-icon
+                      :icon="mdiCloseBox"
+                      color="error"
+                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
+                    ></v-icon>
+                  </template>
+                    <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
+                    <v-list-item-subtitle
+                      >Average {{ props.chosenPlot?.abbreviation }}:
+                      {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
+                    >
+                </v-list-item>
+              </v-list>
+            </v-expansion-panel-text>
+            <v-btn
+              v-if="selectedTimeseriesPoints.length > 0"
+              :loading="!chartStore.hasNodeData"
+              :disabled="!chartStore.hasNodeData"
+              class="ma-1 float-right"
+              color="input"
+              @click="viewLongProfileByDates"
+            >
+              <v-icon :icon="mdiChartBellCurveCumulative"></v-icon>
+              View Long Profile
+            </v-btn>
+          </v-expansion-panel>
+        </v-expansion-panels>
   </v-container>
 </template>
 
@@ -17,10 +57,12 @@ import 'chartjs-adapter-date-fns'
 import { enUS } from 'date-fns/locale'
 import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
+import { useFeaturesStore } from '@/stores/features'
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
+import { mdiChartBellCurveCumulative, mdiCloseBox } from '@mdi/js'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])
@@ -28,6 +70,7 @@ const selectedTimeseriesPoints = ref([])
 
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
+const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
 const { chartData, activeReachChart } = storeToRefs(chartStore)
 
@@ -166,6 +209,17 @@ const handleTimeseriesPointClick = (e) => {
   const timeSeriesPoint = dataset.data[index]
 
   addSelectedTimeseriesPoint(timeSeriesPoint)
+}
+
+const viewLongProfileByDates = () => {
+  chartStore.setDatasetVisibility(chartStore.nodeChartData.datasets, true)
+  chartStore.filterDatasetsBySetOfDates(null, selectedTimeseriesPoints.value)
+  chartStore.chartTab = 'distance'
+  // TODO: update the date range slider based on the selections
+  featuresStore.timeRange.value = [
+    selectedTimeseriesPoints.value[0].datetime,
+    selectedTimeseriesPoints.value[selectedTimeseriesPoints.value.length - 1].datetime
+  ]
 }
 
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
