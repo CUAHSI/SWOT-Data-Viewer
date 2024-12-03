@@ -8,46 +8,41 @@
     >
       <Line :data="chartData" :options="options" ref="activeReachChart" />
     </v-sheet>
-    <v-expansion-panels>
-      <v-expansion-panel
-            :disabled="selectedTimeseriesPoints.length == 0"
-            value="selectedTimeseriesPoints"
+    <v-card v-if="hasSelectedTimeseriesPoints">
+      <v-card-title>Selected Timestamps</v-card-title>
+      <v-card-text>
+        <v-list>
+          <v-list-item
+            v-for="timeSeriesPoint in selectedTimeseriesPoints"
+            :key="timeSeriesPoint.datetime"
           >
-            <v-expansion-panel-title>Selected Timestamps</v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <v-list>
-                <v-list-item
-                  v-for="timeSeriesPoint in selectedTimeseriesPoints"
-                  :key="timeSeriesPoint.datetime"
-                >
-                  <template v-slot:append>
-                    <v-icon
-                      :icon="mdiCloseBox"
-                      color="error"
-                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
-                    ></v-icon>
-                  </template>
-                    <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-                    <v-list-item-subtitle
-                      >Average {{ props.chosenPlot?.abbreviation }}:
-                      {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
-                    >
-                </v-list-item>
-              </v-list>
-            </v-expansion-panel-text>
-            <v-btn
-              v-if="selectedTimeseriesPoints.length > 0"
-              :loading="!chartStore.hasNodeData"
-              :disabled="!chartStore.hasNodeData"
-              class="ma-1 float-right"
-              color="input"
-              @click="viewLongProfileByDates"
-            >
-              <v-icon :icon="mdiChartBellCurveCumulative"></v-icon>
-              View Long Profile
-            </v-btn>
-          </v-expansion-panel>
-        </v-expansion-panels>
+            <template v-slot:append>
+              <v-icon
+                :icon="mdiCloseBox"
+                color="error"
+                @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
+              ></v-icon>
+            </template>
+              <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
+              <v-list-item-subtitle
+                >Average {{ props.chosenPlot?.abbreviation }}:
+                {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
+              >
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+      <v-btn
+        v-if="hasSelectedTimeseriesPoints"
+        :loading="!chartStore.hasNodeData"
+        :disabled="!chartStore.hasNodeData"
+        class="ma-1 float-right"
+        color="input"
+        @click="viewLongProfileByDates"
+      >
+        <v-icon :icon="mdiChartBellCurveCumulative"></v-icon>
+        View Long Profile
+      </v-btn>
+    </v-card>
   </v-container>
 </template>
 
@@ -58,7 +53,7 @@ import { enUS } from 'date-fns/locale'
 import { useChartsStore } from '@/stores/charts'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
@@ -67,6 +62,8 @@ import { mdiChartBellCurveCumulative, mdiCloseBox } from '@mdi/js'
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])
 const selectedTimeseriesPoints = ref([])
+
+const hasSelectedTimeseriesPoints = computed(() => selectedTimeseriesPoints.value.length > 0)
 
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
