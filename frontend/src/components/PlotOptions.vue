@@ -3,6 +3,10 @@
     <v-expansion-panel value="plotOptions">
       <v-expansion-panel-title>Plot Options</v-expansion-panel-title>
       <v-expansion-panel-text>
+        <TimeRangeSelector
+          ref="timeRef"
+          @update="timeRangeUpdateComplete"
+        />
         <DataQuality
           id="dataQuality"
         />
@@ -13,12 +17,6 @@
           :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
           @update:modelValue="chartStore.updateShowLine"
         ></v-select>
-        <v-sheet class="pa-2" color="input">
-          <TimeRangeSelector
-            ref="timeRef"
-            @update="timeRangeUpdateComplete"
-          />
-        </v-sheet>
       </v-expansion-panel-text>
     </v-expansion-panel>
   </v-expansion-panels>

@@ -1,26 +1,29 @@
 <template>
-  <v-form>
+  <v-card class="pa-2 mb-2" color="input">
+    <v-form>
+      <v-card-title>Time Range</v-card-title>
+        <v-text-field
+        v-model="dateRange[0]"
+        density="compact"
+        type="date"
+        variant="outlined"
+        hide-details
+        single-line
+        @update:modelValue="updatetimeRange"
+        :rules="[rules.min]"
+      ></v-text-field>
       <v-text-field
-      v-model="dateRange[0]"
-      density="compact"
-      type="date"
-      variant="outlined"
-      hide-details
-      single-line
-      @update:modelValue="updatetimeRange"
-      :rules="[rules.min]"
-    ></v-text-field>
-    <v-text-field
-      v-model="dateRange[1]"
-      density="compact"
-      type="date"
-      variant="outlined"
-      hide-details
-      single-line
-      @update:modelValue="updatetimeRange"
-      :rules="[rules.max]"
-    ></v-text-field>
-  </v-form>
+        v-model="dateRange[1]"
+        density="compact"
+        type="date"
+        variant="outlined"
+        hide-details
+        single-line
+        @update:modelValue="updatetimeRange"
+        :rules="[rules.max]"
+      ></v-text-field>
+    </v-form>
+  </v-card>
 </template>
 
 <script setup>
