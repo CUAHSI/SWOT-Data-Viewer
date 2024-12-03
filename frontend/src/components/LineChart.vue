@@ -1,20 +1,14 @@
 <template>
   <v-container class="overflow-auto">
-    <v-row>
-      <v-col xs="12" lg="9">
-        <v-sheet
-          :min-height="lgAndUp ? '65vh' : '50vh'"
-          :max-height="lgAndUp ? '100%' : '20vh'"
-          max-width="100%"
-          min-width="500px"
-        >
-          <Line :data="chartData" :options="options" ref="lineChart" />
-        </v-sheet>
-      </v-col>
-      <v-col xs="12" lg="3">
-        <PlotActions :chosenPlot="lineChart"/>
-      </v-col>
-    </v-row>
+    <v-sheet
+      :min-height="lgAndUp ? '65vh' : '50vh'"
+      :max-height="lgAndUp ? '100%' : '20vh'"
+      max-width="100%"
+      min-width="500px"
+    >
+      <Line :data="chartData" :options="options" ref="activeReachChart" />
+    </v-sheet>
+    <PlotActions :chosenPlot="activeReachChart"/>
   </v-container>
 </template>
 
@@ -37,8 +31,7 @@ const selectedTimeseriesPoints = ref([])
 const chartStore = useChartsStore()
 const alertStore = useAlertStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { chartData } = storeToRefs(chartStore)
-const lineChart = ref(null)
+const { chartData, activeReachChart } = storeToRefs(chartStore)
 
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -61,7 +54,7 @@ onMounted(async () => {
   await nextTick()
 
   // push the chart to the store
-  chartStore.storeMountedChart(lineChart.value)
+  chartStore.storeMountedChart(activeReachChart.value)
   chartStore.updateShowLine()
 })
 
@@ -165,13 +158,13 @@ const options = {
 }
 
 const handleTimeseriesPointClick = (e) => {
-  const elems = lineChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+  const elems = activeReachChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
   }
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
-  const dataset = lineChart.value.chart.data.datasets[datasetIndex]
+  const dataset = activeReachChart.value.chart.data.datasets[datasetIndex]
   const timeSeriesPoint = dataset.data[index]
 
   addSelectedTimeseriesPoint(timeSeriesPoint)
@@ -210,7 +203,7 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
 
     // in the case that the point was removed from the selected list, make sure to remove the selected state
     if (ref) {
-      lineChart.value.chart.update()
+      activeReachChart.value.chart.update()
     }
   }
 

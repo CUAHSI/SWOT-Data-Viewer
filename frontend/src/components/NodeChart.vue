@@ -1,20 +1,14 @@
 <template>
   <v-container class="overflow-auto">
-    <v-row>
-      <v-col xs="12" lg="9">
-        <v-sheet
-          :min-height="lgAndUp ? '65vh' : '50vh'"
-          :max-height="lgAndUp ? '100%' : '20vh'"
-          max-width="100%"
-          min-width="500px"
-        >
-          <Line :data="nodeChartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
-        </v-sheet>
-      </v-col>
-      <v-col>
-        <PlotActions :chosenPlot="nodeChart" @reset-data="resetData"/>
-      </v-col>
-    </v-row>
+    <v-sheet
+      :min-height="lgAndUp ? '65vh' : '50vh'"
+      :max-height="lgAndUp ? '100%' : '20vh'"
+      max-width="100%"
+      min-width="500px"
+    >
+      <Line :data="nodeChartData" :options="options" ref="activeNodeChart" :plugins="[Filler]" />
+    </v-sheet>
+    <PlotActions :chosenPlot="activeNodeChart" @reset-data="resetData"/>
   </v-container>
 </template>
 
@@ -22,7 +16,7 @@
 import { Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns'
-import { ref, nextTick, onMounted } from 'vue'
+import { nextTick, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useChartsStore } from '@/stores/charts'
 import { storeToRefs } from 'pinia'
@@ -34,8 +28,7 @@ const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
 
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { nodeChartData } = storeToRefs(chartStore)
-const nodeChart = ref(null)
+const { nodeChartData, activeNodeChart } = storeToRefs(chartStore)
 
 let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -51,13 +44,13 @@ onMounted(async () => {
   await nextTick()
 
   // push the chart to the store
-  chartStore.storeMountedChart(nodeChart.value)
+  chartStore.storeMountedChart(activeNodeChart.value)
   chartStore.updateShowLine()
 })
 
 const resetData = () => {
-  nodeChart.value.chart.data.datasets = nodeChartData.value.datasets
-  nodeChart.value.chart.update()
+  activeNodeChart.value.chart.data.datasets = nodeChartData.value.datasets
+  activeNodeChart.value.chart.update()
 }
 
 const getParsing = () => {
@@ -90,9 +83,9 @@ const options = {
 
           // toggle the q0.75 data series that is not displayed in the legend. This will make
           // IQR appear as a patch instead of a line.
-          let isHidden = nodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden
-          nodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden = !isHidden
-          nodeChart.value.chart.update()
+          let isHidden = activeNodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden
+          activeNodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden = !isHidden
+          activeNodeChart.value.chart.update()
         } else {
           toggleByIndex(index)
         }
