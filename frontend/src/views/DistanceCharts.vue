@@ -20,6 +20,8 @@
         </v-sheet>
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotOptions />
+        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <PlotActions :chosenPlot="activeNodeChart" @reset-data="resetData"/>
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
       <v-col sm="10">
@@ -56,13 +58,14 @@ import { onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
 import PlotOptions from '@/components/PlotOptions.vue'
+import PlotActions from '@/components/PlotActions.vue'
 import { storeToRefs } from 'pinia'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
 const router = useRouter()
 
-const { activePlt } = storeToRefs(chartStore)
+const { activePlt, activeNodeChart, nodeChartData } = storeToRefs(chartStore)
 
 onMounted(() => {
   // check for query params that determine the activePlt
@@ -77,6 +80,11 @@ onMounted(() => {
 
 const changePlot = (plt) => {
   router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
+}
+
+const resetData = () => {
+  activeNodeChart.value.chart.data.datasets = nodeChartData.value.datasets
+  activeNodeChart.value.chart.update()
 }
 
 </script>

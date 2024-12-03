@@ -8,7 +8,6 @@
     >
       <Line :data="chartData" :options="options" ref="activeReachChart" />
     </v-sheet>
-    <PlotActions :chosenPlot="activeReachChart"/>
   </v-container>
 </template>
 
@@ -22,7 +21,6 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
-import PlotActions from './PlotActions.vue'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])

@@ -8,7 +8,6 @@
     >
       <Line :data="nodeChartData" :options="options" ref="activeNodeChart" :plugins="[Filler]" />
     </v-sheet>
-    <PlotActions :chosenPlot="activeNodeChart" @reset-data="resetData"/>
   </v-container>
 </template>
 
@@ -20,8 +19,6 @@ import { nextTick, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useChartsStore } from '@/stores/charts'
 import { storeToRefs } from 'pinia'
-import PlotActions from './PlotActions.vue'
-
 
 const { lgAndUp } = useDisplay()
 
@@ -47,11 +44,6 @@ onMounted(async () => {
   chartStore.storeMountedChart(activeNodeChart.value)
   chartStore.updateShowLine()
 })
-
-const resetData = () => {
-  activeNodeChart.value.chart.data.datasets = nodeChartData.value.datasets
-  activeNodeChart.value.chart.update()
-}
 
 const getParsing = () => {
   let parsing = {}

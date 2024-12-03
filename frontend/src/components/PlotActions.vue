@@ -1,5 +1,4 @@
 <template>
-  <v-container class="overflow-auto">
     <v-expansion-panels with="100%" v-model="panel" multiple>
       <v-expansion-panel value="plotActions">
         <v-expansion-panel-title>Plot Actions</v-expansion-panel-title>
@@ -32,7 +31,6 @@
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
-  </v-container>
 </template>
 
 <script setup>
@@ -50,7 +48,7 @@ import {
 } from '@mdi/js'
 import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
 
-const panel = ref(['plotActions'])
+const panel = ref([])
 
 const chartStore = useChartsStore()
 const featureStore = useFeaturesStore()

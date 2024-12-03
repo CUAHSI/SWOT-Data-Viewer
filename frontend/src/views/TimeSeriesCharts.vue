@@ -25,6 +25,8 @@
         </v-card>
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotOptions />
+        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <PlotActions :chosenPlot="activeReachChart"/>
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
       <v-col sm="10">
@@ -56,13 +58,14 @@ import { useDisplay } from 'vuetify'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import PlotActions from '../components/PlotActions.vue'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
 const router = useRouter()
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-const { activePlt } = storeToRefs(chartStore)
+const { activePlt, activeReachChart } = storeToRefs(chartStore)
 
 onMounted(() => {
   // check for query params that determine the pltTab
