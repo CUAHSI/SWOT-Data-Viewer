@@ -41,6 +41,17 @@ export const useChartsStore = defineStore('charts', () => {
     { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
   ]
 
+  const generateDataQualityLegend = () => {
+    return dataQualityOptions.map((option) => ({
+      text: option.label,
+      fillStyle: option.pointBorderColor,
+      strokeStyle: option.pointBorderColor,
+      pointStyle: option.pointStyle,
+      strokeStyle: 'black',
+      lineWidth: 2,
+    }));
+  };
+
   // load the swot variables from the hydrologic store.
   // these are used to build the charts for the node and reach views.
   const hydrologicStore = useHydrologicStore()
@@ -746,6 +757,7 @@ export const useChartsStore = defineStore('charts', () => {
     showLine,
     updateShowLine,
     storeMountedChart,
-    activePlt
+    activePlt,
+    generateDataQualityLegend
   }
 })

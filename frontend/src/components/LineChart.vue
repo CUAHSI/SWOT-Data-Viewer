@@ -156,8 +156,29 @@ const options = {
   parsing: getParsing,
   plugins: {
     legend: {
-      display: false,
-      position: 'bottom'
+      display: true,
+      position: 'top',
+      align : 'end',
+      labels: {
+        usePointStyle: true,
+        generateLabels: () => chartStore.generateDataQualityLegend(),
+        font: {
+          size: 12,
+        },
+        boxWidth: 20,
+        padding: 10,
+      },
+      title: {
+        display: true,
+        text: 'Data Quality',
+        font: {
+          size: 16,
+          weight: 'bold',
+        },
+        padding: {
+          top: 10,
+        },
+      },
     },
     title: {
       display: true,
