@@ -549,6 +549,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         const displayKey = found.swotviz_alias || found.short_definition // Use alias if available
         if (found.mapping && found.mapping[val]) {
             displayValue = found.mapping[val];
+        } else if (typeof val === 'string' && val.includes(' ')) {
+            displayValue = val.split(' ').join(', ');
         } else {
             const isNumber = !isNaN(parseFloat(val)) && isFinite(val)
             displayValue = isNumber
