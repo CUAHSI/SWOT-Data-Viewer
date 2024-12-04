@@ -3,7 +3,7 @@
     <v-row>
       <v-col sm="2">
         <v-sheet class="elevation-1" color="input">
-          <v-card-title> Plots </v-card-title>
+          <v-card-title> Variables </v-card-title>
           <v-tabs v-model="activePlt" direction="vertical" color="primary" @update:model-value="changePlot">
             <v-tab v-for="plt in chartStore.nodeCharts" :value="plt" :key="plt.abbreviation">
               <template v-if="lgAndUp">
@@ -18,6 +18,7 @@
             </v-tab>
           </v-tabs>
         </v-sheet>
+        <TimeRangeSelector/>
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotOptions />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
@@ -59,6 +60,7 @@ import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
 import PlotOptions from '@/components/PlotOptions.vue'
 import PlotActions from '@/components/PlotActions.vue'
+import TimeRangeSelector from '@/components/TimeRangeSelector.vue'
 import { storeToRefs } from 'pinia'
 
 const { lgAndUp } = useDisplay()

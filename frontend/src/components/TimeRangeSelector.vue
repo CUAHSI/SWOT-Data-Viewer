@@ -1,7 +1,7 @@
 <template>
-  <v-card class="pa-2 mb-2" color="input">
+  <v-card class="pa-2 my-2" color="input">
+    <v-card-title>Time Range</v-card-title>
     <v-form>
-      <v-card-title>Time Range</v-card-title>
         <v-text-field
         v-model="dateRange[0]"
         density="compact"
@@ -30,13 +30,14 @@
 import { ref } from 'vue'
 import { useFeaturesStore } from '../stores/features'
 import { useChartsStore } from '@/stores/charts'
+import { useStatsStore } from '../stores/stats'
 import { storeToRefs } from 'pinia';
-
-// define an update event that emits the new range
-const emit = defineEmits(['update'])
 
 const featuresStore = useFeaturesStore()
 const chartStore = useChartsStore()
+const statsStore = useStatsStore()
+
+const { showStatistics } = storeToRefs(chartStore)
 
 const convertSecondsToDateString = (seconds) => {
   return new Date(seconds * 1000).toISOString().split('T')[0]
@@ -63,7 +64,34 @@ async function filterDatasetsToTimeRange() {
     dateRange.value[0],
     dateRange.value[1]
   )
-  emit('update', timeRange.value)
+  timeRangeUpdateComplete()
+}
+
+const timeRangeUpdateComplete = async () => {
+  // This function is called when the time selector update is complete,
+  // and is used to update the chart with series that need to be
+  // recomputed.
+
+  console.log('Time range update complete')
+  // re-compute statistics if they have been enabled
+  if (showStatistics.value == true) {
+    // remove statistics from the chart
+    let datasets = chartStore.nodeChartData.datasets.filter(
+      (s) => s.seriesType != 'computed_series'
+    )
+
+    // recompute statistics
+    let statisticSeries = await statsStore.generateStatisticsSeries()
+
+    // push statisticSeries elements into the datasets array
+    datasets = datasets.concat(statisticSeries)
+
+    // save these data to the chartStore
+    chartStore.updateNodeChartData(datasets)
+
+    // update the chart
+    chartStore.updateAllCharts()
+  }
 }
 
 const setInitialState = () => {

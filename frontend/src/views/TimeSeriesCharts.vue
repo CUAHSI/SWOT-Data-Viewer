@@ -23,6 +23,7 @@
             </v-tab>
           </v-tabs>
         </v-card>
+        <TimeRangeSelector/>
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotOptions />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
@@ -52,13 +53,14 @@
 <script setup>
 import LineChart from '@/components/LineChart.vue'
 import PlotOptions from '@/components/PlotOptions.vue'
+import PlotActions from '../components/PlotActions.vue'
+import TimeRangeSelector from '@/components/TimeRangeSelector.vue'
 import { useChartsStore } from '../stores/charts'
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import PlotActions from '../components/PlotActions.vue'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
