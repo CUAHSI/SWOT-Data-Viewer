@@ -15,6 +15,8 @@ export const useChartsStore = defineStore('charts', () => {
   const chartData = ref({})
   const nodeChartData = ref({})
   const storedCharts = ref([])
+  const activeNodeChart = ref(null)
+  const activeReachChart = ref(null)
   const hasNodeData = ref(false)
   const chartTab = ref('timeseries')
   const showStatistics = ref(false)
@@ -806,6 +808,8 @@ export const useChartsStore = defineStore('charts', () => {
     showLine,
     updateShowLine,
     storeMountedChart,
-    activePlt
+    activePlt,
+    activeNodeChart,
+    activeReachChart,
   }
 })

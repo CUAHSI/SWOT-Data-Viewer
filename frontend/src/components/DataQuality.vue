@@ -37,7 +37,7 @@ import { storeToRefs } from 'pinia';
 
 const chartStore = useChartsStore()
 const { dataQualityFlags } = storeToRefs(chartStore)
-const panel = ref('0')
+const panel = ref([])
 
 function qualityHasChanged() {
   // emit the qualityUpdated event when the ndataQuality value changes
