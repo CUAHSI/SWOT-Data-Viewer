@@ -8,6 +8,18 @@
           max-width="100%"
           min-width="500px"
         >
+        <!-- Add Reset Zoom Icon -->
+        <v-btn
+          class="zoom-button"
+          color="#f4f4f4"
+          outlined
+          @click="resetZoom()"
+          style="position: absolute; top: 80px; right: 520px; z-index: 10;"
+          >
+          <v-icon :icon="mdiMagnifyMinusOutline" class="me-2"></v-icon>
+          RESET ZOOM
+        </v-btn> 
+        <!-- Chart -->
           <Line :data="nodeChartData" :options="options" ref="nodeChart" :plugins="[Filler]" />
         </v-sheet>
         <v-sheet class="pa-2" color="input">
