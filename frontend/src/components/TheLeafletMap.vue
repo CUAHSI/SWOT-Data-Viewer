@@ -52,6 +52,8 @@ onMounted(() => {
   mapObject.value.reachesFeatures = ref({})
 
   mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
+  leaflet.zoomControl.remove()
+  
 
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
@@ -113,8 +115,8 @@ onMounted(() => {
     }
   })
   const position = new Position()
-  leaflet.addControl(position)
-
+  //leaflet.addControl(position)
+ 
   leaflet.addEventListener('mousemove', (e) => {
     const [lat, lng] = getLatLong(e)
     position.updateHTML(lat, lng)
@@ -215,7 +217,7 @@ onMounted(() => {
     })
     .addTo(leaflet)
 
-  url = url =
+  url =
     'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
   const reachesFeatures = esriLeaflet
     .featureLayer({
@@ -311,14 +313,7 @@ onMounted(() => {
   //  * LEAFLET BUTTONS
   //  */
 
-  // Erase
-  L.easyButton(
-    'fa-eraser',
-    function () {
-      clearSelection()
-    },
-    'clear selected features'
-  ).addTo(leaflet)
+  
 
   // Layer Control
   L.control.layers(baselayers, mixed).addTo(leaflet)
@@ -341,8 +336,9 @@ onMounted(() => {
           })
 
   const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
-    label: "HUC 10",
-    url: "https://arcgis.cuahsi.org/arcgis/rest/services/hucs/WBDHU10/MapServer",
+    label: "HUC 8",
+    maxResults:3,
+    url: "	https://arcgis.cuahsi.org/arcgis/rest/services/hucs/HUC_8/MapServer",
     layers: [0],
     searchFields: ["name"]
   })
@@ -350,9 +346,9 @@ onMounted(() => {
 
   const featureLayerProvider  = esriLeafletGeocoder.featureLayerProvider({
         url:
-          "https://arcgis.cuahsi.org/arcgis/rest/services/hucs/huc_2_test/FeatureServer/0",
+          "https://arcgis.cuahsi.org/arcgis/rest/services/hucs/HUC_8/FeatureServer/0",
         searchFields: ["name"],
-        label: "SampleWorldCities",
+        label: "Huc 8",
         //bufferRadius: 5000,
         formatSuggestion: function (feature) {
           return feature.properties.name;
@@ -361,6 +357,7 @@ onMounted(() => {
 
   const addressSearchProvider = esriLeafletGeocoder.arcgisOnlineProvider({
         apikey: accessToken,
+        maxResults:3,
         nearby: {
             lat: -33.8688,
             lng: 151.2093
@@ -380,29 +377,47 @@ onMounted(() => {
       });
       
       const searchControl = esriLeafletGeocoder.geosearch({
-        position: "bottomleft",
-        placeholder: "Search for a Huc 10 or river name",
-        useMapBounds: false,
-        expanded: true,
-        title: " search",
-
-        providers: [
-          swotriverMapServiceProvider, 
-          hucMapServiceProvider
-        ]
-    }).addTo(leaflet);
-
-    const addressSearchControl = esriLeafletGeocoder.geosearch({
-        position: "bottomleft",
+        position: "topleft",
         placeholder: "Search for a location",
         useMapBounds: false,
         expanded: true,
         title: " search",
 
         providers: [
-          addressSearchProvider
+          swotriverMapServiceProvider, 
+          hucMapServiceProvider,
+          addressSearchProvider,
+          featureLayerProvider
         ]
     }).addTo(leaflet);
+
+
+//add zoom control again they are ordred in the order they are added 
+    L.control.zoom({
+    position: 'topleft'
+}).addTo(leaflet);
+
+// Erase
+L.easyButton(
+    'fa-eraser',
+    function () {
+      clearSelection()
+    },
+    'clear selected features'
+  ).addTo(leaflet)
+
+
+    // const addressSearchControl = esriLeafletGeocoder.geosearch({
+    //     position: "bottomleft",
+    //     placeholder: "Search for a location",
+    //     useMapBounds: false,
+    //     expanded: true,
+    //     title: " search",
+
+    //     providers: [
+    //       addressSearchProvider
+    //     ]
+    // }).addTo(leaflet);
 
 
 })
