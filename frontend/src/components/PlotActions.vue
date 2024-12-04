@@ -1,7 +1,7 @@
 <template>
     <v-expansion-panels with="100%" v-model="panel" multiple>
       <v-expansion-panel value="plotActions">
-        <v-expansion-panel-title>Plot Actions</v-expansion-panel-title>
+        <v-expansion-panel-title>Actions</v-expansion-panel-title>
         <v-expansion-panel-text>
           <v-btn
             :loading="downloading.chart"

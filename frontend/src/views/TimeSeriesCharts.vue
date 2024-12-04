@@ -27,6 +27,8 @@
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotOptions />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <DataQuality />
+        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotActions :chosenPlot="activeReachChart"/>
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
@@ -54,6 +56,7 @@
 import LineChart from '@/components/LineChart.vue'
 import PlotOptions from '@/components/PlotOptions.vue'
 import PlotActions from '../components/PlotActions.vue'
+import DataQuality from '@/components/DataQuality.vue'
 import TimeRangeSelector from '@/components/TimeRangeSelector.vue'
 import { useChartsStore } from '../stores/charts'
 import { computed } from 'vue'

@@ -22,6 +22,8 @@
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotOptions />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <DataQuality />
+        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotActions :chosenPlot="activeNodeChart" @reset-data="resetData"/>
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
@@ -60,6 +62,7 @@ import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
 import PlotOptions from '@/components/PlotOptions.vue'
 import PlotActions from '@/components/PlotActions.vue'
+import DataQuality from '@/components/DataQuality.vue'
 import TimeRangeSelector from '@/components/TimeRangeSelector.vue'
 import { storeToRefs } from 'pinia'
 
