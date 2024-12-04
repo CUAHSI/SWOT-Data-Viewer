@@ -147,11 +147,12 @@ const getParsing = () => {
 
   parsing.xAxisKey = plt.xvar.abbreviation
   parsing.yAxisKey = plt.yvar.abbreviation
+   
   return parsing
 }
 
 const getXScale = () => {
-  let xvar_abbr = plt.xvar.abbreviation
+  let xvar_abbr = props.chosenPlot.xvar.abbreviation
   if (xvar_abbr == 'time_str') {
     return {
       type: 'time',
