@@ -296,7 +296,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         units: 'square kilometers',
       plottable: true,
       plot_definition: 'Flow Accumulation',
-      significant_figures: 0 //TODO: Check this
+      significant_figures: 0 
     },
     {
       abbreviation: 'n_chan_max',
@@ -307,7 +307,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Maximum Channel Count',
       units: '',
       plottable: false,
-      significant_figures: 0 //TODO: Check this
+      significant_figures: 0 
     },
     {
       abbreviation: 'n_chan_mod',
@@ -318,7 +318,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Mode Channel Count',
       units: '',
       plottable: false,
-      significant_figures: 0 //TODO: Check this
+      significant_figures: 0 
     },
     {
       abbreviation: 'obstr_type',
@@ -349,7 +349,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Global River Obstruction Database (GROD) ID',
       units: '',
       plottable: false,
-      significant_figures: 0, //TODO: Check this
+      significant_figures: 0, 
       mapping: {
         0: '-',
       }
@@ -363,7 +363,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'HydroFALLS ID',
       units: '',
       plottable: false,
-      significant_figures: 0, //TODO: Check this
+      significant_figures: 0, 
       mapping: {
         0: '-',
       }
@@ -377,7 +377,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Distance to Outlet',
       units: 'meters',
       plottable: false,
-      significant_figures: 2 //TODO: Check this
+      significant_figures: 2 
     },
     {
       abbreviation: 'type',
