@@ -46,10 +46,10 @@
                 <v-icon :icon="mdiCodeJson"></v-icon>
                 Download JSON
               </v-btn>
-              <v-btn @click="resetZoom()" color="input" class="ma-1">
+              <!-- <v-btn @click="resetZoom()" color="input" class="ma-1">
                 <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
                 Reset Zoom
-              </v-btn>
+              </v-btn> -->
             </v-expansion-panel-text>
           </v-expansion-panel>
           <v-expansion-panel

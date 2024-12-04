@@ -48,14 +48,14 @@
                   <v-icon :icon="mdiCodeJson"></v-icon>
                   Download JSON
                 </v-btn>
-                <v-btn @click="resetZoom()" color="input" class="ma-1">
+                <!-- <v-btn @click="resetZoom()" color="input" class="ma-1">
                   <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
                   Zoom to Exent
-                </v-btn>
-                <v-btn @click="resetData()" color="input" class="ma-1">
+                </v-btn> -->
+                <!-- <v-btn @click="resetData()" color="input" class="ma-1">
                   <v-icon :icon="mdiEraser"></v-icon>
                   Reset Data
-                </v-btn>
+                </v-btn> -->
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
