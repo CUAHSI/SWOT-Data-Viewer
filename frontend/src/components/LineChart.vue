@@ -7,7 +7,20 @@
           :max-height="lgAndUp ? '100%' : '20vh'"
           max-width="100%"
           min-width="500px"
+          style="position: relative;"
         >
+        <!-- Add Reset Zoom Icon -->
+        <v-btn
+          class="zoom-button"
+          color="#f4f4f4"
+          outlined
+          @click="resetZoom()"
+          style="position: absolute; top: 110px; right: 10px; z-index: 10;"
+          >
+          <v-icon :icon="mdiMagnifyMinusOutline" class="me-2"></v-icon>
+          RESET ZOOM
+        </v-btn> 
+        <!-- Chart -->
           <Line :data="chartData" :options="options" ref="lineChart" />
         </v-sheet>
       </v-col>
