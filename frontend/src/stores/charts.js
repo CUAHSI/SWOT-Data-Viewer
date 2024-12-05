@@ -822,5 +822,6 @@ export const useChartsStore = defineStore('charts', () => {
     generateDataQualityLegend,
     activeNodeChart,
     activeReachChart,
+    updateNodeDataSetStyles,
   }
 })
