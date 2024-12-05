@@ -14,7 +14,7 @@
             color="input"
             size="small"
             @click="resetZoom()"
-            style="position: absolute; top: 110px; right: 10px; z-index: 10;"
+            style="position: absolute; top: 120px; right: 45px; z-index: 10;"
             :icon="mdiMagnifyMinusOutline"
           >
           </v-btn>
