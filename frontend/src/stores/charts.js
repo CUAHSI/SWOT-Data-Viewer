@@ -330,6 +330,7 @@ export const useChartsStore = defineStore('charts', () => {
         }
       })
     }
+    updateNodeDataSetStyles()
     updateAllCharts()
   }
 
@@ -728,6 +729,8 @@ export const useChartsStore = defineStore('charts', () => {
     if (!hasNodeData.value) {
       return
     }
+    // TODO: CAM-499 slow zoom occurrs after this foreach is run
+    // https://cuahsi.atlassian.net/browse/CAM-499
     nodeChartData.value.datasets.forEach((dataset) => {
       // replace the dataset properties with those from getNodeDataSetStyle
       const updatedStyles = getNodeDataSetStyle(dataset.data)
@@ -752,7 +755,6 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const updateAllCharts = () => {
-    updateNodeDataSetStyles()
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
@@ -811,5 +813,6 @@ export const useChartsStore = defineStore('charts', () => {
     activePlt,
     activeNodeChart,
     activeReachChart,
+    updateNodeDataSetStyles,
   }
 })
