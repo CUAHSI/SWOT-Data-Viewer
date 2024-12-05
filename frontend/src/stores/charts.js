@@ -729,13 +729,16 @@ export const useChartsStore = defineStore('charts', () => {
     if (!hasNodeData.value) {
       return
     }
-    // TODO: CAM-499 slow zoom occurrs after this foreach is run
-    // https://cuahsi.atlassian.net/browse/CAM-499
     nodeChartData.value.datasets.forEach((dataset) => {
       // replace the dataset properties with those from getNodeDataSetStyle
       const updatedStyles = getNodeDataSetStyle(dataset.data)
       for (const key in updatedStyles) {
-        dataset[key] = updatedStyles[key]
+        // update all of the keys except for pointStyle and pointBorderColor
+        // otherwise slow zoom will ensue
+        // https://cuahsi.atlassian.net/browse/CAM-499
+        if (key != 'pointStyle' && key != 'pointBorderColor') {
+          dataset[key] = updatedStyles[key]
+        }
       }
     })
   }
