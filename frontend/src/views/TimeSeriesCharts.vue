@@ -75,30 +75,15 @@ onMounted(() => {
   }
 })
 
-const sortChartByX = (plt) => {
-  // grab the chart data from the store and maintain reactivity
-  const {chartData} = storeToRefs(chartStore)
- 
-  // get the chart data and sort it by the x-axis variable.
-  // If the x-axis variable is time, sort by time otherwise
-  // sort numerically.
-  let plotData = chartData.value.datasets[0].data
-  let xvar = plt.xvar.abbreviation
-
-  if (xvar == 'time_str') {
-    plotData = plotData.sort((a,b) => new Date(a.time_str) - new Date(b.time_str));
-  }
-  else {
-    plotData = plotData.sort((a,b) => parseFloat(a[xvar]) - parseFloat(b[xvar]));
-  }
-  chartStore.updateShowLine()
-
-}
-
 const changePlot = (plt) => {
   // re-sort the chart data by the x-axis variable
-  // before rending the chart
-  sortChartByX(plt)
+  // before rending the chart. Set the sorted data
+  // to the active data in the chart prior to rendering
+  const {chartData} = storeToRefs(chartStore)
+  chartData.value.datasets[0].data = chartStore.sortChartByX(plt)
+
+  // force a re-render of the line charts
+  chartStore.updateShowLine()
 
   router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
 }

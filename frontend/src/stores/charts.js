@@ -686,10 +686,12 @@ export const useChartsStore = defineStore('charts', () => {
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
-        storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
-          dataset.showLine = showLine.value
-        })
-        storedChart.chart.update()
+        if (storedChart.chart != null) {
+          storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
+            dataset.showLine = showLine.value
+          })
+          storedChart.chart.update()
+        }
       } catch (error) {
         console.error('Error updating chart lines', error)
       }
@@ -700,10 +702,12 @@ export const useChartsStore = defineStore('charts', () => {
     updateNodeDataSetStyles()
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
-      try {
-        storedChart.chart.update()
-      } catch (error) {
-        console.error('Error updating chart', error)
+      if (storedChart.chart != null) {
+        try {
+          storedChart.chart.update()
+        } catch (error) {
+          console.error('Error updating chart', error)
+        }
       }
     })
   }
@@ -721,6 +725,21 @@ export const useChartsStore = defineStore('charts', () => {
 
   }
 
+const sortChartByX = (plt) => {
+ 
+  // get the chart data and sort it by the x-axis variable.
+  // If the x-axis variable is time, sort by time otherwise
+  // sort numerically.
+  let plotData = chartData.value.datasets[0].data
+  let xvar = plt.xvar.abbreviation
+
+  if (xvar == 'time_str') {
+    return plotData.sort((a,b) => new Date(a.time_str) - new Date(b.time_str));
+  }
+  else {
+    return plotData.sort((a,b) => parseFloat(a[xvar]) - parseFloat(b[xvar]));
+  }
+}
 
   return {
     updateNodeChartData,
@@ -746,6 +765,7 @@ export const useChartsStore = defineStore('charts', () => {
     showLine,
     updateShowLine,
     storeMountedChart,
-    activePlt
+    activePlt,
+    sortChartByX,
   }
 })
