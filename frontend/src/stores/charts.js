@@ -340,6 +340,7 @@ export const useChartsStore = defineStore('charts', () => {
         }
       })
     }
+    updateNodeDataSetStyles()
     updateAllCharts()
   }
 
@@ -742,7 +743,12 @@ export const useChartsStore = defineStore('charts', () => {
       // replace the dataset properties with those from getNodeDataSetStyle
       const updatedStyles = getNodeDataSetStyle(dataset.data)
       for (const key in updatedStyles) {
-        dataset[key] = updatedStyles[key]
+        // update all of the keys except for pointStyle and pointBorderColor
+        // otherwise slow zoom will ensue
+        // https://cuahsi.atlassian.net/browse/CAM-499
+        if (key != 'pointStyle' && key != 'pointBorderColor') {
+          dataset[key] = updatedStyles[key]
+        }
       }
     })
   }
@@ -762,7 +768,6 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const updateAllCharts = () => {
-    updateNodeDataSetStyles()
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
