@@ -46,10 +46,9 @@ export const useChartsStore = defineStore('charts', () => {
   const generateDataQualityLegend = () => {
     return dataQualityOptions.map((option) => ({
       text: option.label,
-      fillStyle: option.pointBorderColor,
+      fillStyle: 'black',
       strokeStyle: option.pointBorderColor,
       pointStyle: option.pointStyle,
-      strokeStyle: 'black',
       lineWidth: 2,
     }));
   };
