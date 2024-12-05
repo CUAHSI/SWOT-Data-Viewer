@@ -70,47 +70,29 @@ const options = {
   parsing: getParsing,
   plugins: {
     legend: {
-      display: false,
-      position: 'bottom',
-      labels: {
-        // hide the q0.75 series from the legend. This is because the interquartile range
-        // will be toggled by a single series. We'll use q0.25 for this.
-        filter: (item) => item.text !== 'q0.75'
-      },
-      onClick: function (e, legendItem, legend) {
-        const index = legendItem.datasetIndex
-        const ci = legend.chart
-
-        if (legendItem.text == 'IQR') {
-          // toggle the IQR data series
-          toggleByIndex(index)
-
-          // toggle the q0.75 data series that is not displayed in the legend. This will make
-          // IQR appear as a patch instead of a line.
-          let isHidden = activeNodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden
-          activeNodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden = !isHidden
-          activeNodeChart.value.chart.update()
-        } else {
-          toggleByIndex(index)
-        }
-
-        function toggleByIndex(index) {
-          if (ci.isDatasetVisible(index)) {
-            ci.hide(index)
-            legendItem.hidden = true
-          } else {
-            ci.show(index)
-            legendItem.hidden = false
-          }
-        }
-      }
-    },
-    title: {
       display: true,
-      text: title,
-      font: {
-        size: 16
-      }
+      position: 'top',
+      align : 'end',
+      labels: {
+        usePointStyle: true,
+        generateLabels: () => chartStore.generateDataQualityLegend(),
+        font: {
+          size: 12,
+        },
+        boxWidth: 20,
+        padding: 10,
+      },
+      title: {
+        display: true,
+        text: 'Data Quality',
+        font: {
+          size: 16,
+          weight: 'bold',
+        },
+        padding: {
+          top: 10,
+        },
+      },
     },
     customCanvasBackgroundColor: {
       color: 'white'
