@@ -46,7 +46,7 @@ import {
   mdiMagnifyMinusOutline,
   mdiEraser
 } from '@mdi/js'
-import { downloadCsv, downloadFeatureJson } from '../_helpers/hydroCron'
+import { downloadCsv, downloadMultiNodesCsv, downloadFeatureJson, downloadMultiNodesJson } from '../_helpers/hydroCron'
 
 const panel = ref([])
 
@@ -96,13 +96,23 @@ const downloadChart = async () => {
 
 const downCsv = async () => {
   downloading.value.csv = true
-  await downloadCsv()
+  // determine whether to download the node or feature csv
+  if (isNodeChart.value) {
+    await downloadMultiNodesCsv()
+  } else {
+    await downloadCsv()
+  }
   downloading.value.csv = false
 }
 
 const downJson = async () => {
   downloading.value.json = true
-  await downloadFeatureJson()
+  // determine whether to download the node or feature
+  if (isNodeChart.value) {
+    await downloadMultiNodesJson()
+  } else {
+    await downloadFeatureJson()
+  }
   downloading.value.json = false
 }
 
