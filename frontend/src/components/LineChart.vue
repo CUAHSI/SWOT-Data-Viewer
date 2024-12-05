@@ -7,16 +7,20 @@
       min-width="500px"
     >
       <!-- Add Reset Zoom Icon -->
-      <v-btn
-        class="zoom-button"
-        color="#f4f4f4"
-        outlined
-        @click="resetZoom()"
-        style="position: absolute; top: 110px; right: 10px; z-index: 10;"
-        >
-        <v-icon :icon="mdiMagnifyMinusOutline" class="me-2"></v-icon>
+      <v-tooltip>
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            color="input"
+            size="small"
+            @click="resetZoom()"
+            style="position: absolute; top: 110px; right: 10px; z-index: 10;"
+            :icon="mdiMagnifyMinusOutline"
+          >
+          </v-btn>
+        </template>
         RESET ZOOM
-      </v-btn> 
+      </v-tooltip>
       <!-- Chart -->
       <Line :data="chartData" :options="options" ref="activeReachChart" />
     </v-sheet>
@@ -227,6 +231,14 @@ const options = {
   },
   onClick: (e) => handleTimeseriesPointClick(e)
 }
+
+const resetZoom = () => {
+  if (activeReachChart.value?.chart?.resetZoom) {
+    activeReachChart.value.chart.resetZoom();
+  } else {
+    console.error('Chart instance not found or resetZoom method is unavailable.');
+  }
+};
 
 const handleTimeseriesPointClick = (e) => {
   const elems = activeReachChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
