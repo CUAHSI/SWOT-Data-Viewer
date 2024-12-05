@@ -36,6 +36,7 @@ import { useAlertStore } from './stores/alerts'
 import TheBottomSheet from '@/components/TheBottomSheet.vue'
 import TheLeafletMap from './components/TheLeafletMap.vue'
 
+
 const alertStore = useAlertStore()
 
 let showMobileNavigation = ref(false)
@@ -133,5 +134,7 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
+  
 }
 </style>
+

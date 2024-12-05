@@ -2,7 +2,7 @@
 
 // }
 @import '@fortawesome/fontawesome-free/css/all.min.css';
-
+@import 'esri-leaflet-geocoder/dist/esri-leaflet-geocoder.css';
 html {
   font-size: 16px;
 }
@@ -119,3 +119,4 @@ p {
   -webkit-line-clamp: 3;
   overflow: hidden;
 }
+
