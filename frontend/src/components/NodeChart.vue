@@ -1,13 +1,67 @@
 <template>
   <v-container class="overflow-auto">
-    <v-sheet
-      :min-height="lgAndUp ? '65vh' : '50vh'"
-      :max-height="lgAndUp ? '100%' : '20vh'"
-      max-width="100%"
-      min-width="500px"
-    >
-      <Line :data="nodeChartData" :options="options" ref="activeNodeChart" :plugins="[Filler]" />
-    </v-sheet>
+    <v-row>
+      <v-col xs="12" lg="9">
+        <v-sheet
+          :min-height="lgAndUp ? '65vh' : '50vh'"
+          :max-height="lgAndUp ? '100%' : '20vh'"
+          max-width="100%"
+          min-width="500px"
+        >
+        <!-- Add Reset Zoom Icon -->
+        <v-btn
+          class="zoom-button"
+          color="#f4f4f4"
+          outlined
+          @click="resetZoom()"
+          style="position: absolute; top: 80px; right: 520px; z-index: 10;"
+          >
+          <v-icon :icon="mdiMagnifyMinusOutline" class="me-2"></v-icon>
+          RESET ZOOM
+        </v-btn> 
+        <!-- Chart -->
+          <Line :data="nodeChartData" :options="options" ref="activeNodeChart" :plugins="[Filler]" />
+        </v-sheet>
+        <v-sheet class="pa-2" color="input">
+          <TimeRangeSlider
+            ref="timeRef"
+            @update="timeSliderUpdated"
+            @updateComplete="timeRangeUpdateComplete"
+          />
+        </v-sheet>
+      </v-col>
+      <v-col>
+        <v-sheet>
+          <v-expansion-panels>
+            <v-expansion-panel>
+              <v-expansion-panel-title> Plot Actions </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
+                  <v-icon :icon="mdiDownloadBox"></v-icon>
+                  Download Chart
+                </v-btn>
+                <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
+                  <v-icon :icon="mdiFileDelimited"></v-icon>
+                  Download CSV
+                </v-btn>
+                <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
+                  <v-icon :icon="mdiCodeJson"></v-icon>
+                  Download JSON
+                </v-btn>
+                <v-btn @click="resetZoom()" color="input" class="ma-1">
+                  <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
+                  Zoom to Exent
+                </v-btn>
+                <v-btn @click="resetData()" color="input" class="ma-1">
+                  <v-icon :icon="mdiEraser"></v-icon>
+                  Reset Data
+                </v-btn>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-sheet>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
