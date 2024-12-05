@@ -1,12 +1,12 @@
 <template>
   <div v-show="$route.meta.showMap" id="mapContainer"></div>
-  <!-- <v-card
+  <v-card
     v-if="$route.meta.showMap && zoom < minReachSelectionZoom"
     id="zoomIndicator"
     color="info"
   >
   <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
-  </v-card> -->
+  </v-card>
 </template>
 
 <script setup>
@@ -52,9 +52,9 @@ onMounted(() => {
   mapObject.value.reachesFeatures = ref({})
 
   mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
+  //Remove the common zoom control and add it back later later
   leaflet.zoomControl.remove()
   
-
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
     'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png',
@@ -98,31 +98,11 @@ onMounted(() => {
     zoom.value = e.target._zoom
   })
 
-  let Position = L.Control.extend({
-    _container: null,
-    options: {
-      position: 'bottomright'
-    },
-
-    onAdd: function () {
-      const latlng = L.DomUtil.create('div', 'mouseposition')
-      this._latlng = latlng
-      return latlng
-    },
-
-    updateHTML: function (lat, lng) {
-      this._latlng.innerHTML = `Lat/Lng: ${lat} ${lng}`
-    }
-  })
-  const position = new Position()
-  //leaflet.addControl(position)
  
   leaflet.addEventListener('mousemove', (e) => {
     const [lat, lng] = getLatLong(e)
     position.updateHTML(lat, lng)
   })
-
-
 
   function getLatLong(e) {
     let lat = Math.round(e.latlng.lat * 100000) / 100000
@@ -365,17 +345,7 @@ onMounted(() => {
     });
   /**/
 
-  const gisDayProvider = esriLeafletGeocoder.featureLayerProvider({
-        url:
-          "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/GIS_DAY_Registration/FeatureServer/0",
-        searchFields: ["event_name", "host_organization"],
-        label: "GIS Day Events 2019",
-        //bufferRadius: 5000,
-        formatSuggestion: function (feature) {
-          return feature.properties.event_name + " - " + feature.properties.host_organization;
-        }
-      });
-      
+        
       const searchControl = esriLeafletGeocoder.geosearch({
         position: "topleft",
         placeholder: "Search for a location",
@@ -386,39 +356,24 @@ onMounted(() => {
         providers: [
           swotriverMapServiceProvider, 
           hucMapServiceProvider,
-          addressSearchProvider,
-          featureLayerProvider
+          addressSearchProvider       
         ]
     }).addTo(leaflet);
 
 
-//add zoom control again they are ordred in the order they are added 
-    L.control.zoom({
-    position: 'topleft'
+// add zoom control again they are ordered in the order they are added
+L.control.zoom({
+  position: 'topleft'
 }).addTo(leaflet);
 
 // Erase
 L.easyButton(
-    'fa-eraser',
-    function () {
-      clearSelection()
-    },
-    'clear selected features'
-  ).addTo(leaflet)
-
-
-    // const addressSearchControl = esriLeafletGeocoder.geosearch({
-    //     position: "bottomleft",
-    //     placeholder: "Search for a location",
-    //     useMapBounds: false,
-    //     expanded: true,
-    //     title: " search",
-
-    //     providers: [
-    //       addressSearchProvider
-    //     ]
-    // }).addTo(leaflet);
-
+  'fa-eraser',
+  function () {
+    clearSelection()
+  },
+  'clear selected features'
+).addTo(leaflet)
 
 })
 
@@ -721,11 +676,10 @@ function validate_bbox_size() {
   return { style: style, is_valid: valid }
 }
 </script>
-<style >
+<style scoped>
 #mapContainer {
   width: 100%;
-  height: 100%;
-   
+  height: 100%;   
 }
 #zoomIndicator {
   position: fixed;
@@ -737,6 +691,4 @@ function validate_bbox_size() {
   /* border: 1px solid black; */
   z-index: 1000;
 }
-
-
 </style>

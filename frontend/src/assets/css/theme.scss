@@ -120,24 +120,3 @@ p {
   overflow: hidden;
 }
 
-//turn on to show full extend of returned data
-  // .geocoder-control-suggestions .geocoder-control-suggestion {
-  //   overflow-wrap: break-word;
-  //   word-break: break-all;
-  //   overflow: visible;
-  //   white-space: break-spaces;
-//}
-
-
-  .leaflet-control.mouseposition {
-    position: absolute !important;
-    left: 50%;
-    bottom: 5px;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 5px;
-    border: 1px solid black;
-    border-radius: 5px;
-    z-index: 1000;
-    width: 185px;
-  }
