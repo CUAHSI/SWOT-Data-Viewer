@@ -1,33 +1,77 @@
 <template>
   <v-container class="overflow-auto">
-    <v-sheet
-      :min-height="lgAndUp ? '65vh' : '50vh'"
-      :max-height="lgAndUp ? '100%' : '20vh'"
-      max-width="100%"
-      min-width="500px"
-    >
-      <Line :data="chartData" :options="options" ref="activeReachChart" />
-    </v-sheet>
-    <v-card v-if="hasSelectedTimeseriesPoints">
-      <v-card-title>Selected Timestamps</v-card-title>
-      <v-card-text>
-        <v-list>
-          <v-list-item
-            v-for="timeSeriesPoint in selectedTimeseriesPoints"
-            :key="timeSeriesPoint.datetime"
+    <v-row>
+      <v-col xs="12" lg="9">
+        <v-sheet
+          :min-height="lgAndUp ? '65vh' : '50vh'"
+          :max-height="lgAndUp ? '100%' : '20vh'"
+          max-width="100%"
+          min-width="500px"
+          style="position: relative;"
+        >
+        <!-- Add Reset Zoom Icon -->
+        <v-btn
+          class="zoom-button"
+          color="#f4f4f4"
+          outlined
+          @click="resetZoom()"
+          style="position: absolute; top: 110px; right: 10px; z-index: 10;"
           >
-            <template v-slot:append>
-              <v-icon
-                :icon="mdiCloseBox"
-                color="error"
-                @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
-              ></v-icon>
-            </template>
-              <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-              <v-list-item-subtitle
-                >Average {{ props.chosenPlot?.abbreviation }}:
-                {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
+          <v-icon :icon="mdiMagnifyMinusOutline" class="me-2"></v-icon>
+          RESET ZOOM
+        </v-btn> 
+        <!-- Chart -->
+          <Line :data="chartData" :options="options" ref="activeReachChart" />
+        </v-sheet>
+      </v-col>
+      <v-col xs="12" lg="3">
+        <v-expansion-panels with="100%" v-model="panel" multiple>
+          <v-expansion-panel value="plotActions">
+            <v-expansion-panel-title>Plot Actions</v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <v-btn
+                :loading="downloading.chart"
+                @click="downloadChart()"
+                class="ma-1"
+                color="input"
               >
+                <v-icon :icon="mdiDownloadBox"></v-icon>
+                Download Chart
+              </v-btn>
+              <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
+                <v-icon :icon="mdiFileDelimited"></v-icon>
+                Download CSV
+              </v-btn>
+              <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
+                <v-icon :icon="mdiCodeJson"></v-icon>
+                Download JSON
+              </v-btn>
+              <v-btn @click="resetZoom()" color="input" class="ma-1">
+                <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
+                Reset Zoom
+              </v-btn>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+          <v-card v-if="hasSelectedTimeseriesPoints">
+            <v-card-title>Selected Timestamps</v-card-title>
+            <v-card-text>
+              <v-list>
+                <v-list-item
+                  v-for="timeSeriesPoint in selectedTimeseriesPoints"
+                  :key="timeSeriesPoint.datetime"
+                >
+                  <template v-slot:append>
+                    <v-icon
+                      :icon="mdiCloseBox"
+                      color="error"
+                      @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
+                    ></v-icon>
+                  </template>
+                    <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
+                    <v-list-item-subtitle
+                      >Average {{ props.chosenPlot?.abbreviation }}:
+                      {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
+                    >
           </v-list-item>
         </v-list>
       </v-card-text>
