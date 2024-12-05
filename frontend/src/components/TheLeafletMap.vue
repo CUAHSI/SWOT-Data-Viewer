@@ -98,18 +98,6 @@ onMounted(() => {
     zoom.value = e.target._zoom
   })
 
- 
-  leaflet.addEventListener('mousemove', (e) => {
-    const [lat, lng] = getLatLong(e)
-    position.updateHTML(lat, lng)
-  })
-
-  function getLatLong(e) {
-    let lat = Math.round(e.latlng.lat * 100000) / 100000
-    let lng = Math.round(e.latlng.lng * 100000) / 100000
-    return [lat, lng]
-  }
-
   // add lakes features layer to map
   let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
   const lakesFeatures = esriLeaflet
