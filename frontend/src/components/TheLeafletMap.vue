@@ -5,7 +5,7 @@
     id="zoomIndicator"
     color="info"
   >
-    <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
+  <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
   </v-card>
 </template>
 
@@ -14,6 +14,7 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet-easybutton/src/easy-button.css'
 import L, { canvas } from 'leaflet'
 import * as esriLeaflet from 'esri-leaflet'
+import * as esriLeafletGeocoder from 'esri-leaflet-geocoder'
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import 'leaflet-easybutton/src/easy-button'
 import { nextTick, onMounted, onUpdated, ref } from 'vue'
@@ -36,6 +37,7 @@ const { mapObject } = storeToRefs(mapStore)
 const { activeFeature } = storeToRefs(featureStore)
 const minReachSelectionZoom = 7
 const mapInitialZoom = 3
+const accessToken = "AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX"
 let zoom = ref(mapInitialZoom)
 
 onUpdated(async () => {
@@ -61,7 +63,9 @@ onMounted(() => {
   mapObject.value.reachesFeatures = ref({})
 
   mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
-
+  //Remove the common zoom control and add it back later later
+  leaflet.zoomControl.remove()
+  
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
     'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png',
@@ -104,36 +108,6 @@ onMounted(() => {
   leaflet.on('zoomend', function (e) {
     zoom.value = e.target._zoom
   })
-
-  let Position = L.Control.extend({
-    _container: null,
-    options: {
-      position: 'bottomleft'
-    },
-
-    onAdd: function () {
-      const latlng = L.DomUtil.create('div', 'mouseposition')
-      this._latlng = latlng
-      return latlng
-    },
-
-    updateHTML: function (lat, lng) {
-      this._latlng.innerHTML = `Lat/Lng: ${lat} ${lng}`
-    }
-  })
-  const position = new Position()
-  leaflet.addControl(position)
-
-  leaflet.addEventListener('mousemove', (e) => {
-    const [lat, lng] = getLatLong(e)
-    position.updateHTML(lat, lng)
-  })
-
-  function getLatLong(e) {
-    let lat = Math.round(e.latlng.lat * 100000) / 100000
-    let lng = Math.round(e.latlng.lng * 100000) / 100000
-    return [lat, lng]
-  }
 
   // add lakes features layer to map
   let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
@@ -222,7 +196,7 @@ onMounted(() => {
     })
     .addTo(leaflet)
 
-  url = url =
+  url =
     'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
   const reachesFeatures = esriLeaflet
     .featureLayer({
@@ -316,14 +290,7 @@ onMounted(() => {
   //  * LEAFLET BUTTONS
   //  */
 
-  // Erase
-  L.easyButton(
-    'fa-eraser',
-    function () {
-      clearSelection()
-    },
-    'clear selected features'
-  ).addTo(leaflet)
+  
 
   // Layer Control
   L.control.layers(baselayers, mixed).addTo(leaflet)
@@ -337,6 +304,74 @@ onMounted(() => {
 
   // validate the map
   validate_bbox_size()
+  
+  const swotriverMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+            label: "River names",
+            url: "https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer",
+            layers: [0],
+            searchFields: ["river_name "]
+          })
+
+  const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+    label: "HUC 8",
+    maxResults:3,
+    url: "	https://arcgis.cuahsi.org/arcgis/rest/services/hucs/HUC_8/MapServer",
+    layers: [0],
+    searchFields: ["name"]
+  })
+
+
+  const featureLayerProvider  = esriLeafletGeocoder.featureLayerProvider({
+        url:
+          "https://arcgis.cuahsi.org/arcgis/rest/services/hucs/HUC_8/FeatureServer/0",
+        searchFields: ["name"],
+        label: "Huc 8",
+        //bufferRadius: 5000,
+        formatSuggestion: function (feature) {
+          return feature.properties.name;
+        }
+      });
+
+  const addressSearchProvider = esriLeafletGeocoder.arcgisOnlineProvider({
+        apikey: accessToken,
+        maxResults:3,
+        nearby: {
+            lat: -33.8688,
+            lng: 151.2093
+        }
+    });
+  /**/
+
+        
+      const searchControl = esriLeafletGeocoder.geosearch({
+        position: "topleft",
+        placeholder: "Search for a location",
+        useMapBounds: false,
+        expanded: true,
+        title: " search",
+
+        providers: [
+          swotriverMapServiceProvider, 
+          hucMapServiceProvider,
+          addressSearchProvider       
+        ]
+    }).addTo(leaflet);
+
+
+// add zoom control again they are ordered in the order they are added
+L.control.zoom({
+  position: 'topleft'
+}).addTo(leaflet);
+
+// Erase
+L.easyButton(
+  'fa-eraser',
+  function () {
+    clearSelection()
+  },
+  'clear selected features'
+).addTo(leaflet)
+
 })
 
 async function getGageInfo(e) {
@@ -641,9 +676,8 @@ function validate_bbox_size() {
 <style scoped>
 #mapContainer {
   width: 100%;
-  height: 100%;
+  height: 100%;   
 }
-
 #zoomIndicator {
   position: fixed;
   bottom: 10%;

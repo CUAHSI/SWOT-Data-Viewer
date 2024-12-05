@@ -8,21 +8,42 @@
                 </v-card-subtitle> -->
       </v-card-item>
       <v-card-text>
+        <!-- Default Metadata -->
         <div v-for="metadataObject in defaultSwordMetadata()" :key="metadataObject.id">
           <v-divider />
-          <div>
-            <strong>{{ metadataObject.short_definition }}:</strong> {{ metadataObject.value }}
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong>{{ metadataObject.displayKey }}:</strong> {{ metadataObject.value }}
+            </div>
+            <!-- Tooltip Icon -->
+            <v-tooltip location="top" max-width="200px" style="white-space: normal;">
+              <template #activator="{ props }">
+                <v-icon v-bind="props" :icon="mdiInformationOutline" color="primary" style="cursor: pointer; margin-left: 10px;">
+                </v-icon>
+              </template>
+              <div>{{ metadataObject.definition }}</div>
+            </v-tooltip> 
           </div>
         </div>
+        <!-- Extended Metadata -->
         <template v-if="extended">
           <div
             v-for="extendedMetadataObject in extendedMetadata()"
             :key="extendedMetadataObject.id"
           >
             <v-divider />
-            <div>
-              <strong>{{ extendedMetadataObject.short_definition }}:</strong>
-              {{ extendedMetadataObject.value }}
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <strong>{{ extendedMetadataObject.displayKey }}:</strong> {{ extendedMetadataObject.value }}
+              </div>
+                <!-- Tooltip Icon -->
+              <v-tooltip location="top" max-width="200px" style="white-space: normal;">
+                <template #activator="{ props }">
+                  <v-icon v-bind="props" :icon="mdiInformationOutline" color="primary" style="cursor: pointer; margin-left: 10px;">
+                  </v-icon>
+                </template>
+                <span>{{ extendedMetadataObject.definition }}</span>
+              </v-tooltip>
             </div>
           </div>
         </template>
@@ -41,7 +62,7 @@
 import { ref,  } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { mdiSword } from '@mdi/js'
+import { mdiSword, mdiInformationOutline } from '@mdi/js'
 
 const props = defineProps({
   reachId: { type: Number, default: 0 },

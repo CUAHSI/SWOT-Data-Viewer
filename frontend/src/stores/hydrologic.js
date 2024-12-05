@@ -25,7 +25,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: true,
       fileType: 'all',
-      plottable: true
+      plottable: true,
+      
     },
     {
       abbreviation: 'slope',
@@ -168,8 +169,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: true,
       short_definition: 'Longitude',
+      swotviz_alias: 'Longitude',
       units: 'decimal degrees',
-      plottable: false
+      plottable: false,
+      significant_figures: 4
     },
     {
       abbreviation: 'y',
@@ -177,8 +180,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: true,
       short_definition: 'Latitude',
+      swotviz_alias: 'Latitude',
       units: 'decimal degrees',
-      plottable: false
+      plottable: false,
+      significant_figures: 4
     },
     {
       abbreviation: 'node_id',
@@ -187,8 +192,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'node',
       default: true,
       short_definition: 'Node ID',
+      swotviz_alias: 'Node ID',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0
     },
     {
       abbreviation: 'node_length',
@@ -196,8 +203,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'node',
       default: false,
       short_definition: 'Node length measured along the GRWL centerline points',
+      swotviz_alias: 'Node Length',
       units: 'meters',
-      plottable: false
+      plottable: false,
+      significant_figures: 2
     },
     {
       abbreviation: 'reach_id',
@@ -208,8 +217,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition: 'Reach ID', // Differs from the abbreviation in the SWORD documentation
       // https://zenodo.org/records/3898570
       // abbreviation: 'reach_length',
+      swotviz_alias: 'Reach ID',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0
     },
     {
       abbreviation: 'reach_len',
@@ -217,8 +228,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Reach Length',
+      swotviz_alias: 'Reach Length',
       units: 'meters',
-      plottable: false
+      plottable: false,
+      significant_figures: 2
     },
     {
       abbreviation: 'wse',
@@ -227,9 +240,11 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: true,
       short_definition: 'Average water surface elevation (WSE)',
+      swotviz_alias: 'Average Water Surface Elevation (WSE)',
       units: 'meters',
       plottable: true,
-      plot_definition: 'Water Surface Elevation'
+      plot_definition: 'Water Surface Elevation',
+      significant_figures: 2
     },
     {
       abbreviation: 'wse_var',
@@ -239,8 +254,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'WSE variance along the GRWL centerline points used to calculate the average WSE for each node or reach',
+        swotviz_alias: 'WSE Variance',
       units: 'square meters',
-      plottable: false
+      plottable: false,
+      significant_figures: 2
     },
     {
       abbreviation: 'width',
@@ -248,9 +265,11 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: true,
       short_definition: 'Average width',
+      swotviz_alias: 'Average Width',
       units: 'meters',
       plottable: true,
-      plot_definition: 'Width'
+      plot_definition: 'Width',
+      significant_figures: 2
     },
     {
       abbreviation: 'width_var',
@@ -260,8 +279,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Width variance along the GRWL centerline points used to calculate the average width for each node or reach',
-      units: 'square meters',
-      plottable: false
+      swotviz_alias: 'Width Variance',
+        units: 'square meters',
+      plottable: false,
+      significant_figures: 2
     },
     {
       abbreviation: 'facc',
@@ -271,9 +292,11 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019)',
-      units: 'square kilometers',
+      swotviz_alias: 'Maximum Flow Accumulation',
+        units: 'square kilometers',
       plottable: true,
-      plot_definition: 'Flow Accumulation'
+      plot_definition: 'Flow Accumulation',
+      significant_figures: 0 
     },
     {
       abbreviation: 'n_chan_max',
@@ -281,8 +304,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'Maximum number of channels for each node or reach',
+      swotviz_alias: 'Maximum Channel Count',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     },
     {
       abbreviation: 'n_chan_mod',
@@ -290,8 +315,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'Mode of the number of channels for each node or reach',
+      swotviz_alias: 'Mode Channel Count',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     },
     {
       abbreviation: 'obstr_type',
@@ -301,8 +328,17 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Type of obstruction for each node or reach based on the Globale Obstruction Database (GROD, Whittemore et al., 2020) and HydroFALLS data (http://wp.geog.mcgill.ca/hydrolab/hydrofalls). Obstr_type values: 0 - No Dam, 1 - Dam, 2 - Channel Dam, 3 - Lock, 4 - Low Permeable Dam, 5 - Waterfall',
+      swotviz_alias: 'Obstruction Type',
       units: '',
-      plottable: false
+      plottable: false,
+      mapping: {
+        0: 'No Dam',
+        1: 'Dam',
+        2: 'Channel Dam',
+        3: 'Lock',
+        4: 'Low Permeable Dam',
+        5: 'Waterfall'
+      }
     },
     {
       abbreviation: 'grod_id',
@@ -310,8 +346,13 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'The unique GROD ID for each node or reach with obstr_type values 1-4',
+      swotviz_alias: 'Global River Obstruction Database (GROD) ID',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0, 
+      mapping: {
+        0: '-',
+      }
     },
     {
       abbreviation: 'hfalls_id',
@@ -319,8 +360,13 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'The unique HydroFALLS ID for each node or reach with obstr_type value 5',
+      swotviz_alias: 'HydroFALLS ID',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0, 
+      mapping: {
+        0: '-',
+      }
     },
     {
       abbreviation: 'dist_out',
@@ -328,8 +374,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'all',
       default: false,
       short_definition: 'Distance from the river outlet for each node or reach',
+      swotviz_alias: 'Distance to Outlet',
       units: 'meters',
-      plottable: false
+      plottable: false,
+      significant_figures: 2 
     },
     {
       abbreviation: 'type',
@@ -339,8 +387,17 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'Type identifier for a node or reach: 1=river, 2=lake off river, 3=lake on river, 4=dam or waterfall, 5=unreliable topology, 6=ghost reach/node',
+      swotviz_alias: 'Reach Type',
       units: '',
-      plottable: false
+      plottable: false,
+      mapping: {
+        1: 'River',
+        2: 'Lake Off River',
+        3: 'Lake On River',
+        4: 'Dam or Waterfall',
+        5: 'Unreliable Topology',
+        6: 'Ghost Reach'
+      }
     },
     {
       abbreviation: 'lakeflag',
@@ -350,8 +407,15 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'GRWL water body identifier for each reach:  0=river, 1=lake/reservoir, 2=tidally influenced river,  3=canal',
+      swotviz_alias: 'Lake Flag',
       units: '',
-      plottable: false
+      plottable: false,
+      mapping: {
+        0: 'River',
+        1: 'Lake/Reservoir',
+        2: 'Tidally Influenced River',
+        3: 'Canal'
+      }
     },
     {
       abbreviation: 'slope',
@@ -360,9 +424,11 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Average reach slope',
+      swotviz_alias: 'Average Reach Slope',
       units: 'meters/kilometer',
       plottable: true,
-      plot_definition: 'Slope'
+      plot_definition: 'Slope',
+      significant_figures: 3
     },
     {
       abbreviation: 'n_nodes',
@@ -370,8 +436,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Number of nodes associated with the reach',
+      swotviz_alias: 'Node Count',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     },
     {
       abbreviation: 'n_rch_up',
@@ -379,8 +447,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: false,
       short_definition: 'Number of upstream reaches for each reach',
+      swotviz_alias: 'Upstream Reach Count',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     },
     {
       abbreviation: 'n_rch_down',
@@ -388,8 +458,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: false,
       short_definition: 'Number of downstream reaches for each reach',
+      swotviz_alias: 'Downstream Reach Count',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     },
     {
       abbreviation: 'rch_id_up',
@@ -397,8 +469,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Upstream reach ID',
+      swotviz_alias: 'Upstream Reach ID',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     },
     {
       abbreviation: 'rch_id_dn',
@@ -406,8 +480,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       fileType: 'reach',
       default: true,
       short_definition: 'Downstram reach ID',
+      swotviz_alias: 'Downstram Reach ID',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     },
     {
       abbreviation: 'swot_obs',
@@ -417,19 +493,23 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'The maximum number of SWOT passes to intersect each reach during the 21 day orbit cycle',
+      swotviz_alias: 'SWOT Pass Count',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     },
     {
-      abbreviation: 'swot_orbits',
+      abbreviation: 'swot_orbit',
       definition:
         'A list of the SWOT orbit tracks that intersect each reach during the 21 day orbit cycle',
       fileType: 'reach',
       default: false,
       short_definition:
         'A list of the SWOT orbit tracks that intersect each reach during the 21 day orbit cycle',
+      swotviz_alias: 'SWOT Orbit Tracks',
       units: '',
-      plottable: false
+      plottable: false,
+      significant_figures: 0 
     }
   ])
 
@@ -465,8 +545,20 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     for (const [abbreviation, val] of Object.entries(feature)) {
       const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)
       if (found) {
-        found.value = `${val} ${found.units}`
-        descriptions.push(found)
+        let displayValue;
+        const displayKey = found.swotviz_alias || found.short_definition // Use alias if available
+        if (found.mapping && found.mapping[val]) {
+            displayValue = found.mapping[val];
+        } else if (typeof val === 'string' && val.includes(' ')) {
+            displayValue = val.split(' ').join(', ');
+        } else {
+            const isNumber = !isNaN(parseFloat(val)) && isFinite(val)
+            displayValue = isNumber
+              ? `${parseFloat(val).toFixed(found.significant_figures)} ${found.units}`
+              : `${val} ${found.units}`
+        }
+        found.value = displayValue;           
+        descriptions.push({...found, displayKey})
       }
     }
     return descriptions
