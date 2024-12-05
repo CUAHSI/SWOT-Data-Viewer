@@ -12,8 +12,8 @@ export const useFeaturesStore = defineStore('features', () => {
   // set the maxtime to today in decimal seconds
   const maxTime = Date.now() / 1000
 
-  const oneMonthAgoInSeconds = new Date().getTime() / 1000 - 30 * 24 * 60 * 60
-  const initialTimeRange = [oneMonthAgoInSeconds, maxTime]
+  const threeMonthAgoInSeconds = new Date().getTime() / 1000 - 3 * 30 * 24 * 60 * 60
+  const initialTimeRange = [threeMonthAgoInSeconds, maxTime]
   const timeRange = ref(initialTimeRange)
   const querying = ref({ hydrocron: false, nodes: false })
 

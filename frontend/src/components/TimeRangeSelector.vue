@@ -1,55 +1,43 @@
 <template>
-  <v-form>
-    <v-container>
-      <v-range-slider
-        v-model="timeRange"
-        :min="featuresStore.minTime"
-        :max="featuresStore.maxTime"
-        class="align-center"
+  <v-card class="pa-2 my-2" color="input">
+    <v-card-title>Time Range</v-card-title>
+    <v-form>
+        <v-text-field
+        v-model="dateRange[0]"
+        density="compact"
+        type="date"
+        variant="outlined"
         hide-details
-        @update:modelValue="updateDateRange"
-        @end="updateDateRangeComplete"
-      >
-        <template v-slot:prepend>
-          <v-text-field
-            v-model="dateRange[0]"
-            density="compact"
-            type="date"
-            variant="outlined"
-            hide-details
-            single-line
-            @update:modelValue="updatetimeRange"
-            :rules="[rules.min]"
-          ></v-text-field>
-        </template>
-        <template v-slot:append>
-          <v-text-field
-            v-model="dateRange[1]"
-            density="compact"
-            type="date"
-            variant="outlined"
-            hide-details
-            single-line
-            @update:modelValue="updatetimeRange"
-            :rules="[rules.max]"
-          ></v-text-field>
-        </template>
-      </v-range-slider>
-    </v-container>
-  </v-form>
+        single-line
+        @update:modelValue="updatetimeRange"
+        :rules="[rules.min]"
+      ></v-text-field>
+      <v-text-field
+        v-model="dateRange[1]"
+        density="compact"
+        type="date"
+        variant="outlined"
+        hide-details
+        single-line
+        @update:modelValue="updatetimeRange"
+        :rules="[rules.max]"
+      ></v-text-field>
+    </v-form>
+  </v-card>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useFeaturesStore } from '../stores/features'
 import { useChartsStore } from '@/stores/charts'
+import { useStatsStore } from '../stores/stats'
 import { storeToRefs } from 'pinia';
-
-// define an update event that emits the new range
-const emit = defineEmits(['update', 'updateComplete'])
 
 const featuresStore = useFeaturesStore()
 const chartStore = useChartsStore()
+const statsStore = useStatsStore()
+
+const { showStatistics } = storeToRefs(chartStore)
 
 const convertSecondsToDateString = (seconds) => {
   return new Date(seconds * 1000).toISOString().split('T')[0]
@@ -71,25 +59,39 @@ const updatetimeRange = () => {
   filterDatasetsToTimeRange()
 }
 
-// When the slider range changes, update the date range.
-const updateDateRange = () => {
-  dateRange.value = timeRange.value.map((seconds) => {
-    return convertSecondsToDateString(seconds)
-  })
-}
-
-// When the user is done changing the slider range, emit event.
-const updateDateRangeComplete = () => {
-  filterDatasetsToTimeRange()
-  emit('updateComplete', timeRange.value)
-}
-
 async function filterDatasetsToTimeRange() {
   chartStore.filterDatasetsToTimeRange(
     dateRange.value[0],
     dateRange.value[1]
   )
-  emit('update', timeRange.value)
+  timeRangeUpdateComplete()
+}
+
+const timeRangeUpdateComplete = async () => {
+  // This function is called when the time selector update is complete,
+  // and is used to update the chart with series that need to be
+  // recomputed.
+
+  console.log('Time range update complete')
+  // re-compute statistics if they have been enabled
+  if (showStatistics.value == true) {
+    // remove statistics from the chart
+    let datasets = chartStore.nodeChartData.datasets.filter(
+      (s) => s.seriesType != 'computed_series'
+    )
+
+    // recompute statistics
+    let statisticSeries = await statsStore.generateStatisticsSeries()
+
+    // push statisticSeries elements into the datasets array
+    datasets = datasets.concat(statisticSeries)
+
+    // save these data to the chartStore
+    chartStore.updateNodeChartData(datasets)
+
+    // update the chart
+    chartStore.updateAllCharts()
+  }
 }
 
 const setInitialState = () => {
@@ -98,14 +100,14 @@ const setInitialState = () => {
 
   // set the initial state for the time ranges based
   // off available data.
-  const offset = 2 * 86400 // 2 days in seconds. This is chosen arbitrarily
+  const offset = 2 * 60*60*24 // 2 days in seconds. This is chosen arbitrarily
 
   // compute min/max date based on the datasets, omitting computed_series (i.e. derived data)
   const minDateSec =
-    Math.min(...chartStore.nodeChartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.minDateTime)) / 1000 -
+    Math.min(...chartStore.chartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.minDateTime)) / 1000 -
     offset
   const maxDateSec =
-    Math.max(...chartStore.nodeChartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.maxDateTime)) / 1000 +
+    Math.max(...chartStore.chartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.maxDateTime)) / 1000 +
     offset
 
   featuresStore.minTime = minDateSec
@@ -116,9 +118,6 @@ const setInitialState = () => {
   })
   filterDatasetsToTimeRange()
 }
-
-// set the min/max time range for the time slider component
-setInitialState()
 
 const rules = {
   min: (v) => {
