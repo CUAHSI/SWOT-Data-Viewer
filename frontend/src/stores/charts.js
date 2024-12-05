@@ -73,14 +73,6 @@ export const useChartsStore = defineStore('charts', () => {
       title: 'Reach Width along Reach Length',
       help: "Reach Width plotted against Reach Length for all nodes in the selected reach",
       name: 'Width vs Distance',
-    },
-    {
-      abbreviation: 'wse/width',
-      xvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
-      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
-      title: 'Water Surface Elevation vs Reach Width',
-      help: "Water Surface Elevation plotted against Reach Width for all nodes in the selected reach",
-      name: 'WSE vs Width',
     }
   ])
 
@@ -119,6 +111,14 @@ export const useChartsStore = defineStore('charts', () => {
       title: 'Reach Slope',
       help: swotVariables.value.find((v) => v.abbreviation == 'slope').definition,
       name: 'Slope vs Time',
+    },
+    {
+      abbreviation: 'wse/width',
+      xvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
+      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+      title: 'Water Surface Elevation vs Reach Width',
+      help: "Water Surface Elevation plotted against Reach Width for all nodes in the selected reach",
+      name: 'WSE vs Width',
     }
   ])
 
@@ -744,10 +744,12 @@ export const useChartsStore = defineStore('charts', () => {
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
-        storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
-          dataset.showLine = showLine.value
-        })
-        storedChart.chart.update()
+        if (storedChart.chart != null) {
+          storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
+            dataset.showLine = showLine.value
+          })
+          storedChart.chart.update()
+        }
       } catch (error) {
         console.error('Error updating chart lines', error)
       }
@@ -757,17 +759,19 @@ export const useChartsStore = defineStore('charts', () => {
   const updateAllCharts = () => {
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
-      try {
-        // check if the chart is a node chart or a reach chart
-        // and refresh the data accordingly
-        if (storedChart.chart.data.datasets[0].seriesType == 'swot_node_series') {
-          storedChart.chart.data.datasets = nodeChartData.value.datasets
-        } else {
-          storedChart.chart.data.datasets = chartData.value.datasets
-        }
-        storedChart.chart.update()
-      } catch (error) {
-        console.error('Error updating chart', error)
+      if (storedChart.chart != null) {
+        try {
+          // check if the chart is a node chart or a reach chart
+          // and refresh the data accordingly
+          if (storedChart.chart.data.datasets[0].seriesType == 'swot_node_series') {
+            storedChart.chart.data.datasets = nodeChartData.value.datasets
+          } else {
+            storedChart.chart.data.datasets = chartData.value.datasets
+          }
+          storedChart.chart.update()
+        } catch (error) {
+          console.error('Error updating chart', error)
+          }
       }
     })
   }
@@ -785,6 +789,21 @@ export const useChartsStore = defineStore('charts', () => {
 
   }
 
+const sortChartByX = (plt) => {
+ 
+  // get the chart data and sort it by the x-axis variable.
+  // If the x-axis variable is time, sort by time otherwise
+  // sort numerically.
+  let plotData = chartData.value.datasets[0].data
+  let xvar = plt.xvar.abbreviation
+
+  if (xvar == 'time_str') {
+    return plotData.sort((a,b) => new Date(a.time_str) - new Date(b.time_str));
+  }
+  else {
+    return plotData.sort((a,b) => parseFloat(a[xvar]) - parseFloat(b[xvar]));
+  }
+}
 
   return {
     updateNodeChartData,
@@ -811,6 +830,7 @@ export const useChartsStore = defineStore('charts', () => {
     updateShowLine,
     storeMountedChart,
     activePlt,
+    sortChartByX,
     activeNodeChart,
     activeReachChart,
     updateNodeDataSetStyles,
