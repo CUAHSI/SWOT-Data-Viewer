@@ -7,16 +7,20 @@
       min-width="500px"
     >
       <!-- Add Reset Zoom Icon -->
-      <v-btn
-        class="zoom-button"
-        color="#f4f4f4"
-        outlined
-        @click="resetZoom()"
-        style="position: absolute; top: 80px; right: 520px; z-index: 10;"
-        >
-        <v-icon :icon="mdiMagnifyMinusOutline" class="me-2"></v-icon>
+      <v-tooltip>
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            color="input"
+            size="small"
+            @click="resetZoom()"
+            style="position: absolute; top: 80px; right: 45px; z-index: 10;"
+            :icon="mdiMagnifyMinusOutline"
+          >
+          </v-btn>
+        </template>
         RESET ZOOM
-      </v-btn> 
+      </v-tooltip>
       <!-- Chart -->
       <Line :data="nodeChartData" :options="options" ref="activeNodeChart" :plugins="[Filler]" />
     </v-sheet>
@@ -31,6 +35,7 @@ import { nextTick, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useChartsStore } from '@/stores/charts'
 import { storeToRefs } from 'pinia'
+import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from '@mdi/js'
 
 const { lgAndUp } = useDisplay()
 
@@ -56,6 +61,14 @@ onMounted(async () => {
   chartStore.storeMountedChart(activeNodeChart.value)
   chartStore.updateShowLine()
 })
+
+const resetZoom = () => {
+  if (activeNodeChart.value?.chart?.resetZoom) {
+    activeNodeChart.value.chart.resetZoom();
+  } else {
+    console.error('Chart instance not found or resetZoom method is unavailable.');
+  }
+};
 
 const getParsing = () => {
   let parsing = {}
