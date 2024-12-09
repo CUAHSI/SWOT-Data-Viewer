@@ -43,6 +43,16 @@ export const useChartsStore = defineStore('charts', () => {
     { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
   ]
 
+  const generateDataQualityLegend = () => {
+    return dataQualityOptions.map((option) => ({
+      text: option.label,
+      fillStyle: 'black',
+      strokeStyle: option.pointBorderColor,
+      pointStyle: option.pointStyle,
+      lineWidth: 2,
+    }));
+  };
+
   // load the swot variables from the hydrologic store.
   // these are used to build the charts for the node and reach views.
   const hydrologicStore = useHydrologicStore()
@@ -73,14 +83,6 @@ export const useChartsStore = defineStore('charts', () => {
       title: 'Reach Width along Reach Length',
       help: "Reach Width plotted against Reach Length for all nodes in the selected reach",
       name: 'Width vs Distance',
-    },
-    {
-      abbreviation: 'wse/width',
-      xvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
-      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
-      title: 'Water Surface Elevation vs Reach Width',
-      help: "Water Surface Elevation plotted against Reach Width for all nodes in the selected reach",
-      name: 'WSE vs Width',
     }
   ])
 
@@ -747,10 +749,12 @@ export const useChartsStore = defineStore('charts', () => {
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       try {
-        storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
-          dataset.showLine = showLine.value
-        })
-        storedChart.chart.update()
+        if (storedChart.chart != null) {
+          storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
+            dataset.showLine = showLine.value
+          })
+          storedChart.chart.update()
+        }
       } catch (error) {
         console.error('Error updating chart lines', error)
       }
@@ -814,6 +818,7 @@ export const useChartsStore = defineStore('charts', () => {
     updateShowLine,
     storeMountedChart,
     activePlt,
+    generateDataQualityLegend,
     activeNodeChart,
     activeReachChart,
     updateNodeDataSetStyles,

@@ -6,6 +6,22 @@
       max-width="100%"
       min-width="500px"
     >
+      <!-- Add Reset Zoom Icon -->
+      <v-tooltip>
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            color="input"
+            size="small"
+            @click="resetZoom()"
+            style="position: absolute; top: 120px; right: 45px; z-index: 10;"
+            :icon="mdiMagnifyMinusOutline"
+          >
+          </v-btn>
+        </template>
+        RESET ZOOM
+      </v-tooltip>
+      <!-- Chart -->
       <Line :data="chartData" :options="options" ref="activeReachChart" />
     </v-sheet>
     <v-card v-if="hasSelectedTimeseriesPoints">
@@ -57,7 +73,7 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
-import { mdiChartBellCurveCumulative, mdiCloseBox } from '@mdi/js'
+import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from '@mdi/js'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])
@@ -111,8 +127,29 @@ const options = {
   parsing: getParsing,
   plugins: {
     legend: {
-      display: false,
-      position: 'bottom'
+      display: true,
+      position: 'top',
+      align : 'end',
+      labels: {
+        usePointStyle: true,
+        generateLabels: () => chartStore.generateDataQualityLegend(),
+        font: {
+          size: 12,
+        },
+        boxWidth: 20,
+        padding: 10,
+      },
+      title: {
+        display: true,
+        text: 'Data Quality',
+        font: {
+          size: 16,
+          weight: 'bold',
+        },
+        padding: {
+          top: 10,
+        },
+      },
     },
     title: {
       display: true,
@@ -194,6 +231,14 @@ const options = {
   },
   onClick: (e) => handleTimeseriesPointClick(e)
 }
+
+const resetZoom = () => {
+  if (activeReachChart.value?.chart?.resetZoom) {
+    activeReachChart.value.chart.resetZoom();
+  } else {
+    console.error('Chart instance not found or resetZoom method is unavailable.');
+  }
+};
 
 const handleTimeseriesPointClick = (e) => {
   const elems = activeReachChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)

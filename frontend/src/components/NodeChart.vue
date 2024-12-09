@@ -6,6 +6,22 @@
       max-width="100%"
       min-width="500px"
     >
+      <!-- Add Reset Zoom Icon -->
+      <v-tooltip>
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            color="input"
+            size="small"
+            @click="resetZoom()"
+            style="position: absolute; top: 80px; right: 45px; z-index: 10;"
+            :icon="mdiMagnifyMinusOutline"
+          >
+          </v-btn>
+        </template>
+        RESET ZOOM
+      </v-tooltip>
+      <!-- Chart -->
       <Line :data="nodeChartData" :options="options" ref="activeNodeChart" :plugins="[Filler]" />
     </v-sheet>
   </v-container>
@@ -19,6 +35,7 @@ import { nextTick, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useChartsStore } from '@/stores/charts'
 import { storeToRefs } from 'pinia'
+import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from '@mdi/js'
 
 const { lgAndUp } = useDisplay()
 
@@ -45,6 +62,14 @@ onMounted(async () => {
   chartStore.updateShowLine()
 })
 
+const resetZoom = () => {
+  if (activeNodeChart.value?.chart?.resetZoom) {
+    activeNodeChart.value.chart.resetZoom();
+  } else {
+    console.error('Chart instance not found or resetZoom method is unavailable.');
+  }
+};
+
 const getParsing = () => {
   let parsing = {}
   parsing.xAxisKey = plt.xvar.abbreviation
@@ -58,47 +83,29 @@ const options = {
   parsing: getParsing,
   plugins: {
     legend: {
-      display: false,
-      position: 'bottom',
-      labels: {
-        // hide the q0.75 series from the legend. This is because the interquartile range
-        // will be toggled by a single series. We'll use q0.25 for this.
-        filter: (item) => item.text !== 'q0.75'
-      },
-      onClick: function (e, legendItem, legend) {
-        const index = legendItem.datasetIndex
-        const ci = legend.chart
-
-        if (legendItem.text == 'IQR') {
-          // toggle the IQR data series
-          toggleByIndex(index)
-
-          // toggle the q0.75 data series that is not displayed in the legend. This will make
-          // IQR appear as a patch instead of a line.
-          let isHidden = activeNodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden
-          activeNodeChart.value.chart.data.datasets.filter((d) => d.label == 'q0.75')[0].hidden = !isHidden
-          activeNodeChart.value.chart.update()
-        } else {
-          toggleByIndex(index)
-        }
-
-        function toggleByIndex(index) {
-          if (ci.isDatasetVisible(index)) {
-            ci.hide(index)
-            legendItem.hidden = true
-          } else {
-            ci.show(index)
-            legendItem.hidden = false
-          }
-        }
-      }
-    },
-    title: {
       display: true,
-      text: title,
-      font: {
-        size: 16
-      }
+      position: 'top',
+      align : 'end',
+      labels: {
+        usePointStyle: true,
+        generateLabels: () => chartStore.generateDataQualityLegend(),
+        font: {
+          size: 12,
+        },
+        boxWidth: 20,
+        padding: 10,
+      },
+      title: {
+        display: true,
+        text: 'Data Quality',
+        font: {
+          size: 16,
+          weight: 'bold',
+        },
+        padding: {
+          top: 10,
+        },
+      },
     },
     customCanvasBackgroundColor: {
       color: 'white'
