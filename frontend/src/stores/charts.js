@@ -83,14 +83,6 @@ export const useChartsStore = defineStore('charts', () => {
       title: 'Reach Width along Reach Length',
       help: "Reach Width plotted against Reach Length for all nodes in the selected reach",
       name: 'Width vs Distance',
-    },
-    {
-      abbreviation: 'wse/width',
-      xvar: swotVariables.value.find((v) => v.abbreviation == 'width'),
-      yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
-      title: 'Water Surface Elevation vs Reach Width',
-      help: "Water Surface Elevation plotted against Reach Width for all nodes in the selected reach",
-      name: 'WSE vs Width',
     }
   ])
 
