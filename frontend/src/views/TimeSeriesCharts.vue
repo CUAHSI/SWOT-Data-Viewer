@@ -87,13 +87,24 @@ const changePlot = (plt) => {
   // re-sort the chart data by the x-axis variable
   // before rending the chart. Set the sorted data
   // to the active data in the chart prior to rendering
-  const {chartData} = storeToRefs(chartStore)
-  chartData.value.datasets[0].data = chartStore.sortChartByX(plt)
+  //const {chartData, activeChartVariables, activeReachChart} = storeToRefs(chartStore)
+  const {chartData, activePlt} = storeToRefs(chartStore)
+
+  
+  // save the active plot so we can update it when 
+  // controls (e.g. quality) are changed later.
+  activePlt.value = plt
+  
+  //chartData.value.datasets[0].data = chartStore.sortChartByX(plt)
+
+  // TODO: save this plt as the active plot so we can refresh the data in the chart.js class later.
 
   // force a re-render of the line charts
-  chartStore.updateShowLine()
-
+  chartStore.updateCurrentChart()
+//  chartStore.updateShowLine()
+  
   router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
+
 }
 
 </script>

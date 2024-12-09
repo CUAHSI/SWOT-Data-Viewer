@@ -41,8 +41,10 @@ onMounted(async () => {
   await nextTick()
 
   // push the chart to the store
+  //chartStore.storeMountedChart(activeNodeChart.value, xLabel, yLabel)
   chartStore.storeMountedChart(activeNodeChart.value)
-  chartStore.updateShowLine()
+  //chartStore.updateShowLine()
+  chartStore.updateCurrentChart()
 })
 
 const getParsing = () => {

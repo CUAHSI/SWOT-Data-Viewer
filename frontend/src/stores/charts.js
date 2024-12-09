@@ -774,9 +774,15 @@ export const useChartsStore = defineStore('charts', () => {
           }
       }
     })
+
   }
 
   const storeMountedChart = (chart) => {
+  //, xlabel, ylabel) => {
+   
+    // add x and y labels to the chart object so we can look it up later
+//    chart.xlabel = xlabel
+//    chart.ylabel = ylabel
     storedCharts.value.push(chart)
 
     // clean stored charts that are undifined
@@ -794,7 +800,7 @@ const sortChartByX = (plt) => {
   // get the chart data and sort it by the x-axis variable.
   // If the x-axis variable is time, sort by time otherwise
   // sort numerically.
-  let plotData = chartData.value.datasets[0].data
+  let plotData = getActiveChart().chart.data.datasets[0].data
   let xvar = plt.xvar.abbreviation
 
   if (xvar == 'time_str') {
@@ -803,6 +809,46 @@ const sortChartByX = (plt) => {
   else {
     return plotData.sort((a,b) => parseFloat(a[xvar]) - parseFloat(b[xvar]));
   }
+}
+
+const getActiveChart = () => 
+{
+  if (chartTab.value == 'timeseries')
+  {
+    return activeReachChart.value
+  } else
+  {
+    return activeNodeChart.value
+  }
+}
+
+const updateCurrentChart = () => {
+  let storedChart = getActiveChart()
+  if (storedChart == null) {
+      console.log('No chart to update')
+      return
+    }
+
+  console.log('storedChart', storedChart)
+  try {
+    // check if the chart is a node chart or a reach chart
+    // and refresh the data accordingly
+    if (storedChart.chart.data.datasets[0].seriesType == 'swot_node_series') {
+      storedChart.chart.data.datasets = nodeChartData.value.datasets
+    } else {
+      storedChart.chart.data.datasets = chartData.value.datasets
+    }
+  } catch (error) {
+    console.error('Error updating chart', error)
+  }
+
+  storedChart.chart.data.datasets.filter(ds => ds.seriesType != 'computed_series').forEach((dataset) => {
+    dataset.showLine = showLine.value
+    dataset.pointStyle = getPointStyles(dataset)
+  })
+  
+  // sort the chart data by the x-axis variable
+  storedChart.chart.data.datasets[0].data = sortChartByX(activePlt.value)
 }
 
   return {
@@ -834,5 +880,6 @@ const sortChartByX = (plt) => {
     activeNodeChart,
     activeReachChart,
     updateNodeDataSetStyles,
+    updateCurrentChart,
   }
 })

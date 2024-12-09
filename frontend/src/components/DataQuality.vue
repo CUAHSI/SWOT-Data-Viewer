@@ -45,6 +45,7 @@ function qualityHasChanged() {
 
   // apply the time slider filter to the data
   chartStore.filterDatasetsToTimeRange()
-  chartStore.updateAllCharts()
+
+  chartStore.updateCurrentChart()
 }
 </script>

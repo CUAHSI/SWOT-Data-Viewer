@@ -92,8 +92,12 @@ onMounted(async () => {
   await nextTick()
 
   // push the chart to the store
+  //chartStore.storeMountedChart(activeReachChart.value, xLabel, yLabel)
   chartStore.storeMountedChart(activeReachChart.value)
-  chartStore.updateShowLine()
+  
+  // force a re-render of the line charts
+  chartStore.updateCurrentChart()
+  //chartStore.updateShowLine()
 })
 
 const getParsing = () => {
