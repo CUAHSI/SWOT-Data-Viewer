@@ -3,7 +3,7 @@
     <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow @update:model-value="changePlotType">
       <v-tab value="timeseries">
         <v-icon :icon="mdiTimelineClock"></v-icon>
-        Reach Timeseries
+        Reach Averaged
       </v-tab>
       <v-tab value="distance">
         <v-icon :icon="mdiMapMarkerDistance"></v-icon>
