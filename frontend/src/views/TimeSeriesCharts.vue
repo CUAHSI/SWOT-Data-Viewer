@@ -88,7 +88,7 @@ const changePlot = (plt) => {
   // before rending the chart. Set the sorted data
   // to the active data in the chart prior to rendering
   //const {chartData, activeChartVariables, activeReachChart} = storeToRefs(chartStore)
-  const {chartData, activePlt} = storeToRefs(chartStore)
+  const {activePlt} = storeToRefs(chartStore)
 
   
   // save the active plot so we can update it when 
