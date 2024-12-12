@@ -757,6 +757,8 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const updateAllCharts = () => {
+    // This function updates the styling for all stored charts
+
     // iterate over stored charts and update the line visibility
     storedCharts.value.forEach((storedChart) => {
       if (storedChart.chart != null) {
@@ -777,15 +779,14 @@ export const useChartsStore = defineStore('charts', () => {
 
   }
 
-  const storeMountedChart = (chart) => {
-  //, xlabel, ylabel) => {
-   
-    // add x and y labels to the chart object so we can look it up later
-//    chart.xlabel = xlabel
-//    chart.ylabel = ylabel
+  const storeMountedChart = (chart, x, y) => {
+ 
+    chart.x = x
+    chart.y = y
     storedCharts.value.push(chart)
 
-    // clean stored charts that are undifined
+    console.log('Storing New Chart -> ', chart)
+    // clean stored charts that are undefined
     cleanStoredCharts()
 
   }
@@ -795,41 +796,53 @@ export const useChartsStore = defineStore('charts', () => {
 
   }
 
-const sortChartByX = (plt) => {
+const sortChartByX = (chart) => {
  
   // get the chart data and sort it by the x-axis variable.
   // If the x-axis variable is time, sort by time otherwise
   // sort numerically.
-  let plotData = getActiveChart().chart.data.datasets[0].data
-  let xvar = plt.xvar.abbreviation
+  let chartData = chart.data.datasets[0].data
+  let xvar = activePlt.value.xvar.abbreviation
 
   if (xvar == 'time_str') {
-    return plotData.sort((a,b) => new Date(a.time_str) - new Date(b.time_str));
+    return chartData.sort((a,b) => new Date(a.time_str) - new Date(b.time_str));
   }
   else {
-    return plotData.sort((a,b) => parseFloat(a[xvar]) - parseFloat(b[xvar]));
+    return chartData.sort((a,b) => parseFloat(a[xvar]) - parseFloat(b[xvar]));
   }
 }
 
 const getActiveChart = () => 
 {
-  if (chartTab.value == 'timeseries')
-  {
-    return activeReachChart.value
-  } else
-  {
-    return activeNodeChart.value
+  // Retrieves the currently active chart from the list of
+  // stored charts using its x and y labels
+
+  // return null if no charts exist in the storedCharts object. This
+  // can happen on the initial page load. 
+  if  (storedCharts.value.length == 0) {
+    return null
   }
+
+  // get the x and y labels for the currenty active chart 
+  let xlabel = activePlt.value.xvar.name
+  let ylabel = activePlt.value.yvar.name
+  
+  // add units to the labels, if they exist
+  if (activePlt.value.xvar.unit != null) { xlabel += ' (' + activePlt.value.xvar.unit + ')'}
+  if (activePlt.value.yvar.unit != null) { ylabel += ' (' + activePlt.value.yvar.unit + ')'}
+
+  // return the stored chart that matches the current x and y labels
+  return storedCharts.value.filter(c => (c.x == xlabel && c.y == ylabel) )[0]
 }
 
 const updateCurrentChart = () => {
+
+  // get the currently active chart from the chartStore.
   let storedChart = getActiveChart()
   if (storedChart == null) {
-      console.log('No chart to update')
       return
     }
 
-  console.log('storedChart', storedChart)
   try {
     // check if the chart is a node chart or a reach chart
     // and refresh the data accordingly
@@ -848,7 +861,9 @@ const updateCurrentChart = () => {
   })
   
   // sort the chart data by the x-axis variable
-  storedChart.chart.data.datasets[0].data = sortChartByX(activePlt.value)
+  storedChart.chart.data.datasets[0].data = sortChartByX(storedChart.chart)
+
+  storedChart.chart.update()
 }
 
   return {

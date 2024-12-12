@@ -92,8 +92,7 @@ onMounted(async () => {
   await nextTick()
 
   // push the chart to the store
-  //chartStore.storeMountedChart(activeReachChart.value, xLabel, yLabel)
-  chartStore.storeMountedChart(activeReachChart.value)
+  chartStore.storeMountedChart(activeReachChart.value, xLabel, yLabel)
   
   // force a re-render of the line charts
   chartStore.updateCurrentChart()

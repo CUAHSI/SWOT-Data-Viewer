@@ -95,6 +95,7 @@ const changePlot = (plt) => {
   // controls (e.g. quality) are changed later.
   activePlt.value = plt
   
+  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
   //chartData.value.datasets[0].data = chartStore.sortChartByX(plt)
 
   // TODO: save this plt as the active plot so we can refresh the data in the chart.js class later.
@@ -103,7 +104,6 @@ const changePlot = (plt) => {
   chartStore.updateCurrentChart()
 //  chartStore.updateShowLine()
   
-  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
 
 }
 
