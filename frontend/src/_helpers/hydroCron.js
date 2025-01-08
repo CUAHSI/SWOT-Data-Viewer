@@ -2,6 +2,7 @@ import { HYDROCRON_URL } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
+import { EARLIEST_HYDROCRON_DATETIME } from '../constants'
 
 String.prototype.hashCode = function() {
   var hash = 0,
@@ -66,7 +67,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     return
   }
 
-  const start_time = '2024-01-01T00:00:00Z'
+  const start_time = EARLIEST_HYDROCRON_DATETIME
   const end_time = new Date(Date.now() + MS_TO_KEEP_CACHE).toISOString().split('.')[0] + 'Z'
 
   params = {

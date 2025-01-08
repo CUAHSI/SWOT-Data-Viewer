@@ -14,3 +14,4 @@ export const ENDPOINTS = {
 }
 
 export const NODE_DATETIME_VARIATION = 1 // minutes
+export const EARLIEST_HYDROCRON_DATETIME = '2023-03-01T00:00:00Z'
