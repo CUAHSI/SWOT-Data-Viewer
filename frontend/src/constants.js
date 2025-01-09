@@ -7,10 +7,6 @@ export const APP_API_URL = import.meta.env.VITE_APP_API_URL || 'VITE_APP_API_URL
 export const HYDROCRON_URL = import.meta.env.VITE_HYDROCRON_URL || 'VITE_HYDROCRON_URL_PLACEHOLDER'
 export const ENDPOINTS = {
   openapi: `${APP_API_URL}/openapi.json`,
-  authCuahsiAuthorize: `${APP_API_URL}/auth/front/authorize`,
-  authCuahsiCallback: `${APP_API_URL}/auth/front/callback`,
-  authenticatedRoute: `${APP_API_URL}/authenticated-route`,
-  userInfo: `${APP_API_URL}/users/me`
 }
 
 export const NODE_DATETIME_VARIATION = 1 // minutes

@@ -1,23 +1,13 @@
-import subprocess
-
-from beanie import init_beanie
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.db import User, db
-from app.routers.access_control import router as access_control_router
-from app.routers.argo import router as argo_router
 from app.routers.data import router as data_router
-from app.routers.storage import router as storage_router
-from app.schemas import UserRead, UserUpdate
-from app.users import SECRET, auth_backend, cuahsi_oauth_client, fastapi_users
 from config import get_settings
 
 # Remote debugging connection
 # import epdb
 # epdb.serve(8181)
 
-# TODO: get oauth working with swagger/redoc
 # Setting the base url for swagger docs
 # https://github.com/tiangolo/fastapi/pull/1547
 # https://swagger.io/docs/specification/api-host-and-base-path/
@@ -25,8 +15,6 @@ from config import get_settings
 # https://github.com/tiangolo/fastapi/pull/499
 swagger_params = {
     "withCredentials": True,
-    "oauth2RedirectUrl": cuahsi_oauth_client.authorize_endpoint,
-    "swagger_ui_client_id": cuahsi_oauth_client.client_id,
 }
 
 app = FastAPI(
@@ -45,76 +33,7 @@ app.add_middleware(
 )
 
 app.include_router(
-    argo_router,
-    # prefix="/auth/cuahsi",
-    tags=["argo"],
-)
-
-app.include_router(
-    access_control_router,
-    # prefix="/auth/cuahsi",
-    tags=["minio"],
-)
-
-app.include_router(
-    storage_router,
-    # prefix="/auth/cuahsi",
-    tags=["minio"],
-)
-
-app.include_router(
-    fastapi_users.get_oauth_router(
-        cuahsi_oauth_client,
-        auth_backend,
-        SECRET,
-        redirect_url=get_settings().oauth2_redirect_url,
-    ),
-    prefix="/auth/cuahsi",
-    tags=["auth"],
-)
-
-app.include_router(
-    fastapi_users.get_oauth_router(
-        cuahsi_oauth_client,
-        auth_backend,
-        SECRET,
-        redirect_url=get_settings().vite_oauth2_redirect_url,
-    ),
-    prefix="/auth/front",
-    tags=["auth"],
-)
-
-app.include_router(
-    fastapi_users.get_users_router(UserRead, UserUpdate),
-    prefix="/users",
-    tags=["users"],
-)
-
-app.include_router(
     data_router,
     prefix="/data",
     tags=["data"],
 )
-
-
-@app.on_event("startup")
-async def on_startup():
-    await init_beanie(
-        database=db,
-        document_models=[
-            User,
-        ],
-    )
-    arguments = [
-        "mc",
-        "alias",
-        "set",
-        "cuahsi",
-        f"https://{get_settings().minio_api_url}",
-        get_settings().minio_access_key,
-        get_settings().minio_secret_key,
-    ]
-    try:
-        _ = subprocess.check_output(arguments)
-    except subprocess.CalledProcessError:
-        raise

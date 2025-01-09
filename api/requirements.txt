@@ -1,12 +1,7 @@
-# argo version with 3 added to major version (argo 3.4.8 == argo-workflows 6.4.8) https://github.com/argoproj/argo-workflows/tree/master/sdks/python#versioning
-argo-workflows==6.4.8
 PyYAML==6.0.1
 requests==2.32.3
 fastapi==0.111.1
-fastapi-users[beanie]
 uvicorn[standard]==0.30.1
-httpx-oauth==0.15.0
-minio==7.2.7
 pydantic-settings==2.3.4
 google-cloud-logging==3.10.0
 pyproj==3.6.1

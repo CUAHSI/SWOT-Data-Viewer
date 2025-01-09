@@ -38,7 +38,6 @@
             </v-btn>
         </template>
       </v-tooltip>
-      <!-- <UserLogin @logged-in="login" v-if="!mdAndDown" :mobile="false" /> -->
       <v-app-bar-nav-icon @click="$emit('toggleMobileNav')" v-if="smAndDown" />
     </div>
   </v-app-bar>
@@ -67,8 +66,6 @@ import { useDisplay } from 'vuetify'
 import { ref, watch } from 'vue'
 import imgUrl from '@/assets/swotviz-high-quality-transparent-v10.png'
 import { mdiLink } from '@mdi/js'
-// import UserLogin from "@/components/UserLogin.vue";
-// import { useAuthStore } from '../stores/auth'
 
 defineProps(['paths'])
 defineEmits(['toggleMobileNav'])
@@ -93,11 +90,6 @@ const toggleDialog = () => {
     showCopyUrlDialog.value = !showCopyUrlDialog.value;
     hasCopied.value = false;
 }
-
-// const auth = useAuthStore()
-// function login() {
-//   auth.isLoggedIn = true
-// }
 </script>
 
 <style lang="scss" scoped>
