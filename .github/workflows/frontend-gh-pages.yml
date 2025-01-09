@@ -42,7 +42,6 @@ jobs:
           touch .env
           echo VITE_APP_API_URL=${{ secrets.VITE_APP_API_URL }} >> .env
           echo VITE_APP_FULL_URL=${{ secrets.VITE_APP_FULL_URL }} >> .env
-          echo VITE_OAUTH2_REDIRECT_URL=${{ secrets.VITE_OAUTH2_REDIRECT_URL }} >> .env
           echo VITE_APP_BASE=${{ secrets.VITE_APP_BASE }} >> .env
           echo VITE_HYDROCRON_URL=${{ secrets.VITE_HYDROCRON_URL }} >> .env
           cp .env ../.env

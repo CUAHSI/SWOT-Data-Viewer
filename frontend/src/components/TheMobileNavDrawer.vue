@@ -23,24 +23,17 @@
       <v-divider class="my-4"></v-divider>
 
       <v-list class="text-body-1">
-        <!-- <UserLogin @logged-in="login" mobile="true" /> -->
       </v-list>
     </v-list>
   </v-navigation-drawer>
 </template>
 
 <script setup>
-// import UserLogin from '@/components/UserLogin.vue'
-import { useAuthStore } from '../stores/auth'
 import { useDisplay } from 'vuetify'
 
 const props = defineProps(['show', 'paths'])
 defineEmits(['toggleMobileNav'])
 
-const authStore = useAuthStore()
 const { mdAndDown } = useDisplay()
 
-function login() {
-  authStore.isLoggedIn = true
-}
 </script>
