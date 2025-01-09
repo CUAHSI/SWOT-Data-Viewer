@@ -2,13 +2,17 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useChartsStore } from '@/stores/charts'
+import { EARLIEST_HYDROCRON_DATETIME } from '../constants'
+import { parseISO, getUnixTime } from 'date-fns'
 
 export const useFeaturesStore = defineStore('features', () => {
   const selectedFeatures = ref([])
   const activeFeature = ref(null)
   const nodes = ref([])
-  // set the mintime to date of first data, 2023-03-29, relative to ECMAScript epoch in decimal seconds
-  const minTime = new Date('2023-03-29').getTime() / 1000
+
+  // set the mintime to date of first data relative to ECMAScript epoch in decimal seconds
+  const minTime = getUnixTime(parseISO(EARLIEST_HYDROCRON_DATETIME))
+
   // set the maxtime to today in decimal seconds
   const maxTime = Date.now() / 1000
 
