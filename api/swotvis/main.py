@@ -8,7 +8,6 @@ from config import get_settings
 # import epdb
 # epdb.serve(8181)
 
-# TODO: get oauth working with swagger/redoc
 # Setting the base url for swagger docs
 # https://github.com/tiangolo/fastapi/pull/1547
 # https://swagger.io/docs/specification/api-host-and-base-path/
