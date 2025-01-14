@@ -44,20 +44,13 @@ import { ref } from 'vue'
 import { useFeaturesStore } from '../stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { storeToRefs } from 'pinia';
+import { convertDateStringToSeconds, convertSecondsToDateString  } from '@/_helpers/time'
 
 // define an update event that emits the new range
 const emit = defineEmits(['update', 'updateComplete'])
 
 const featuresStore = useFeaturesStore()
 const chartStore = useChartsStore()
-
-const convertSecondsToDateString = (seconds) => {
-  return new Date(seconds * 1000).toISOString().split('T')[0]
-}
-
-const convertDateStringToSeconds = (dateString) => {
-  return new Date(dateString).getTime() / 1000
-}
 
 // There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
 const { timeRange } = storeToRefs(featuresStore)

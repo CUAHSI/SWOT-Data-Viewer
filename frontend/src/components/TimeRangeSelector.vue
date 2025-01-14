@@ -32,20 +32,13 @@ import { useFeaturesStore } from '../stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { useStatsStore } from '../stores/stats'
 import { storeToRefs } from 'pinia';
+import { convertDateStringToSeconds, convertSecondsToDateString  } from '@/_helpers/time'
 
 const featuresStore = useFeaturesStore()
 const chartStore = useChartsStore()
 const statsStore = useStatsStore()
 
 const { showStatistics } = storeToRefs(chartStore)
-
-const convertSecondsToDateString = (seconds) => {
-  return new Date(seconds * 1000).toISOString().split('T')[0]
-}
-
-const convertDateStringToSeconds = (dateString) => {
-  return new Date(dateString).getTime() / 1000
-}
 
 // There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
 const { timeRange } = storeToRefs(featuresStore)

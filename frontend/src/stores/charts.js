@@ -593,7 +593,15 @@ export const useChartsStore = defineStore('charts', () => {
     if (!(date instanceof Date)) {
       date = new Date(date)
     }
-    return colorScale(date).hex()
+    try {
+      const scale = colorScale(date)
+      const hex = scale.hex()
+      return hex
+    }
+    catch (error) {
+      console.error('Invalid date', date)
+      return 'black'
+    }
   }
 
   const getDateGradientColors = (dataSet) => {
