@@ -31,14 +31,14 @@
         </nav>
       </v-card>
       <v-spacer></v-spacer>
-      <v-tooltip text="Share This Page" location="start">
+      <v-tooltip text="Share This Page" location="bottom">
         <template v-slot:activator="{ props }">
             <v-btn icon v-bind="props" @click="toggleDialog">
                 <v-icon :icon="mdiLink"></v-icon>
             </v-btn>
         </template>
       </v-tooltip>
-      <v-tooltip text="Report an Issue" location="start">
+      <v-tooltip text="Report an Issue" location="bottom">
         <template v-slot:activator="{ props }">
           <v-btn icon v-bind="props" @click="toggleGithubDialog">
             <v-icon :icon="mdiGithub"></v-icon>
@@ -68,7 +68,7 @@
   </v-dialog>
   <v-dialog v-model="showGithubDialog" max-width="500">
     <v-card>
-      <v-card-title>Report an Issue</v-card-title>
+      <v-card-title>Create an Issue</v-card-title>
       <v-card-text class="d-flex flex-wrap justify-center">
         <p class="text-body-1">
           Please report any issues you find with SWOTVIZ to our GitHub repository.
