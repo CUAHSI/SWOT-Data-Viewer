@@ -70,7 +70,7 @@ const chartStore = useChartsStore()
 const router = useRouter()
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-const { activePlt, activeReachChart } = storeToRefs(chartStore)
+const { activePlt, activeReachChart, chartTab } = storeToRefs(chartStore)
 
 onMounted(() => {
   // check for query params that determine the pltTab
@@ -84,7 +84,7 @@ onMounted(() => {
 })
 
 const changePlot = (plt) => {
-  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
+  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation, plot: chartTab.value } })
 }
 
 </script>

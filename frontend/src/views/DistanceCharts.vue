@@ -70,7 +70,7 @@ const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
 const router = useRouter()
 
-const { activePlt, activeNodeChart, nodeChartData } = storeToRefs(chartStore)
+const { activePlt, activeNodeChart, nodeChartData, chartTab } = storeToRefs(chartStore)
 
 onMounted(() => {
   // check for query params that determine the activePlt
@@ -84,7 +84,7 @@ onMounted(() => {
 })
 
 const changePlot = (plt) => {
-  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation } })
+  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation, plot: chartTab.value } })
 }
 
 const resetData = () => {

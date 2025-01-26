@@ -1,6 +1,6 @@
 <template>
   <v-container v-if="hasData" fluid fill-height>
-    <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow @update:model-value="changePlotType">
+    <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
       <v-tab value="timeseries">
         <v-icon :icon="mdiTimelineClock"></v-icon>
         Reach Averaged
@@ -85,10 +85,6 @@ onMounted(() => {
     }
   }
 })
-
-const changePlotType = (plot) => {
-  router.push({ query: { plot } })
-}
 
 const runQuery = async () => {
   querying.value.hydrocron = true
