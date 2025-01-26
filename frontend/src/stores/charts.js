@@ -402,10 +402,10 @@ export const useChartsStore = defineStore('charts', () => {
     })
     timeStampGroups[lastTime.getTime()] = currentGroup
 
-    // now sort each group by node_dist
+    // sort the data within each group by distance to outlet
     for (const date in timeStampGroups) {
       timeStampGroups[date].sort((a, b) => {
-        return a.node_dist - b.node_dist
+        return a.p_dist_out - b.p_dist_out
       })
     }
     return timeStampGroups
