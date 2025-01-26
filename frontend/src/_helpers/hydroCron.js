@@ -231,21 +231,30 @@ async function downloadMultiNodesJson(nodes = []) {
   downloadBlob(blob, filename)
 }
 
+async function modifyDateTimeStringForExcel(csvData) {
+  // Modify the time_str format for excel compatibility
+  // Excel doesn’t natively recognize the ISO 8601 datetime format
+  // So we convert to yyyy-MM-dd HH:mm:ss
+  csvData = csvData.replace(/T/g, ' ')
+  csvData = csvData.replace(/Z/g, '')
+  return csvData
+}
+
 async function downloadMultiNodesCsv(nodes = []) {
   if (nodes.length === 0) {
     nodes = useFeaturesStore().nodes
   }
   const csvData = await Promise.all(
     nodes.map(async (node, index) => {
-      const csv = await queryHydroCron(node, 'csv')
+      let csv = await queryHydroCron(node, 'csv')
       // strip the header from all but the first node
       if (index !== 0) {
         return csv.split('\n').slice(1).join('\n')
       }
+      csv = await modifyDateTimeStringForExcel(csv)
       return csv
     })
   )
-  console.log('CSV data:', csvData)
   const blob = new Blob(csvData, { type: 'text/csv' })
   let filename = getLongFilename(nodes[0]) + '.csv'
   filename = `${nodes.length}_nodes_${filename}`
@@ -258,7 +267,8 @@ async function downloadCsv(feature = null) {
     const featuresStore = useFeaturesStore()
     feature = featuresStore.activeFeature
   }
-  const csvData = await queryHydroCron(feature, 'csv')
+  let csvData = await queryHydroCron(feature, 'csv')
+  csvData = await modifyDateTimeStringForExcel(csvData)
   const blob = new Blob([csvData], { type: 'text/csv' })
   const filename = `${getLongFilename(feature)}.csv`
   downloadBlob(blob, filename)
