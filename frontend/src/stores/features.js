@@ -121,5 +121,4 @@ export const useFeaturesStore = defineStore('features', () => {
     // https://prazdevs.github.io/pinia-plugin-persistedstate/guide/config.html#pick
     pick: ['timeRange'],
   }
-
 })

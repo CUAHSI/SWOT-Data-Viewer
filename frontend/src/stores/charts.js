@@ -845,4 +845,10 @@ export const useChartsStore = defineStore('charts', () => {
     activeReachChart,
     updateNodeDataSetStyles,
   }
+},
+{
+  persist: {
+    // https://prazdevs.github.io/pinia-plugin-persistedstate/guide/config.html#pick
+    pick: ['showLine', 'dataQualityFlags', 'showStatistics'],
+  }
 })
