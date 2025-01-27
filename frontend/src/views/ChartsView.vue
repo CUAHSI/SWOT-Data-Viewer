@@ -1,6 +1,6 @@
 <template>
   <v-container v-if="hasData" fluid fill-height>
-    <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow @update:model-value="changePlotType">
+    <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
       <v-tab value="timeseries">
         <v-icon :icon="mdiTimelineClock"></v-icon>
         Reach Averaged
@@ -70,25 +70,14 @@ onMounted(() => {
     }
     runQuery()
   }
-  else if (props.reachId !== "") {
+  const currentRoute = router.currentRoute.value
+  chartStore.checkQueryParams(currentRoute)
+  if (props.reachId !== "") {
     querying.value.hydrocron = true
     console.log('Setting active feature by reach id', props.reachId)
     featuresStore.setActiveFeatureByReachId(props.reachId)
-    
-    // check for query params that determine the chartTab
-    const query = router.currentRoute.value.query
-    if (query.plot) {
-      // check that the chartTab is valid
-      if (query.plot === 'timeseries' || query.plot === 'distance') {
-        chartStore.chartTab = query.plot
-      }
-    }
   }
 })
-
-const changePlotType = (plot) => {
-  router.push({ query: { plot } })
-}
 
 const runQuery = async () => {
   querying.value.hydrocron = true

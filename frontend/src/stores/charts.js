@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
@@ -7,6 +7,7 @@ import chroma from 'chroma-js'
 import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { useAlertStore } from '@/stores/alerts'
+import { useRouter } from 'vue-router'
 
 
 
@@ -24,6 +25,7 @@ export const useChartsStore = defineStore('charts', () => {
   const showLine = ref(true)
   const dataQualityFlags = ref([0, 1, 2])  // by default don't show bad data
   let colorScale = chroma.scale('YlGnBu').mode('lch').colors(3)
+  const router = useRouter()
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -809,6 +811,93 @@ export const useChartsStore = defineStore('charts', () => {
 
   }
 
+  const updateRouteAfterPlotChange = async () => {
+    const query = {
+      variables: activePlt.value.abbreviation,
+      plot: chartTab.value,
+      showLine: showLine.value,
+      showStatistics: showStatistics.value,
+      dataQualityFlags: dataQualityFlags.value,
+      // timeRange: timeRange.value,
+    }
+    await router.push({
+      query
+    })
+  }
+
+  const checkQueryParams = (to) => {
+    let query = to.query
+    if (!query) {
+      query = router.currentRoute.value.query
+    }
+    if (query.plot) {
+      chartTab.value = query.plot
+    }
+    if (query.variables) {
+      let plt = null
+      if (query.plot == 'timeseries') {
+        plt = reachCharts.value.find((plt) => plt.abbreviation === query.variables)
+      }else{
+        plt = nodeCharts.value.find((plt) => plt.abbreviation === query.variables)
+      }
+      if (plt) {
+        activePlt.value = plt
+      }else{
+        console.error("Invalid Plot Abbreviation", query.variables)
+      }
+    }
+    if (query.showLine) {
+      showLine.value = query.showLine == 'true'
+    }
+    if (query.showStatistics) {
+      showStatistics.value = query.showStatistics == 'true'
+    }
+    if (query.dataQualityFlags) {
+      // if the query is a string, convert it to an array
+      if (typeof query.dataQualityFlags === 'string') {
+        query.dataQualityFlags = [dataQualityFlags]
+      }
+      // now convert the array of strings to an array of integers
+      query.dataQualityFlags = query.dataQualityFlags.map((flag) => parseInt(flag))
+
+      // and remove duplicates
+      query.dataQualityFlags = [...new Set(query.dataQualityFlags)]
+
+      dataQualityFlags.value = query.dataQualityFlags
+    }
+    // TODO: Serialize time range
+    // if (query.timeRange) {
+    //   featureStore.timeRange = query.timeRange
+    // }
+
+    // Watchers to trigger updateRouteAfterPlotChange
+    watch(chartTab, () => { 
+      console.log('Chart Tab Changed', chartTab.value)
+      updateRouteAfterPlotChange()
+    })
+    watch(activePlt, (pre, post) => { 
+      console.log('Active PLT Changed', pre, post)
+      updateRouteAfterPlotChange()
+    })
+    watch(showLine, () => { 
+      console.log('Show Line Changed', showLine.value)
+      updateRouteAfterPlotChange()
+    })
+    watch(showStatistics, () => { 
+      console.log('Show Statistics Changed', showStatistics.value)
+      updateRouteAfterPlotChange()
+    })
+    watch(dataQualityFlags, () => { 
+      console.log('Data Quality Flags Changed', dataQualityFlags.value)
+      updateRouteAfterPlotChange()
+    })
+    // TODO: watch time range
+    // watch(timeRange, () => {
+    //   console.log('Time Range Changed', timeRange.value)
+    //   updateRouteAfterPlotChange()
+    // })
+  }
+
   const cleanStoredCharts = () => {
     storedCharts.value = storedCharts.value.filter(e => e.chart != undefined) ;
 
@@ -844,5 +933,13 @@ export const useChartsStore = defineStore('charts', () => {
     activeNodeChart,
     activeReachChart,
     updateNodeDataSetStyles,
+    updateRouteAfterPlotChange,
+    checkQueryParams,
   }
+},
+{
+  // persist: {
+  //   // https://prazdevs.github.io/pinia-plugin-persistedstate/guide/config.html#pick
+  //   pick: ['showLine', 'dataQualityFlags', 'showStatistics'],
+  // }
 })
