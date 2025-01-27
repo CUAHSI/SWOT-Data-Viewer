@@ -811,43 +811,13 @@ export const useChartsStore = defineStore('charts', () => {
 
   }
 
-  // Watchers to trigger updateRouteAfterPlotChange
-  watch(chartTab, () => { 
-    console.log('Chart Tab Changed', chartTab.value)
-    updateRouteAfterPlotChange()
-  })
-  watch(activePlt, (pre, post) => { 
-    console.log('Active PLT Changed', pre, post)
-    updateRouteAfterPlotChange()
-  })
-  watch(showLine, () => { 
-    console.log('Show Line Changed', showLine.value)
-    updateRouteAfterPlotChange()
-  })
-  watch(showStatistics, () => { 
-    console.log('Show Statistics Changed', showStatistics.value)
-    updateRouteAfterPlotChange()
-  })
-  // TODO: CAM-442 watch time range
-  // watch(timeRange, () => {
-  //   console.log('Time Range Changed', timeRange.value)
-  //   updateRouteAfterPlotChange()
-  // })
-  // watch(dataQualityFlags, () => { 
-  //   console.log('Data Quality Flags Changed', dataQualityFlags.value)
-  //   updateRouteAfterPlotChange()
-  // })
-
   const updateRouteAfterPlotChange = async () => {
-    // const featureStore = useFeaturesStore()
-    // const { timeRange } = storeToRefs(featureStore)
     const query = {
-      // ...router.currentRoute.value.query,
       variables: activePlt.value.abbreviation,
       plot: chartTab.value,
       showLine: showLine.value,
-      // dataQualityFlags: dataQualityFlags.value,
       showStatistics: showStatistics.value,
+      dataQualityFlags: dataQualityFlags.value,
       // timeRange: timeRange.value,
     }
     await router.push({
@@ -856,7 +826,6 @@ export const useChartsStore = defineStore('charts', () => {
   }
 
   const checkQueryParams = (to) => {
-    // const featureStore = useFeaturesStore()
     let query = to.query
     if (!query) {
       query = router.currentRoute.value.query
@@ -883,14 +852,50 @@ export const useChartsStore = defineStore('charts', () => {
     if (query.showStatistics) {
       showStatistics.value = query.showStatistics == 'true'
     }
-    // TODO: CAM-442 time range
+    if (query.dataQualityFlags) {
+      // if the query is a string, convert it to an array
+      if (typeof query.dataQualityFlags === 'string') {
+        query.dataQualityFlags = [dataQualityFlags]
+      }
+      // now convert the array of strings to an array of integers
+      query.dataQualityFlags = query.dataQualityFlags.map((flag) => parseInt(flag))
+
+      // and remove duplicates
+      query.dataQualityFlags = [...new Set(query.dataQualityFlags)]
+
+      dataQualityFlags.value = query.dataQualityFlags
+    }
+    // TODO: Serialize time range
     // if (query.timeRange) {
     //   featureStore.timeRange = query.timeRange
     // }
-    // TODO: CAM-442 DQ flags
-    // if (query.dataQualityFlags) {
-    //   dataQualityFlags.value = query.dataQualityFlags
-    // }
+
+    // Watchers to trigger updateRouteAfterPlotChange
+    watch(chartTab, () => { 
+      console.log('Chart Tab Changed', chartTab.value)
+      updateRouteAfterPlotChange()
+    })
+    watch(activePlt, (pre, post) => { 
+      console.log('Active PLT Changed', pre, post)
+      updateRouteAfterPlotChange()
+    })
+    watch(showLine, () => { 
+      console.log('Show Line Changed', showLine.value)
+      updateRouteAfterPlotChange()
+    })
+    watch(showStatistics, () => { 
+      console.log('Show Statistics Changed', showStatistics.value)
+      updateRouteAfterPlotChange()
+    })
+    watch(dataQualityFlags, () => { 
+      console.log('Data Quality Flags Changed', dataQualityFlags.value)
+      updateRouteAfterPlotChange()
+    })
+    // TODO: watch time range
+    // watch(timeRange, () => {
+    //   console.log('Time Range Changed', timeRange.value)
+    //   updateRouteAfterPlotChange()
+    // })
   }
 
   const cleanStoredCharts = () => {
