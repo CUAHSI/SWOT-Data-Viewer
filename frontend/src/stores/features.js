@@ -114,4 +114,11 @@ export const useFeaturesStore = defineStore('features', () => {
     maxTime,
     querying
   }
+},
+{
+  // persist: {
+  //   // only persist the timeRange
+  //   // https://prazdevs.github.io/pinia-plugin-persistedstate/guide/config.html#pick
+  //   pick: ['timeRange'],
+  // }
 })

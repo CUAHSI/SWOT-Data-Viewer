@@ -31,11 +31,18 @@
         </nav>
       </v-card>
       <v-spacer></v-spacer>
-      <v-tooltip text="Share This Page" location="start">
+      <v-tooltip text="Share This Page" location="bottom">
         <template v-slot:activator="{ props }">
             <v-btn icon v-bind="props" @click="toggleDialog">
                 <v-icon :icon="mdiLink"></v-icon>
             </v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Report an Issue" location="bottom">
+        <template v-slot:activator="{ props }">
+          <v-btn icon v-bind="props" @click="toggleGithubDialog">
+            <v-icon :icon="mdiGithub"></v-icon>
+          </v-btn>
         </template>
       </v-tooltip>
       <v-app-bar-nav-icon @click="$emit('toggleMobileNav')" v-if="smAndDown" />
@@ -58,14 +65,30 @@
             <v-btn text="Close" @click="toggleDialog"></v-btn>
         </v-card-actions>
     </v-card>
-</v-dialog>
+  </v-dialog>
+  <v-dialog v-model="showGithubDialog" max-width="500">
+    <v-card>
+      <v-card-title>Create an Issue</v-card-title>
+      <v-card-text class="d-flex flex-wrap justify-center">
+        <p class="text-body-1">
+          Please report any issues you find with SWOTVIZ to our GitHub repository.
+        </p>
+        <v-btn variant="outlined" color="primary" class="ma-2" :href="'https://github.com/CUAHSI/SWOT-Data-Viewer/issues/new?template=bug_report.md'" target="_blank">
+          Report a Bug
+        </v-btn>
+        <v-btn variant="outlined" color="primary" class="ma-2" :href="'https://github.com/CUAHSI/SWOT-Data-Viewer/issues/new?template=feature_request.md'" target="_blank">
+          Request a Feature
+        </v-btn>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 <script setup>
 import { RouterLink, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { ref, watch } from 'vue'
 import imgUrl from '@/assets/swotviz-high-quality-transparent-v10.png'
-import { mdiLink } from '@mdi/js'
+import { mdiLink, mdiGithub } from '@mdi/js'
 
 defineProps(['paths'])
 defineEmits(['toggleMobileNav'])
@@ -73,6 +96,7 @@ defineEmits(['toggleMobileNav'])
 const { smAndDown } = useDisplay()
 
 const showCopyUrlDialog = ref(false);
+const showGithubDialog = ref(false);
 const hasCopied = ref(false);
 const route = useRoute()
 const pageUrl = ref(window.location.href)
@@ -90,6 +114,11 @@ const toggleDialog = () => {
     showCopyUrlDialog.value = !showCopyUrlDialog.value;
     hasCopied.value = false;
 }
+
+const toggleGithubDialog = () => {
+  showGithubDialog.value = !showGithubDialog.value;
+}
+
 </script>
 
 <style lang="scss" scoped>

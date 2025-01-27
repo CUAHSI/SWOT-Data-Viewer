@@ -74,6 +74,7 @@ import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
 import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from '@mdi/js'
+import { convertDateStringToSeconds } from '@/_helpers/time'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])
@@ -86,6 +87,7 @@ const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
 const { chartData, activeReachChart } = storeToRefs(chartStore)
+const { timeRange } = storeToRefs(featuresStore)
 
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -256,12 +258,16 @@ const handleTimeseriesPointClick = (e) => {
 const viewLongProfileByDates = () => {
   chartStore.setDatasetVisibility(chartStore.nodeChartData.datasets, true)
   chartStore.filterDatasetsBySetOfDates(null, selectedTimeseriesPoints.value)
+  // chartStore.filterDatasetsBySetOfDates(null, selectedTimeseriesPoints.value)
+  let start = selectedTimeseriesPoints.value[0].datetime
+  let end = selectedTimeseriesPoints.value[selectedTimeseriesPoints.value.length - 1].datetime
+  start = convertDateStringToSeconds(start)
+  end = convertDateStringToSeconds(end)
+  timeRange.value = [start, end]
+  // chartStore.filterDatasetsToTimeRange()
   chartStore.chartTab = 'distance'
-  // TODO: update the date range slider based on the selections
-  featuresStore.timeRange.value = [
-    selectedTimeseriesPoints.value[0].datetime,
-    selectedTimeseriesPoints.value[selectedTimeseriesPoints.value.length - 1].datetime
-  ]
+  chartStore.updateNodeDataSetStyles()
+  chartStore.updateAllCharts()
 }
 
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
