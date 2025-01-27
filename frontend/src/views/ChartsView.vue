@@ -74,15 +74,6 @@ onMounted(() => {
     querying.value.hydrocron = true
     console.log('Setting active feature by reach id', props.reachId)
     featuresStore.setActiveFeatureByReachId(props.reachId)
-    
-    // check for query params that determine the chartTab
-    const query = router.currentRoute.value.query
-    if (query.plot) {
-      // check that the chartTab is valid
-      if (query.plot === 'timeseries' || query.plot === 'distance') {
-        chartStore.chartTab = query.plot
-      }
-    }
   }
 })
 

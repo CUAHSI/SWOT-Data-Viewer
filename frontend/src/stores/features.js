@@ -116,9 +116,9 @@ export const useFeaturesStore = defineStore('features', () => {
   }
 },
 {
-  persist: {
-    // only persist the timeRange
-    // https://prazdevs.github.io/pinia-plugin-persistedstate/guide/config.html#pick
-    pick: ['timeRange'],
-  }
+  // persist: {
+  //   // only persist the timeRange
+  //   // https://prazdevs.github.io/pinia-plugin-persistedstate/guide/config.html#pick
+  //   pick: ['timeRange'],
+  // }
 })

@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import MapView from '../views/MapView.vue'
 import ApiView from '../views/ApiView.vue'
+import { useChartsStore } from '@/stores/charts'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -34,7 +35,12 @@ const router = createRouter({
       path: '/plots/:reachId?',
       name: 'plots',
       component: () => import('../views/ChartsView.vue'),
-      props: true
+      props: true,
+      beforeEnter: async (to, from, next) => {
+        const chartStore = useChartsStore()
+        chartStore.checkQueryParams(to)
+        next()
+      }
     },
     {
       path: "/reach/:reachId",

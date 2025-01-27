@@ -4,7 +4,7 @@
       <v-col sm="2">
         <v-card class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
-          <v-tabs v-model="activePlt" direction="vertical" color="primary" @update:model-value="changePlot">
+          <v-tabs v-model="activePlt" direction="vertical" color="primary">
             <v-tab
               v-for="plt in chartStore.reachCharts"
               :value="plt"
@@ -62,30 +62,17 @@ import { useChartsStore } from '../stores/charts'
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
-const router = useRouter()
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-const { activePlt, activeReachChart, chartTab } = storeToRefs(chartStore)
+const { activePlt, activeReachChart } = storeToRefs(chartStore)
 
 onMounted(() => {
-  // check for query params that determine the pltTab
-  const query = router.currentRoute.value.query
-  if (query.variables) {
-    const plt = chartStore.reachCharts.find((plt) => plt.abbreviation === query.variables)
-    if (plt) {
-      activePlt.value = plt
-    }
-  }
+  // chartStore.checkQueryParams()
 })
-
-const changePlot = (plt) => {
-  router.push({ query: { ...router.currentRoute.value.query, variables: plt.abbreviation, plot: chartTab.value } })
-}
 
 </script>
 

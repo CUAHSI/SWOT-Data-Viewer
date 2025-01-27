@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
@@ -7,6 +7,7 @@ import chroma from 'chroma-js'
 import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { useAlertStore } from '@/stores/alerts'
+import { useRouter } from 'vue-router'
 
 
 
@@ -24,6 +25,7 @@ export const useChartsStore = defineStore('charts', () => {
   const showLine = ref(true)
   const dataQualityFlags = ref([0, 1, 2])  // by default don't show bad data
   let colorScale = chroma.scale('YlGnBu').mode('lch').colors(3)
+  const router = useRouter()
 
   const dataQualityOptions = [
     { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -809,6 +811,88 @@ export const useChartsStore = defineStore('charts', () => {
 
   }
 
+  // Watchers to trigger updateRouteAfterPlotChange
+  watch(chartTab, () => { 
+    console.log('Chart Tab Changed', chartTab.value)
+    updateRouteAfterPlotChange()
+  })
+  watch(activePlt, (pre, post) => { 
+    console.log('Active PLT Changed', pre, post)
+    updateRouteAfterPlotChange()
+  })
+  watch(showLine, () => { 
+    console.log('Show Line Changed', showLine.value)
+    updateRouteAfterPlotChange()
+  })
+  watch(showStatistics, () => { 
+    console.log('Show Statistics Changed', showStatistics.value)
+    updateRouteAfterPlotChange()
+  })
+  // TODO: CAM-442 watch time range
+  // watch(timeRange, () => {
+  //   console.log('Time Range Changed', timeRange.value)
+  //   updateRouteAfterPlotChange()
+  // })
+  // watch(dataQualityFlags, () => { 
+  //   console.log('Data Quality Flags Changed', dataQualityFlags.value)
+  //   updateRouteAfterPlotChange()
+  // })
+
+  const updateRouteAfterPlotChange = async () => {
+    // const featureStore = useFeaturesStore()
+    // const { timeRange } = storeToRefs(featureStore)
+    const query = {
+      // ...router.currentRoute.value.query,
+      variables: activePlt.value.abbreviation,
+      plot: chartTab.value,
+      showLine: showLine.value,
+      // dataQualityFlags: dataQualityFlags.value,
+      showStatistics: showStatistics.value,
+      // timeRange: timeRange.value,
+    }
+    await router.push({
+      query
+    })
+  }
+
+  const checkQueryParams = (to) => {
+    // const featureStore = useFeaturesStore()
+    let query = to.query
+    if (!query) {
+      query = router.currentRoute.value.query
+    }
+    if (query.plot) {
+      chartTab.value = query.plot
+    }
+    if (query.variables) {
+      let plt = null
+      if (query.plot == 'timeseries') {
+        plt = reachCharts.value.find((plt) => plt.abbreviation === query.variables)
+      }else{
+        plt = nodeCharts.value.find((plt) => plt.abbreviation === query.variables)
+      }
+      if (plt) {
+        activePlt.value = plt
+      }else{
+        console.error("Invalid Plot Abbreviation", query.variables)
+      }
+    }
+    if (query.showLine) {
+      showLine.value = query.showLine == 'true'
+    }
+    if (query.showStatistics) {
+      showStatistics.value = query.showStatistics == 'true'
+    }
+    // TODO: CAM-442 time range
+    // if (query.timeRange) {
+    //   featureStore.timeRange = query.timeRange
+    // }
+    // TODO: CAM-442 DQ flags
+    // if (query.dataQualityFlags) {
+    //   dataQualityFlags.value = query.dataQualityFlags
+    // }
+  }
+
   const cleanStoredCharts = () => {
     storedCharts.value = storedCharts.value.filter(e => e.chart != undefined) ;
 
@@ -844,11 +928,13 @@ export const useChartsStore = defineStore('charts', () => {
     activeNodeChart,
     activeReachChart,
     updateNodeDataSetStyles,
+    updateRouteAfterPlotChange,
+    checkQueryParams,
   }
 },
 {
-  persist: {
-    // https://prazdevs.github.io/pinia-plugin-persistedstate/guide/config.html#pick
-    pick: ['showLine', 'dataQualityFlags', 'showStatistics'],
-  }
+  // persist: {
+  //   // https://prazdevs.github.io/pinia-plugin-persistedstate/guide/config.html#pick
+  //   pick: ['showLine', 'dataQualityFlags', 'showStatistics'],
+  // }
 })
