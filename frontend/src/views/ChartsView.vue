@@ -70,7 +70,9 @@ onMounted(() => {
     }
     runQuery()
   }
-  else if (props.reachId !== "") {
+  const currentRoute = router.currentRoute.value
+  chartStore.checkQueryParams(currentRoute)
+  if (props.reachId !== "") {
     querying.value.hydrocron = true
     console.log('Setting active feature by reach id', props.reachId)
     featuresStore.setActiveFeatureByReachId(props.reachId)

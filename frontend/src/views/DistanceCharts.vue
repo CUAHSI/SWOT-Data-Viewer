@@ -71,7 +71,6 @@ const chartStore = useChartsStore()
 const { activePlt, activeNodeChart, nodeChartData } = storeToRefs(chartStore)
 
 onMounted(() => {
-  // chartStore.checkQueryParams()
 })
 
 const resetData = () => {

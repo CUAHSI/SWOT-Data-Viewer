@@ -71,7 +71,6 @@ let hasData = computed(() => chartStore.chartData && chartStore.chartData.datase
 const { activePlt, activeReachChart } = storeToRefs(chartStore)
 
 onMounted(() => {
-  // chartStore.checkQueryParams()
 })
 
 </script>
