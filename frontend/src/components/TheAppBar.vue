@@ -7,10 +7,11 @@
     elevate-on-scroll
     fixed
     app
+    height="70"
   >
     <div class="d-flex align-end full-height pa-2 align-center w-100">
       <router-link :to="{ path: `/` }" class="logo">
-        <v-img :src="imgUrl" cover width="8rem"></v-img>
+        <v-img :src="imgUrl" cover width="10rem" class="ma-2"></v-img>
       </router-link>
 
       <v-spacer></v-spacer>
@@ -87,7 +88,7 @@
 import { RouterLink, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { ref, watch } from 'vue'
-import imgUrl from '@/assets/swotviz-high-quality-transparent-v10.png'
+import imgUrl from '@/assets/swot-logo-v12-transparent-bkg.png'
 import { mdiLink, mdiGithub } from '@mdi/js'
 
 defineProps(['paths'])

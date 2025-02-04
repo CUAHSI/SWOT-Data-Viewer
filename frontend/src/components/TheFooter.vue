@@ -1,18 +1,16 @@
 <template>
-  <v-footer
-    height="50"
-    v-if="!$route.meta.hideNavigation"
-    fixed
-    app
-    color="navbar"
-    class="d-flex flex-column"
-  >
-    <div class="d-flex align-end full-height align-center w-100">
+  <v-footer v-if="!$route.meta.hideNavigation" app color="navbar" class="d-flex flex-column">
+    <div class="d-flex w-100 position-relative">
       <v-spacer></v-spacer>
-      <v-btn color="secondary" href="https://www.cuahsi.org/" target="_blank">
-        <v-img :src="imgUrl" cover width="10rem"></v-img>
-      </v-btn>
-      <!-- <ThemeButton /> -->
+      <div class="poweredbycontainer">
+        <v-card href="https://cuahsi.org" class="mx-auto float-left" rel="noopener" target="_blank"
+          subtitle="Powered by" min-width="
+          16rem">
+          <template v-slot:append>
+            <v-img :src="imgUrl" cover width="8rem"></v-img>
+          </template>
+        </v-card>
+      </div>
     </div>
   </v-footer>
 </template>
@@ -24,11 +22,11 @@ import imgUrl from '@/assets/cuahsi-logo.png'
 
 <style lang="scss" scoped>
 .logo {
-  height: 100%;
+  height: 10vh;
   cursor: pointer;
 
   img {
-    height: 100%;
+    height: 10vh;
   }
 }
 </style>
