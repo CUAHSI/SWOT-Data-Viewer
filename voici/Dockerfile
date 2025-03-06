@@ -15,7 +15,8 @@ COPY notebooks notebooks
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1  # (otherwise python will not be found)
 # run voici
-RUN voici notebooks
+RUN voici build --contents notebooks --output-dir _output
+
 
 # Production layer
 FROM caddy:2.7.6-alpine as prod
