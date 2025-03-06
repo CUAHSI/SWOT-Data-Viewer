@@ -24,6 +24,19 @@ services:
     # depends_on:
     #   - api
 
+  voici:
+    image: voici
+    env_file:
+      - .env
+    build:
+      dockerfile: Dockerfile
+      context: ./voici/
+    ports:
+      - 8000:8000
+    restart: unless-stopped
+    volumes:
+      - ./voici/content:/content
+
   api:
     image: api
     ports:
