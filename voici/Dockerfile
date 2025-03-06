@@ -11,11 +11,11 @@ RUN micromamba install -y -n base -f build-environment.yml && \
 # RUN micromamba install -n base voici --yes
 
 # copy the content
-COPY content content
+COPY notebooks notebooks
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1  # (otherwise python will not be found)
 # run voici
-RUN voici build --contents content --output-dir dist
+RUN voici notebooks
 
 # Production layer
 FROM caddy:2.7.6-alpine as prod
@@ -23,9 +23,9 @@ FROM caddy:2.7.6-alpine as prod
 # Copy config
 COPY caddy.docker.json /etc/caddy/caddy.json
 
-# Copy source dist
-COPY --from=voici-build /voici/dist /srv
+# Copy source dir
+COPY --from=voici-build /voici/_output /srv
 
-EXPOSE 8000
+EXPOSE 8090
 
 CMD ["caddy", "run", "--config", "/etc/caddy/caddy.json"]

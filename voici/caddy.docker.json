@@ -6,7 +6,7 @@
           "automatic_https": {
             "disable": true
           },
-          "listen": [":8000"],
+          "listen": [":8090"],
           "routes": [
             {
               "handle": [
@@ -24,18 +24,6 @@
                 }
               ],
               "terminal": true
-            },
-            {
-              "handle": [
-                {
-                  "handler": "rewrite",
-                  "uri": "/index.html"
-                },
-                {
-                  "handler": "file_server",
-                  "root": "/srv"
-                }
-              ]
             }
           ]
         }

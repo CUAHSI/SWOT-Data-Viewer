@@ -10,6 +10,9 @@ services:
       - 443:443
     depends_on:
       - api
+      - frontend
+      - voici
+    restart: unless-stopped
   
   frontend:
     image: frontend
@@ -32,10 +35,8 @@ services:
       dockerfile: Dockerfile
       context: ./voici/
     ports:
-      - 8000:8000
+      - 8090:8090
     restart: unless-stopped
-    volumes:
-      - ./voici/content:/content
 
   api:
     image: api
