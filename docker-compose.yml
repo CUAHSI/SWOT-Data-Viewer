@@ -11,7 +11,6 @@ services:
     depends_on:
       - api
       - frontend
-      - voici
     restart: unless-stopped
   
   frontend:
@@ -24,20 +23,8 @@ services:
     ports:
       - 8080:8080
     restart: unless-stopped
-    # depends_on:
-    #   - api
-
-  voici:
-    image: voici
-    env_file:
-      - .env
-    build:
-      dockerfile: Dockerfile
-      context: ./voici/
-    # ports:
-    #   # TODO voici seems not to redirect properly when using anything other than 80
-    #   - 8090:8090
-    restart: unless-stopped
+    depends_on:
+      - api
 
   api:
     image: api

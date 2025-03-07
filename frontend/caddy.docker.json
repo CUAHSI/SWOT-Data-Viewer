@@ -12,7 +12,7 @@
               "handle": [
                 {
                   "handler": "file_server",
-                  "root": "/srv"
+                  "root": "/srv/swotviz"
                 }
               ],
               "match": [
@@ -27,13 +27,27 @@
             },
             {
               "handle": [
+              {
+                "handler": "file_server",
+                "root": "/srv/voici"
+              }
+              ],
+              "match": [
+              {
+                "path": ["*voici*", "*all.json*", "*remoteEntry*"]
+              }
+              ],
+              "terminal": true
+            },
+            {
+              "handle": [
                 {
                   "handler": "rewrite",
                   "uri": "/index.html"
                 },
                 {
                   "handler": "file_server",
-                  "root": "/srv"
+                  "root": "/srv/swotviz"
                 }
               ]
             }
