@@ -34,8 +34,9 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./voici/
-    ports:
-      - 8090:8090
+    # ports:
+    #   # TODO voici seems not to redirect properly when using anything other than 80
+    #   - 8090:8090
     restart: unless-stopped
 
   api:
