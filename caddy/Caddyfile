@@ -1,0 +1,23 @@
+localhost:443 {
+  redir /api /api/
+  handle_path /api/* {
+    reverse_proxy api:8000
+  }
+
+  handle_path /openapi.json {
+    reverse_proxy api:8000
+  }
+
+  handle_path /docs {
+    reverse_proxy api:8000
+  }
+
+  handle_path /redoc {
+    reverse_proxy api:8000
+  }
+
+  handle * {
+    reverse_proxy host.docker.internal:8080
+  }
+  
+}
