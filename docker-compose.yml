@@ -1,15 +1,19 @@
 version: '3'
 
 services:
-  nginx:
-    image: nginx:1.24.0
+  caddy:
+    image: caddy:2.7.6-alpine
+    build:
+      context: ./caddy/
     volumes:
-      - ./nginx/nginx-local-frontend-dev.conf:/etc/nginx/nginx.conf
-      - ./nginx/config:/etc/ssl
+      - ./caddy:/etc/caddy
     ports:
       - 443:443
+      - 80:80
     depends_on:
       - api
+      - frontend
+    restart: unless-stopped
   
   frontend:
     image: frontend
@@ -21,8 +25,8 @@ services:
     ports:
       - 8080:8080
     restart: unless-stopped
-    # depends_on:
-    #   - api
+    depends_on:
+      - api
 
   api:
     image: api

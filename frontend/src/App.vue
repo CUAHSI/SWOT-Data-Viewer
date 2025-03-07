@@ -65,6 +65,10 @@ const paths = [
   {
     attrs: { to: '/about' },
     label: 'About'
+  },
+  {
+    attrs: { to: '/notebooks' },
+    label: 'Notebooks'
   }
 ]
 
