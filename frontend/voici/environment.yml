@@ -8,3 +8,13 @@ dependencies:
   - bqplot
   - ipycanvas
   - ipywidgets
+  # TODO: use a different solver to resolve these deps
+  # - requests
+  # - json
+  # - pprint
+  # - xarray
+  # - geojson
+  # - matplotlib
+  # - contextily
+  # - plotly
+  # - earthaccess
