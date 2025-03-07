@@ -1,27 +1,20 @@
-FROM mambaorg/micromamba:2.0.5 as voici-build
-
+FROM continuumio/miniconda3:25.1.1-2 as voici-build
+SHELL ["/bin/bash", "--login", "-c"]
 WORKDIR /voici
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER voici/build-environment.yml build-environment.yml
-RUN micromamba create -n voici -f build-environment.yml && \
-    micromamba clean --all --yes
-SHELL ["micromamba", "run", "-n", "voici", "/bin/bash", "-c"]
+RUN conda init bash
+COPY voici/build-environment.yml build-environment.yml
+RUN conda env create -n voici -f build-environment.yml
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER voici/environment.yml environment.yml
-RUN micromamba install voici
+RUN conda activate voici
+SHELL ["conda", "run", "-n", "voici", "/bin/bash", "-c"]
+
+COPY voici/environment.yml environment.yml
+RUN conda install -c conda-forge voici
 COPY voici/notebooks notebooks
-
-ARG MAMBA_DOCKERFILE_ACTIVATE=1  # (otherwise python will not be found)
 RUN voici build --contents notebooks --output-dir dist
 
-# in order to get the required .env, context must be app/
-# docker build -f app/frontend/Dockerfile app/
 FROM node:20.9.0 as node_build
-
-# WORKDIR /tmp
-# COPY *env* ./
-# RUN [ -f ".env" ] || cp env.template .env
-# RUN grep '^VITE' .env > /.env
 
 WORKDIR /app
 COPY package.json .
@@ -32,11 +25,6 @@ RUN npm run build
 
 # Production layer
 FROM caddy:2.7.6-alpine as prod
-
-# COPY --from=build-stage .env .env
-# Install envsubst command for replacing __env files
-# RUN set -x \
-#   && apk add gettext libintl
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
