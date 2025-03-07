@@ -1,0 +1,12 @@
+:8080 {
+  redir /notebooks /notebooks/
+  handle_path /notebooks/* {
+    root * /srv/notebooks
+    file_server
+  }
+
+  handle {
+    root * /srv/swotviz
+    file_server
+  }
+}

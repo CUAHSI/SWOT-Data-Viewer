@@ -41,15 +41,15 @@ FROM caddy:2.7.6-alpine as prod
 COPY docker-entrypoint.sh /usr/local/bin/
 
 # Copy config
-COPY Caddyfile.json /etc/caddy/caddy.json
+COPY Caddyfile /etc/caddy/Caddyfile
 
 # Copy source dist
 COPY --from=node_build /app/dist /srv/swotviz
 
 # bring in the static files from voici build
-COPY --from=voici-build /voici/dist /srv/voici
+COPY --from=voici-build /voici/dist /srv/notebooks
 
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["caddy", "run", "--config", "/etc/caddy/caddy.json"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]
