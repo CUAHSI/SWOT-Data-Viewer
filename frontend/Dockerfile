@@ -12,7 +12,7 @@ SHELL ["conda", "run", "-n", "voici", "/bin/bash", "-c"]
 COPY voici/environment.yml environment.yml
 RUN conda install -c conda-forge voici
 COPY voici/notebooks notebooks
-RUN voici build --contents notebooks --output-dir dist
+RUN voici build --contents notebooks --output-dir dist --strip_sources=False
 
 FROM node:20.9.0 as node_build
 
