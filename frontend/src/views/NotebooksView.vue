@@ -22,6 +22,6 @@ let notebook_url = '/notebooks'
 
 // check if this is dev mode, if so use localhost, otherwise use the deployed version
 if (process.env.NODE_ENV === 'development') {
-  notebook_url = 'https://localhost/notebooks'
+  notebook_url = 'https://localhost/notebooks/SWOT_GISshapefiles.html'
 }
 </script>

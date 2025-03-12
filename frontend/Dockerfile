@@ -1,21 +1,14 @@
-FROM continuumio/miniconda3:25.1.1-2 as voici-build
-SHELL ["/bin/bash", "--login", "-c"]
-WORKDIR /voici
+FROM quay.io/jupyter/base-notebook:python-3.11.10 as nbconvert-build
+# FROM python:3.10-slim as nbconvert-build
+COPY ./notebooks /notebooks
+WORKDIR /notebooks
 
-RUN conda init bash
-COPY voici/build-environment.yml build-environment.yml
-RUN conda env create -n voici -f build-environment.yml
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
 
-RUN conda activate voici
-SHELL ["conda", "run", "-n", "voici", "/bin/bash", "-c"]
-
-COPY voici/environment.yml environment.yml
-RUN conda install -c conda-forge voici
-COPY voici/notebooks notebooks
-RUN voici build --contents notebooks --output-dir dist --strip_sources=False
+RUN jupyter nbconvert --to html /notebooks/*.ipynb --output-dir=/home/jovyan/dist
 
 FROM node:20.9.0 as node_build
-
 WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
@@ -34,8 +27,8 @@ COPY Caddyfile /etc/caddy/Caddyfile
 # Copy source dist
 COPY --from=node_build /app/dist /srv/swotviz
 
-# bring in the static files from voici build
-COPY --from=voici-build /voici/dist /srv/notebooks
+# bring in the static files from nbconvert build
+COPY --from=nbconvert-build /home/jovyan/dist /srv/notebooks
 
 EXPOSE 8080
 
