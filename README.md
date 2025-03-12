@@ -33,3 +33,8 @@ More detailed info is available in the [frontend readme](frontend/README.md)
 ```console
 make format
 ```
+
+## Adding notebooks
+
+You can add your (.ipynb) notebooks into [nbconvert/notebooks](nbconvert/notebooks).
+Then run [nbconvert.sh](nbconvert/nbconvert.sh). Rendered .html versions of the notebooks should be committed to this repo.
