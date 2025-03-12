@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  nbconvert:
+    build:
+      dockerfile: Dockerfile
+      context: ./
+    container_name: nbconvert
+    # override the default command with simple bash command to keep the container running
+    entrypoint: ["/bin/bash", "-c", "tail -f /dev/null"]
