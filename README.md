@@ -36,5 +36,5 @@ make format
 
 ## Adding notebooks
 
-You can add your (.ipynb) notebooks into [nbconvert/notebooks](nbconvert/notebooks).
+You can add your (.ipynb) notebooks into [frontend/public/notebooks](frontend/public/notebooks).
 Then run [nbconvert.sh](nbconvert/nbconvert.sh). Rendered .html versions of the notebooks should be committed to this repo.

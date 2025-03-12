@@ -10,10 +10,24 @@
     <v-alert v-if="isDev" type="warning">
       Notebooks must be manually rendered after updates. Run ./nbconvert/nvconvert.sh to build the notebooks.
     </v-alert>
-    <v-card>
-      <v-card-text>
-        <v-btn v-for="notebook in notebookList" :key="notebook.name" :href="`/notebooks/${notebook.name}`" text>
-          {{ removeExtension(notebook.name) }}
+    <v-card v-for="notebook in renderedNotebookList" :key="notebook.name" width="300">
+      <template v-slot:title>
+        <span class="font-weight-black">{{ removeExtension(notebook.name) }}</span>
+      </template>
+      <v-card-text class="d-flex justify-space-between">
+        <v-btn :href="`/notebooks/${notebook.name}`" text target="_blank">
+          <v-icon left>{{ mdiNotebook }}</v-icon>
+          View
+          <v-tooltip activator="parent" location="bottom">
+            View rendered copy of {{ notebook.name }}
+          </v-tooltip>
+        </v-btn>
+        <v-btn :href="`/notebooks/${notebook_name_from_html(notebook.name)}`" download>
+          <v-icon left>{{ mdiDownloadBox }}</v-icon>
+          Download
+          <v-tooltip activator="parent" location="bottom">
+            Download {{ notebook_name_from_html(notebook.name) }}
+          </v-tooltip>
         </v-btn>
       </v-card-text>
     </v-card>
@@ -22,6 +36,10 @@
 
 <script setup>
 import { computed } from 'vue'
+import {
+  mdiDownloadBox,
+  mdiNotebook,
+} from '@mdi/js'
 
 const isDev = computed(() => process.env.NODE_ENV === 'development')
 
@@ -33,8 +51,8 @@ const isDev = computed(() => process.env.NODE_ENV === 'development')
 // this list will be used to render the links to the notebooks in the template
 
 // https://vite.dev/guide/features.html#glob-import
-const notebooks = import.meta.glob('/public/notebooks/*.html')
-const notebookList = Object.keys(notebooks).map((path) => {
+const rendered_notebooks = import.meta.glob('/public/notebooks/*.html')
+let renderedNotebookList = Object.keys(rendered_notebooks).map((path) => {
   const name = path.split('/').pop()
   return {
     name
@@ -42,5 +60,23 @@ const notebookList = Object.keys(notebooks).map((path) => {
 })
 
 const removeExtension = (name) => name.replace('.html', '')
+
+// create a list of ipynb files
+const notebook_list = import.meta.glob('/public/notebooks/*.ipynb')
+const notebookList = Object.keys(notebook_list).map((path) => {
+  const name = path.split('/').pop()
+  return {
+    name
+  }
+})
+
+const notebook_name_from_html = (html_name) => html_name.replace('.html', '.ipynb')
+
+// check that every ipynb file has a corresponding html file
+// if not, remove it
+renderedNotebookList = renderedNotebookList.filter((notebook) => {
+  const name = notebook_name_from_html(notebook.name)
+  return notebookList.some((notebook) => notebook.name === notebook_name_from_html(name))
+})
 
 </script>
