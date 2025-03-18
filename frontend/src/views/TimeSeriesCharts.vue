@@ -5,11 +5,7 @@
         <v-card class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
           <v-tabs v-model="activePlt" direction="vertical" color="primary">
-            <v-tab
-              v-for="plt in chartStore.reachCharts"
-              :value="plt"
-              :key="plt.abbreviation"
-            >
+            <v-tab v-for="plt in chartStore.reachCharts" :value="plt" :key="plt.abbreviation">
               <template v-if="lgAndUp">
                 {{ plt.name }}
               </template>
@@ -18,33 +14,23 @@
               </template>
               <v-tooltip activator="parent" location="start" max-width="300px">
                 {{ plt.help }}
-              </v-tooltip
-            >
+              </v-tooltip>
             </v-tab>
           </v-tabs>
         </v-card>
-        <TimeRangeSelector/>
+        <TimeRangeSelector />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotOptions />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <DataQuality />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
-        <PlotActions :chosenPlot="activeReachChart"/>
+        <PlotActions :chosenPlot="activeReachChart" />
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
       <v-col sm="10">
         <v-window v-model="activePlt">
-          <v-window-item
-            v-for="plt in chartStore.reachCharts"
-            :key="plt.abbreviation"
-            :value="plt"
-          >
-            <LineChart
-              v-if="plt"
-              class="chart"
-              :data="chartStore.chartData"
-              :chosenPlot="plt"
-            />
+          <v-window-item v-for="plt in chartStore.reachCharts" :key="plt.abbreviation" :value="plt">
+            <LineChart v-if="plt" class="chart" :data="chartStore.chartData" :chosenPlot="plt" />
           </v-window-item>
         </v-window>
       </v-col>
@@ -70,9 +56,7 @@ const chartStore = useChartsStore()
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
 const { activePlt, activeReachChart } = storeToRefs(chartStore)
 
-onMounted(() => {
-})
-
+onMounted(() => {})
 </script>
 
 <style scoped>

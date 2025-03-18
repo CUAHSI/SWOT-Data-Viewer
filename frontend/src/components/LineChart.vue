@@ -14,7 +14,7 @@
             color="input"
             size="small"
             @click="resetZoom()"
-            style="position: absolute; top: 120px; right: 45px; z-index: 10;"
+            style="position: absolute; top: 120px; right: 45px; z-index: 10"
             :icon="mdiMagnifyMinusOutline"
           >
           </v-btn>
@@ -39,11 +39,11 @@
                 @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
               ></v-icon>
             </template>
-              <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-              <v-list-item-subtitle
-                >Average {{ props.chosenPlot?.abbreviation }}:
-                {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
-              >
+            <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
+            <v-list-item-subtitle
+              >Average {{ props.chosenPlot?.abbreviation }}:
+              {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
+            >
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -131,27 +131,27 @@ const options = {
     legend: {
       display: true,
       position: 'top',
-      align : 'end',
+      align: 'end',
       labels: {
         usePointStyle: true,
         generateLabels: () => chartStore.generateDataQualityLegend(),
         font: {
-          size: 12,
+          size: 12
         },
         boxWidth: 20,
-        padding: 10,
+        padding: 10
       },
       title: {
         display: true,
         text: 'Data Quality',
         font: {
           size: 16,
-          weight: 'bold',
+          weight: 'bold'
         },
         padding: {
-          top: 10,
-        },
-      },
+          top: 10
+        }
+      }
     },
     title: {
       display: true,
@@ -236,14 +236,19 @@ const options = {
 
 const resetZoom = () => {
   if (activeReachChart.value?.chart?.resetZoom) {
-    activeReachChart.value.chart.resetZoom();
+    activeReachChart.value.chart.resetZoom()
   } else {
-    console.error('Chart instance not found or resetZoom method is unavailable.');
+    console.error('Chart instance not found or resetZoom method is unavailable.')
   }
-};
+}
 
 const handleTimeseriesPointClick = (e) => {
-  const elems = activeReachChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+  const elems = activeReachChart.value.chart.getElementsAtEventForMode(
+    e,
+    'nearest',
+    { intersect: true },
+    false
+  )
   if (elems.length <= 0) {
     return
   }
@@ -311,5 +316,4 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
     panel.value = ['plotActions']
   }
 }
-
 </script>

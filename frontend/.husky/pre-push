@@ -1,0 +1,3 @@
+make format
+cd frontend
+npm run validate

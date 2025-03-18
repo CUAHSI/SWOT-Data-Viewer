@@ -1,14 +1,14 @@
 <template>
-    <v-switch
-      label="Statistics"
-      v-model="showStatistics"
-      color="primary"
-      @change="statsStore.toggleSeriesStatistics(showStatistics)"
-    >
-      <v-tooltip activator="parent" location="start">
-        Enable/Disable computed statistics in the long-profile plot.
-      </v-tooltip>
-    </v-switch>
+  <v-switch
+    label="Statistics"
+    v-model="showStatistics"
+    color="primary"
+    @change="statsStore.toggleSeriesStatistics(showStatistics)"
+  >
+    <v-tooltip activator="parent" location="start">
+      Enable/Disable computed statistics in the long-profile plot.
+    </v-tooltip>
+  </v-switch>
 </template>
 
 <script setup>

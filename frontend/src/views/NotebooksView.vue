@@ -2,9 +2,9 @@
   <v-container>
     <div>
       <p>
-        This page provides example notebooks for interacting with SWOT data.
-        These notebooks are designed to be run in a Jupyter environment. 
-        If you are not familiar with Jupyter, you can learn more about it <a href="https://jupyter.org/">here</a>.
+        This page provides example notebooks for interacting with SWOT data. These notebooks are
+        designed to be run in a Jupyter environment. If you are not familiar with Jupyter, you can
+        learn more about it <a href="https://jupyter.org/">here</a>.
       </p>
     </div>
     <v-alert v-if="isDev" type="warning" class="my-4">

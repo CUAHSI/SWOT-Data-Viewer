@@ -1,3 +1,1 @@
-export const notebooks = [
-  'SWOT_GISshapefiles.ipynb'
-];
+export const notebooks = ['SWOT_GISshapefiles.ipynb']

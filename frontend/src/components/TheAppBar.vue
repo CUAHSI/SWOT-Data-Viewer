@@ -34,9 +34,9 @@
       <v-spacer></v-spacer>
       <v-tooltip text="Share This Page" location="bottom">
         <template v-slot:activator="{ props }">
-            <v-btn icon v-bind="props" @click="toggleDialog">
-                <v-icon :icon="mdiLink"></v-icon>
-            </v-btn>
+          <v-btn icon v-bind="props" @click="toggleDialog">
+            <v-icon :icon="mdiLink"></v-icon>
+          </v-btn>
         </template>
       </v-tooltip>
       <v-tooltip text="Report an Issue" location="bottom">
@@ -51,20 +51,23 @@
   </v-app-bar>
   <v-dialog v-model="showCopyUrlDialog" max-width="500">
     <v-card>
-        <v-card-title>Share This Page</v-card-title>
-        <v-card-text>
-            <p class="text-body-1">
-                Copy the link below to share this page with others.
-            </p>
-            <v-text-field variant="outlined" v-on:focus="$event.target.select()" ref="clone" readonly
-                :value="pageUrl" />
-            <v-btn v-if="!hasCopied" @click="copyUrl">Copy</v-btn>
-            <v-btn color="green" v-else @click="copyUrl">Copied to clipboard!</v-btn>
-        </v-card-text>
-        <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn text="Close" @click="toggleDialog"></v-btn>
-        </v-card-actions>
+      <v-card-title>Share This Page</v-card-title>
+      <v-card-text>
+        <p class="text-body-1">Copy the link below to share this page with others.</p>
+        <v-text-field
+          variant="outlined"
+          v-on:focus="$event.target.select()"
+          ref="clone"
+          readonly
+          :value="pageUrl"
+        />
+        <v-btn v-if="!hasCopied" @click="copyUrl">Copy</v-btn>
+        <v-btn color="green" v-else @click="copyUrl">Copied to clipboard!</v-btn>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text="Close" @click="toggleDialog"></v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
   <v-dialog v-model="showGithubDialog" max-width="500">
@@ -74,10 +77,22 @@
         <p class="text-body-1">
           Please report any issues you find with SWOTVIZ to our GitHub repository.
         </p>
-        <v-btn variant="outlined" color="primary" class="ma-2" :href="'https://github.com/CUAHSI/SWOT-Data-Viewer/issues/new?template=bug_report.md'" target="_blank">
+        <v-btn
+          variant="outlined"
+          color="primary"
+          class="ma-2"
+          :href="'https://github.com/CUAHSI/SWOT-Data-Viewer/issues/new?template=bug_report.md'"
+          target="_blank"
+        >
           Report a Bug
         </v-btn>
-        <v-btn variant="outlined" color="primary" class="ma-2" :href="'https://github.com/CUAHSI/SWOT-Data-Viewer/issues/new?template=feature_request.md'" target="_blank">
+        <v-btn
+          variant="outlined"
+          color="primary"
+          class="ma-2"
+          :href="'https://github.com/CUAHSI/SWOT-Data-Viewer/issues/new?template=feature_request.md'"
+          target="_blank"
+        >
           Request a Feature
         </v-btn>
       </v-card-text>
@@ -96,9 +111,9 @@ defineEmits(['toggleMobileNav'])
 
 const { smAndDown } = useDisplay()
 
-const showCopyUrlDialog = ref(false);
-const showGithubDialog = ref(false);
-const hasCopied = ref(false);
+const showCopyUrlDialog = ref(false)
+const showGithubDialog = ref(false)
+const hasCopied = ref(false)
 const route = useRoute()
 const pageUrl = ref(window.location.href)
 
@@ -107,19 +122,18 @@ watch(route, () => {
 })
 
 const copyUrl = () => {
-    navigator.clipboard.writeText(pageUrl.value);
-    hasCopied.value = true;
+  navigator.clipboard.writeText(pageUrl.value)
+  hasCopied.value = true
 }
 
 const toggleDialog = () => {
-    showCopyUrlDialog.value = !showCopyUrlDialog.value;
-    hasCopied.value = false;
+  showCopyUrlDialog.value = !showCopyUrlDialog.value
+  hasCopied.value = false
 }
 
 const toggleGithubDialog = () => {
-  showGithubDialog.value = !showGithubDialog.value;
+  showGithubDialog.value = !showGithubDialog.value
 }
-
 </script>
 
 <style lang="scss" scoped>
@@ -155,10 +169,10 @@ const toggleGithubDialog = () => {
   }
 }
 
- .nav-items .v-btn.is-active,
- .mobile-nav-items .v-list-item.is-active,
- .v-btn--active {
-   background-color: #1976d2 !important;
-   color: #FFF;
- }
+.nav-items .v-btn.is-active,
+.mobile-nav-items .v-list-item.is-active,
+.v-btn--active {
+  background-color: #1976d2 !important;
+  color: #fff;
+}
 </style>

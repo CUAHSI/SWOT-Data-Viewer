@@ -4,16 +4,17 @@ import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { EARLIEST_HYDROCRON_DATETIME } from '../constants'
 
-String.prototype.hashCode = function() {
+String.prototype.hashCode = function () {
   var hash = 0,
-    i, chr;
-  if (this.length === 0) return hash;
+    i,
+    chr
+  if (this.length === 0) return hash
   for (i = 0; i < this.length; i++) {
-    chr = this.charCodeAt(i);
-    hash = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
+    chr = this.charCodeAt(i)
+    hash = (hash << 5) - hash + chr
+    hash |= 0 // Convert to 32bit integer
   }
-  return hash;
+  return hash
 }
 
 const MS_TO_KEEP_CACHE = 1000 * 60 * 60 * 24 * 7 // 7 days
@@ -149,7 +150,7 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
           throw e
         }
       }
-    }else{
+    } else {
       data = JSON.parse(data)
     }
     const processedResult = await processHydroCronResult(data, params, swordFeature)
@@ -172,24 +173,24 @@ const processHydroCronResult = async (data, params, swordFeature) => {
   // console.log(response.headers.get('Content-Type'))
   const alertStore = useAlertStore()
   // https://podaac.github.io/hydrocron/timeseries.html#response-codes
-    if (data.hits == undefined || data.hits < 1) {
-      alertStore.displayAlert({
-        title: 'No data found',
-        text: `No data found for ${JSON.stringify(params)}`,
-        type: 'warning',
-        closable: true,
-        duration: 6
-      })
-      return null
-    }
+  if (data.hits == undefined || data.hits < 1) {
+    alertStore.displayAlert({
+      title: 'No data found',
+      text: `No data found for ${JSON.stringify(params)}`,
+      type: 'warning',
+      closable: true,
+      duration: 6
+    })
+    return null
+  }
 
-    data.params = params
-    // check if the feature already has queries
-    if (swordFeature.queries === undefined) {
-      swordFeature.queries = []
-    }
-    swordFeature.queries.push(data)
-    return data
+  data.params = params
+  // check if the feature already has queries
+  if (swordFeature.queries === undefined) {
+    swordFeature.queries = []
+  }
+  swordFeature.queries.push(data)
+  return data
 }
 
 async function downloadBlob(blob, filename) {
@@ -327,7 +328,7 @@ async function getNodesFromReach(reachFeature) {
         throw e
       }
     }
-  }else{
+  } else {
     data = JSON.parse(data)
   }
   // SWORD Nodes have attributes, insteady of properties. For consistency, we rename attributes to properties

@@ -56,7 +56,7 @@ const { querying, activeFeature, selectedFeatures } = storeToRefs(featuresStore)
 // use a watcher to run the query once the active feature is set
 // we do this because it seems that async queries from esri leaflet
 // are not properly returning a promise to await
-watch(activeFeature, async(newActiveFeature) => {
+watch(activeFeature, async (newActiveFeature) => {
   if (newActiveFeature) {
     runQuery()
   }
@@ -65,14 +65,14 @@ watch(activeFeature, async(newActiveFeature) => {
 onMounted(() => {
   if (activeFeature.value) {
     // set the reach id in the url from the active feature
-    if (props.reachId === "") {
+    if (props.reachId === '') {
       router.replace({ params: { reachId: activeFeature.value.properties.reach_id } })
     }
     runQuery()
   }
   const currentRoute = router.currentRoute.value
   chartStore.checkQueryParams(currentRoute)
-  if (props.reachId !== "") {
+  if (props.reachId !== '') {
     querying.value.hydrocron = true
     console.log('Setting active feature by reach id', props.reachId)
     featuresStore.setActiveFeatureByReachId(props.reachId)
@@ -92,5 +92,7 @@ const runQuery = async () => {
 }
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-let fetchingData = computed(() => !hasData.value && (querying.value.hydrocron || querying.value.nodes))
+let fetchingData = computed(
+  () => !hasData.value && (querying.value.hydrocron || querying.value.nodes)
+)
 </script>
