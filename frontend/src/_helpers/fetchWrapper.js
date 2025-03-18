@@ -1,4 +1,3 @@
-import { APP_API_URL } from '@/constants'
 import { useAlertStore } from '@/stores/alerts'
 
 export const fetchWrapper = {

@@ -22,8 +22,7 @@
       </v-list>
       <v-divider class="my-4"></v-divider>
 
-      <v-list class="text-body-1">
-      </v-list>
+      <v-list class="text-body-1"> </v-list>
     </v-list>
   </v-navigation-drawer>
 </template>
@@ -35,5 +34,4 @@ const props = defineProps(['show', 'paths'])
 defineEmits(['toggleMobileNav'])
 
 const { mdAndDown } = useDisplay()
-
 </script>
