@@ -16,7 +16,7 @@ COPY docker-entrypoint.sh /usr/local/bin/
 COPY Caddyfile /etc/caddy/Caddyfile
 
 # Copy source dist
-COPY --from=node_build /app/dist /srv/swotviz
+COPY --from=node_build /app/dist /srv
 
 EXPOSE 8080
 
