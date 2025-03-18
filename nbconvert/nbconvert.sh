@@ -11,6 +11,7 @@ cp $NOTEBOOK_DIR/*.ipynb notebooks/
 
 # run nbconvert on the notebooks
 docker-compose up nbconvert -d
+docker-compose exec nbconvert jupyter nbconvert --to html /notebooks/*.ipynb --output-dir=/home/jovyan/dist/
 docker cp nbconvert:/home/jovyan/dist/. $NOTEBOOK_DIR
 docker-compose down
 
