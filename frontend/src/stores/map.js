@@ -12,7 +12,7 @@ export const useMapStore = defineStore('map', () => {
   })
 
   const deselectFeature = (feature) => {
-    try{
+    try {
       mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
         color: featureOptions.value.defaultColor,
         weight: featureOptions.value.defaultWeight
@@ -25,8 +25,8 @@ export const useMapStore = defineStore('map', () => {
   const selectFeature = (feature) => {
     try {
       mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
-      color: featureOptions.value.selectedColor,
-      weight: featureOptions.value.selectedWeight
+        color: featureOptions.value.selectedColor,
+        weight: featureOptions.value.selectedWeight
       })
     } catch (error) {
       console.warn('Attempted to select feature:', error)

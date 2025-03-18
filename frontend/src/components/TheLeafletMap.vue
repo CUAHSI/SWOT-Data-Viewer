@@ -5,7 +5,7 @@
     id="zoomIndicator"
     color="info"
   >
-  <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
+    <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
   </v-card>
 </template>
 
@@ -17,7 +17,7 @@ import * as esriLeaflet from 'esri-leaflet'
 import * as esriLeafletGeocoder from 'esri-leaflet-geocoder'
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import 'leaflet-easybutton/src/easy-button'
-import { nextTick, onMounted, onUpdated, ref } from 'vue'
+import { onMounted, onUpdated, ref } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
@@ -37,7 +37,8 @@ const { mapObject } = storeToRefs(mapStore)
 const { activeFeature } = storeToRefs(featureStore)
 const minReachSelectionZoom = 7
 const mapInitialZoom = 3
-const accessToken = "AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX"
+const accessToken =
+  'AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX'
 let zoom = ref(mapInitialZoom)
 
 onUpdated(async () => {
@@ -65,7 +66,7 @@ onMounted(() => {
   mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
   //Remove the common zoom control and add it back later later
   leaflet.zoomControl.remove()
-  
+
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
     'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png',
@@ -162,7 +163,7 @@ onMounted(() => {
   })
 
   url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
-  let lakes = L.tileLayer
+  L.tileLayer
     .wms(url, {
       layers: 0,
       transparent: 'true',
@@ -186,7 +187,7 @@ onMounted(() => {
   // add reaches layer to map
   url =
     'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
-  let reaches = L.tileLayer
+  L.tileLayer
     .wms(url, {
       layers: 0,
       transparent: 'true',
@@ -227,7 +228,7 @@ onMounted(() => {
   // add nodes layer to map
   url =
     'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
-  let sword_nodes = L.tileLayer.wms(url, {
+  L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
     format: 'image/png',
@@ -290,8 +291,6 @@ onMounted(() => {
   //  * LEAFLET BUTTONS
   //  */
 
-  
-
   // Layer Control
   L.control.layers(baselayers, mixed).addTo(leaflet)
 
@@ -304,123 +303,118 @@ onMounted(() => {
 
   // validate the map
   validate_bbox_size()
-  
-  const swotriverMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
-            label: "River names",
-            url: "https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer",
-            layers: [0],
-            searchFields: ["river_name "]
-          })
 
-  const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
-    label: "HUC 8",
-    maxResults:3,
-    url: "	https://arcgis.cuahsi.org/arcgis/rest/services/hucs/HUC_8/MapServer",
+  const swotriverMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+    label: 'River names',
+    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer',
     layers: [0],
-    searchFields: ["name"]
+    searchFields: ['river_name ']
   })
 
+  const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+    label: 'HUC 8',
+    maxResults: 3,
+    url: '	https://arcgis.cuahsi.org/arcgis/rest/services/hucs/HUC_8/MapServer',
+    layers: [0],
+    searchFields: ['name']
+  })
 
-  const featureLayerProvider  = esriLeafletGeocoder.featureLayerProvider({
-        url:
-          "https://arcgis.cuahsi.org/arcgis/rest/services/hucs/HUC_8/FeatureServer/0",
-        searchFields: ["name"],
-        label: "Huc 8",
-        //bufferRadius: 5000,
-        formatSuggestion: function (feature) {
-          return feature.properties.name;
-        }
-      });
+  esriLeafletGeocoder.featureLayerProvider({
+    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/hucs/HUC_8/FeatureServer/0',
+    searchFields: ['name'],
+    label: 'Huc 8',
+    //bufferRadius: 5000,
+    formatSuggestion: function (feature) {
+      return feature.properties.name
+    }
+  })
 
   const addressSearchProvider = esriLeafletGeocoder.arcgisOnlineProvider({
-        apikey: accessToken,
-        maxResults:3,
-        nearby: {
-            lat: -33.8688,
-            lng: 151.2093
-        }
-    });
+    apikey: accessToken,
+    maxResults: 3,
+    nearby: {
+      lat: -33.8688,
+      lng: 151.2093
+    }
+  })
   /**/
 
-        
-      const searchControl = esriLeafletGeocoder.geosearch({
-        position: "topleft",
-        placeholder: "Search for a location",
-        useMapBounds: false,
-        expanded: true,
-        title: " search",
+  esriLeafletGeocoder
+    .geosearch({
+      position: 'topleft',
+      placeholder: 'Search for a location',
+      useMapBounds: false,
+      expanded: true,
+      title: ' search',
 
-        providers: [
-          swotriverMapServiceProvider, 
-          hucMapServiceProvider,
-          addressSearchProvider       
-        ]
-    }).addTo(leaflet);
+      providers: [swotriverMapServiceProvider, hucMapServiceProvider, addressSearchProvider]
+    })
+    .addTo(leaflet)
 
+  // add zoom control again they are ordered in the order they are added
+  L.control
+    .zoom({
+      position: 'topleft'
+    })
+    .addTo(leaflet)
 
-// add zoom control again they are ordered in the order they are added
-L.control.zoom({
-  position: 'topleft'
-}).addTo(leaflet);
-
-// Erase
-L.easyButton(
-  'fa-eraser',
-  function () {
-    clearSelection()
-  },
-  'clear selected features'
-).addTo(leaflet)
-
+  // Erase
+  L.easyButton(
+    'fa-eraser',
+    function () {
+      clearSelection()
+    },
+    'clear selected features'
+  ).addTo(leaflet)
 })
 
-async function getGageInfo(e) {
-  // TESTING GAGE INFO BOX
-  // quick and dirty buffer around cursor
-  // bbox = lon_min, lat_min, lon_max, lat_max
-  let buf = 0.001
+// async function getGageInfo(e) {
+//   // TESTING GAGE INFO BOX
+//   // quick and dirty buffer around cursor
+//   // bbox = lon_min, lat_min, lon_max, lat_max
+//   let buf = 0.001
 
-  let buffered_bbox =
-    e.latlng.lat -
-    buf +
-    ',' +
-    (e.latlng.lng - buf) +
-    ',' +
-    (e.latlng.lat + buf) +
-    ',' +
-    (e.latlng.lng + buf)
-  let defaultParameters = {
-    service: 'WFS',
-    request: 'GetFeature',
-    bbox: buffered_bbox,
-    typeName: 'usgs_gages:usgs_gages_4326',
-    SrsName: 'EPSG:4326',
-    outputFormat: 'ESRIGEOJSON'
-  }
-  let root = 'https://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WFSServer'
-  let parameters = L.Util.extend(defaultParameters)
-  let gageURL = root + L.Util.getParamString(parameters)
+//   let buffered_bbox =
+//     e.latlng.lat -
+//     buf +
+//     ',' +
+//     (e.latlng.lng - buf) +
+//     ',' +
+//     (e.latlng.lat + buf) +
+//     ',' +
+//     (e.latlng.lng + buf)
+//   let defaultParameters = {
+//     service: 'WFS',
+//     request: 'GetFeature',
+//     bbox: buffered_bbox,
+//     typeName: 'usgs_gages:usgs_gages_4326',
+//     SrsName: 'EPSG:4326',
+//     outputFormat: 'ESRIGEOJSON'
+//   }
+//   let root = 'https://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WFSServer'
+//   let parameters = L.Util.extend(defaultParameters)
+//   let gageURL = root + L.Util.getParamString(parameters)
 
-  let gage_meta = {}
-  console.log(gageURL)
-  let resp = await fetch(gageURL)
-  if (resp.ok) {
-    try {
-      let response = await resp.json()
-      if (response.features.length > 0) {
-        let atts = response.features[0].attributes
-        let geom = response.features[0].geometry
-        gage_meta.name = atts.STATION_NM
-        gage_meta.num = atts.SITE_NO
-        gage_meta.x = geom.x
-        gage_meta.y = geom.y
-      }
-    } catch (e) {
-      console.error('Error attempting json parse', e)
-    }
-  }
-  return gage_meta
-}
+//   let gage_meta = {}
+//   console.log(gageURL)
+//   let resp = await fetch(gageURL)
+//   if (resp.ok) {
+//     try {
+//       let response = await resp.json()
+//       if (response.features.length > 0) {
+//         let atts = response.features[0].attributes
+//         let geom = response.features[0].geometry
+//         gage_meta.name = atts.STATION_NM
+//         gage_meta.num = atts.SITE_NO
+//         gage_meta.x = geom.x
+//         gage_meta.y = geom.y
+//       }
+//     } catch (e) {
+//       console.error('Error attempting json parse', e)
+//     }
+//   }
+//   return gage_meta
+// }
 
 /**
  * Handles the click event on the map.
@@ -428,106 +422,39 @@ async function getGageInfo(e) {
  * @param {MouseEvent} e - The click event object.
  * @returns {Promise<void>} - A promise that resolves when the click event is handled.
  */
-async function mapClick(e) {
+async function mapClick() {
   return
 
-  // exit early if not zoomed in enough.
-  // this ensures that objects are not clicked until zoomed in
-  let zoom = e.target.getZoom()
-  if (zoom < mapObject.value.selectable_zoom) {
-    return
-  }
+  // // exit early if not zoomed in enough.
+  // // this ensures that objects are not clicked until zoomed in
+  // let zoom = e.target.getZoom()
+  // if (zoom < mapObject.value.selectable_zoom) {
+  //   return
+  // }
 
-  // check if gage was clicked
-  let gage = await getGageInfo(e)
+  // // check if gage was clicked
+  // let gage = await getGageInfo(e)
 
-  // if a gage was selected, create a pop up and exit early.
-  // we don't want to toggle HUC selection if a gage was clicked
-  if (Object.keys(gage).length > 0) {
-    // create map info object here
+  // // if a gage was selected, create a pop up and exit early.
+  // // we don't want to toggle HUC selection if a gage was clicked
+  // if (Object.keys(gage).length > 0) {
+  //   // create map info object here
 
-    // close all popups
-    if (mapObject.value.popups.length > 0) {
-      mapObject.value.leaflet.closePopup()
-    }
+  //   // close all popups
+  //   if (mapObject.value.popups.length > 0) {
+  //     mapObject.value.leaflet.closePopup()
+  //   }
 
-    // create new popup containing gage info
-    L.popup()
-      .setLatLng([gage.y, gage.x])
-      .setContent('<b>ID:</b> ' + gage.num + '<br>' + '<b>Name</b>: ' + gage.name + '<br>')
-      //		             + '<b>Select</b>: <a onClick=traceUpstream("'+gage.num+'")>upstream</a>')
-      .openOn(mapObject.value.leaflet)
+  //   // create new popup containing gage info
+  //   L.popup()
+  //     .setLatLng([gage.y, gage.x])
+  //     .setContent('<b>ID:</b> ' + gage.num + '<br>' + '<b>Name</b>: ' + gage.name + '<br>')
+  //     //		             + '<b>Select</b>: <a onClick=traceUpstream("'+gage.num+'")>upstream</a>')
+  //     .openOn(mapObject.value.leaflet)
 
-    // exit function without toggling HUC
-    return
-  }
-}
-
-function traceUpstream(usgs_gage) {
-  console.log('traceUpstream --> selected gage = ' + usgs_gage)
-
-  // clear any existing reaches from the map
-  if (mapObject.value.reaches.obj != null) {
-    mapObject.value.reaches.obj.clearLayers()
-  }
-
-  // query the upstream reaches via NLDI
-  $.ajax({
-    url: '/nldi-trace',
-    type: 'GET',
-    contentType: 'application/json',
-    data: {
-      site_provider: 'nwis',
-      site: usgs_gage
-    },
-    success: function (response) {
-      // add the reaches to the map and replace the global reaches
-      // object with the newly selected reaches.
-      let reaches = L.geoJSON(response.features, { style: { color: 'green' } })
-      mapObject.value.reaches.start_id = reaches._leaflet_id
-      mapObject.value.reaches.count = response.features.length
-      mapObject.value.reaches.obj = reaches
-      reaches.addTo(mapObject.value.leaflet)
-
-      // a list to store a single coordinate for each reach
-      let centroids = []
-
-      // generate a list of points for each of the reaches
-      response.features.forEach(function (reach) {
-        // select the middle geometry feature.
-        // This is a hack and should be replaced with something better
-        geom_idx = Math.ceil(reach.geometry.coordinates.length / 2)
-
-        geom_coord = reach.geometry.coordinates[geom_idx]
-        centroids.push(geom_coord)
-      })
-
-      console.log('Number of reaches found = ' + centroids.length)
-
-      // TODO: move this into a function since it's used in several places.
-      // query the HUC geometry for each of the reach coordinate points
-      // use this data to query ArcGIS WFS for the selected HUC object.
-      centroids.forEach(function (coord) {
-        let defaultParameters = {
-          service: 'WFS',
-          request: 'GetFeature',
-          bbox: coord[0] + ',' + coord[1] + ',' + coord[0] + ',' + coord[1],
-          typeName: 'HUC_WBD:HUC12_US',
-          SrsName: 'EPSG:4326'
-        }
-        let root = 'https://arcgis.cuahsi.org/arcgis/services/US_WBD/HUC_WBD/MapServer/WFSServer'
-        let parameters = L.Util.extend(defaultParameters)
-        let URL = root + L.Util.getParamString(parameters)
-
-        //	   	// load the map and table elements async
-        // todo: highlight the unique set of HUCs, do not toggle.
-        //	   	toggleHucsAsync(URL, true, null);
-      })
-    },
-    error: function (error) {
-      console.log('error querying NLDI upstream: ' + error)
-    }
-  })
+  //   // exit function without toggling HUC
+  //   return
+  // }
 }
 
 function clearSelection() {
@@ -676,7 +603,7 @@ function validate_bbox_size() {
 <style scoped>
 #mapContainer {
   width: 100%;
-  height: 100%;   
+  height: 100%;
 }
 #zoomIndicator {
   position: fixed;

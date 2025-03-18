@@ -18,22 +18,18 @@
             </v-tab>
           </v-tabs>
         </v-sheet>
-        <TimeRangeSelector/>
+        <TimeRangeSelector />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <PlotOptions />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
         <DataQuality />
         <v-divider class="my-2" v-if="lgAndUp"></v-divider>
-        <PlotActions :chosenPlot="activeNodeChart" @reset-data="resetData"/>
+        <PlotActions :chosenPlot="activeNodeChart" @reset-data="resetData" />
       </v-col>
       <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
       <v-col sm="10">
         <v-window v-model="activePlt">
-          <v-window-item
-            v-for="plt in chartStore.nodeCharts"
-            :key="plt.abbreviation"
-            :value="plt"
-          >
+          <v-window-item v-for="plt in chartStore.nodeCharts" :key="plt.abbreviation" :value="plt">
             <NodeChart
               v-if="plt"
               class="chart"
@@ -70,14 +66,12 @@ const chartStore = useChartsStore()
 
 const { activePlt, activeNodeChart, nodeChartData } = storeToRefs(chartStore)
 
-onMounted(() => {
-})
+onMounted(() => {})
 
 const resetData = () => {
   activeNodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   activeNodeChart.value.chart.update()
 }
-
 </script>
 
 <style scoped>

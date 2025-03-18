@@ -25,8 +25,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: false,
       selectable: true,
       fileType: 'all',
-      plottable: true,
-      
+      plottable: true
     },
     {
       abbreviation: 'slope',
@@ -254,7 +253,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: false,
       short_definition:
         'WSE variance along the GRWL centerline points used to calculate the average WSE for each node or reach',
-        swotviz_alias: 'WSE Variance',
+      swotviz_alias: 'WSE Variance',
       units: 'square meters',
       plottable: false,
       significant_figures: 2
@@ -280,7 +279,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition:
         'Width variance along the GRWL centerline points used to calculate the average width for each node or reach',
       swotviz_alias: 'Width Variance',
-        units: 'square meters',
+      units: 'square meters',
       plottable: false,
       significant_figures: 2
     },
@@ -293,10 +292,10 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       short_definition:
         'Maximum flow accumulation value for a node or reach. Flow accumulation values are extracted from the MERIT Hydro dataset (Yamazaki et al., 2019)',
       swotviz_alias: 'Maximum Flow Accumulation',
-        units: 'square kilometers',
+      units: 'square kilometers',
       plottable: true,
       plot_definition: 'Flow Accumulation',
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'n_chan_max',
@@ -307,7 +306,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Maximum Channel Count',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'n_chan_mod',
@@ -318,7 +317,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Mode Channel Count',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'obstr_type',
@@ -349,9 +348,9 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Global River Obstruction Database (GROD) ID',
       units: '',
       plottable: false,
-      significant_figures: 0, 
+      significant_figures: 0,
       mapping: {
-        0: '-',
+        0: '-'
       }
     },
     {
@@ -363,9 +362,9 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'HydroFALLS ID',
       units: '',
       plottable: false,
-      significant_figures: 0, 
+      significant_figures: 0,
       mapping: {
-        0: '-',
+        0: '-'
       }
     },
     {
@@ -377,7 +376,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Distance to Outlet',
       units: 'meters',
       plottable: false,
-      significant_figures: 2 
+      significant_figures: 2
     },
     {
       abbreviation: 'type',
@@ -439,7 +438,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Node Count',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'n_rch_up',
@@ -450,7 +449,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Upstream Reach Count',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'n_rch_down',
@@ -461,7 +460,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Downstream Reach Count',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'rch_id_up',
@@ -472,7 +471,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Upstream Reach ID',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'rch_id_dn',
@@ -483,7 +482,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'Downstram Reach ID',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'swot_obs',
@@ -496,7 +495,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'SWOT Pass Count',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     },
     {
       abbreviation: 'swot_orbit',
@@ -509,7 +508,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       swotviz_alias: 'SWOT Orbit Tracks',
       units: '',
       plottable: false,
-      significant_figures: 0 
+      significant_figures: 0
     }
   ])
 
@@ -545,20 +544,20 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     for (const [abbreviation, val] of Object.entries(feature)) {
       const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)
       if (found) {
-        let displayValue;
+        let displayValue
         const displayKey = found.swotviz_alias || found.short_definition // Use alias if available
         if (found.mapping && found.mapping[val]) {
-            displayValue = found.mapping[val];
+          displayValue = found.mapping[val]
         } else if (typeof val === 'string' && val.includes(' ')) {
-            displayValue = val.split(' ').join(', ');
+          displayValue = val.split(' ').join(', ')
         } else {
-            const isNumber = !isNaN(parseFloat(val)) && isFinite(val)
-            displayValue = isNumber
-              ? `${parseFloat(val).toFixed(found.significant_figures)} ${found.units}`
-              : `${val} ${found.units}`
+          const isNumber = !isNaN(parseFloat(val)) && isFinite(val)
+          displayValue = isNumber
+            ? `${parseFloat(val).toFixed(found.significant_figures)} ${found.units}`
+            : `${val} ${found.units}`
         }
-        found.value = displayValue;           
-        descriptions.push({...found, displayKey})
+        found.value = displayValue
+        descriptions.push({ ...found, displayKey })
       }
     }
     return descriptions

@@ -39,11 +39,11 @@ const router = createRouter({
       path: '/plots/:reachId?',
       name: 'plots',
       component: () => import('../views/ChartsView.vue'),
-      props: true,
+      props: true
     },
     {
-      path: "/reach/:reachId",
-      name: "reach",
+      path: '/reach/:reachId',
+      name: 'reach',
       component: () => import('../views/ReachView.vue')
     },
     {

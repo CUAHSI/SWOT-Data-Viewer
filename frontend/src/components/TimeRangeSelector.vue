@@ -2,7 +2,7 @@
   <v-card class="pa-2 my-2" color="input">
     <v-card-title>Time Range</v-card-title>
     <v-form>
-        <v-text-field
+      <v-text-field
         v-model="dateRange[0]"
         density="compact"
         type="date"
@@ -31,8 +31,8 @@ import { ref } from 'vue'
 import { useFeaturesStore } from '../stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { useStatsStore } from '../stores/stats'
-import { storeToRefs } from 'pinia';
-import { convertDateStringToSeconds, convertSecondsToDateString  } from '@/_helpers/time'
+import { storeToRefs } from 'pinia'
+import { convertDateStringToSeconds, convertSecondsToDateString } from '@/_helpers/time'
 
 const featuresStore = useFeaturesStore()
 const chartStore = useChartsStore()
@@ -53,10 +53,7 @@ const updatetimeRange = () => {
 }
 
 async function filterDatasetsToTimeRange() {
-  chartStore.filterDatasetsToTimeRange(
-    dateRange.value[0],
-    dateRange.value[1]
-  )
+  chartStore.filterDatasetsToTimeRange(dateRange.value[0], dateRange.value[1])
   timeRangeUpdateComplete()
 }
 
@@ -93,14 +90,24 @@ const setInitialState = () => {
 
   // set the initial state for the time ranges based
   // off available data.
-  const offset = 2 * 60*60*24 // 2 days in seconds. This is chosen arbitrarily
+  const offset = 2 * 60 * 60 * 24 // 2 days in seconds. This is chosen arbitrarily
 
   // compute min/max date based on the datasets, omitting computed_series (i.e. derived data)
   const minDateSec =
-    Math.min(...chartStore.chartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.minDateTime)) / 1000 -
+    Math.min(
+      ...chartStore.chartData.datasets
+        .filter((series) => series.seriesType != 'computed_series')
+        .map((series) => series.minDateTime)
+    ) /
+      1000 -
     offset
   const maxDateSec =
-    Math.max(...chartStore.chartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.maxDateTime)) / 1000 +
+    Math.max(
+      ...chartStore.chartData.datasets
+        .filter((series) => series.seriesType != 'computed_series')
+        .map((series) => series.maxDateTime)
+    ) /
+      1000 +
     offset
 
   featuresStore.minTime = minDateSec
