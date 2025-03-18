@@ -1,36 +1,31 @@
 <template>
-    <v-expansion-panels with="100%" v-model="panel" multiple>
-      <v-expansion-panel value="plotActions">
-        <v-expansion-panel-title>Actions</v-expansion-panel-title>
-        <v-expansion-panel-text>
-          <v-btn
-            :loading="downloading.chart"
-            @click="downloadChart()"
-            class="ma-1"
-            color="input"
-          >
-            <v-icon :icon="mdiDownloadBox"></v-icon>
-            Download Chart
-          </v-btn>
-          <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
-            <v-icon :icon="mdiFileDelimited"></v-icon>
-            Download CSV
-          </v-btn>
-          <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
-            <v-icon :icon="mdiCodeJson"></v-icon>
-            Download JSON
-          </v-btn>
-          <v-btn @click="resetZoom()" color="input" class="ma-1">
-            <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
-            Reset Zoom
-          </v-btn>
-          <v-btn v-if="isNodeChart" @click="resetData()" color="input" class="ma-1">
-            <v-icon :icon="mdiEraser"></v-icon>
-            Reset Data
-          </v-btn>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+  <v-expansion-panels with="100%" v-model="panel" multiple>
+    <v-expansion-panel value="plotActions">
+      <v-expansion-panel-title>Actions</v-expansion-panel-title>
+      <v-expansion-panel-text>
+        <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
+          <v-icon :icon="mdiDownloadBox"></v-icon>
+          Download Chart
+        </v-btn>
+        <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
+          <v-icon :icon="mdiFileDelimited"></v-icon>
+          Download CSV
+        </v-btn>
+        <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
+          <v-icon :icon="mdiCodeJson"></v-icon>
+          Download JSON
+        </v-btn>
+        <v-btn @click="resetZoom()" color="input" class="ma-1">
+          <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
+          Reset Zoom
+        </v-btn>
+        <v-btn v-if="isNodeChart" @click="resetData()" color="input" class="ma-1">
+          <v-icon :icon="mdiEraser"></v-icon>
+          Reset Data
+        </v-btn>
+      </v-expansion-panel-text>
+    </v-expansion-panel>
+  </v-expansion-panels>
 </template>
 
 <script setup>
@@ -46,7 +41,12 @@ import {
   mdiMagnifyMinusOutline,
   mdiEraser
 } from '@mdi/js'
-import { downloadCsv, downloadMultiNodesCsv, downloadFeatureJson, downloadMultiNodesJson } from '../_helpers/hydroCron'
+import {
+  downloadCsv,
+  downloadMultiNodesCsv,
+  downloadFeatureJson,
+  downloadMultiNodesJson
+} from '../_helpers/hydroCron'
 
 const panel = ref([])
 
@@ -70,7 +70,6 @@ const setDefaults = () => {
 
   // set statistics switch to off in the charts store
   showStatistics.value = false
-
 }
 
 const getChartName = () => {

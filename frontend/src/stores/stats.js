@@ -10,16 +10,16 @@ export const useStatsStore = defineStore('stats', () => {
   async function getStatistics() {
     // compute statistics based on the node series that are visible
     // in the chart.
-  
+
     let datasets = chartStore.nodeChartData.datasets
       .filter((s) => s.seriesType == 'swot_node_series')
       .filter((s) => s.hidden == false)
-  
+
     // upate datasets so that is just an array arrays of the datasets.data objects
     datasets = datasets.map((dataset) => {
       return dataset.data
     })
-  
+
     let stats = await fetch(`${APP_API_URL}/data/compute_node_series`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -29,11 +29,11 @@ export const useStatsStore = defineStore('stats', () => {
       .then((data) => {
         return data
       })
-  
+
     // save computed statistics to a reactive variable
     chartStatistics.value = stats
   }
-  
+
   function buildChartSeries(data, xkey = 'p_dist_out', ykey, series_label, props = {}) {
     let dat = {
       label: series_label,
@@ -52,14 +52,14 @@ export const useStatsStore = defineStore('stats', () => {
     }
     return dat
   }
-  
+
   const generateStatisticsSeries = async () => {
     // compute statistics and return them as chart series
-  
+
     await getStatistics()
-  
+
     let statisticSeries = []
-  
+
     // build chart series for each statistic and set it in nodeChartData.
     // set each of these to hidden.
     for (let stat in chartStatistics.value) {
@@ -102,29 +102,29 @@ export const useStatsStore = defineStore('stats', () => {
         statisticSeries.push(series)
       }
     }
-  
+
     return statisticSeries
   }
-  
+
   const toggleSeriesStatistics = async (visible = true) => {
     // adds and removes computed statistics from the chart
-  
+
     // get the data from the chart
     let updatedDatasets = nodeChartData.value.datasets
-  
+
     if (visible) {
       let statisticSeries = await generateStatisticsSeries()
-  
+
       // push statisticSeries elements into the updatedDatasets array
       updatedDatasets = updatedDatasets.concat(statisticSeries)
     } else {
       // remove the computed statistics from the chart
       updatedDatasets = updatedDatasets.filter((s) => s.seriesType != 'computed_series')
     }
-  
+
     // save these data to the chartStore
     chartStore.updateNodeChartData(updatedDatasets)
-  
+
     // update the charts
     chartStore.updateAllCharts()
   }

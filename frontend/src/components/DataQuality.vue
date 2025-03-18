@@ -33,7 +33,7 @@
 <script setup>
 import { useChartsStore } from '@/stores/charts'
 import { ref } from 'vue'
-import { storeToRefs } from 'pinia';
+import { storeToRefs } from 'pinia'
 
 const chartStore = useChartsStore()
 const { dataQualityFlags } = storeToRefs(chartStore)
