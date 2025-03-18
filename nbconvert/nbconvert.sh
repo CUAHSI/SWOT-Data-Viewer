@@ -9,10 +9,10 @@ export SOURCE_NOTEBOOK_JS_MODULE=../frontend/src/notebooks.mjs
 mkdir -p notebooks
 cp $NOTEBOOK_DIR/*.ipynb notebooks/
 
-# # run nbconvert on the notebooks
-# docker-compose up nbconvert -d
-# docker cp nbconvert:/home/jovyan/dist/. $NOTEBOOK_DIR
-# docker-compose down
+# run nbconvert on the notebooks
+docker-compose up nbconvert -d
+docker cp nbconvert:/home/jovyan/dist/. $NOTEBOOK_DIR
+docker-compose down
 
 # create a js module that has an object with the notebook metadata
 # each notebook can contain a cell with the following metadata:
