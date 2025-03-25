@@ -44,7 +44,7 @@ export const useStatsStore = defineStore('stats', () => {
       },
       fill: props.fill || false,
       hidden: props.hidden || false,
-      showLine: props.showLine || true,
+      showLine: props.showLineVsPoints || true,
       borderColor: props.borderColor || 'blue',
       borderWidth: props.borderWidth || 1,
       pointRadius: props.pointRadius || 0,

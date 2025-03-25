@@ -22,7 +22,7 @@ export const useChartsStore = defineStore(
     const hasNodeData = ref(false)
     const chartTab = ref('timeseries')
     const showStatistics = ref(false)
-    const showLine = ref(true)
+    const showLineVsPoints = ref(true)
     const dataQualityFlags = ref([0, 1, 2]) // by default don't show bad data
     let colorScale = chroma.scale('YlGnBu').mode('lch').colors(3)
     const router = useRouter()
@@ -224,20 +224,22 @@ export const useChartsStore = defineStore(
       chartData.value = JSON.parse(JSON.stringify(unfilteredChartData.value))
       nodeChartData.value = JSON.parse(JSON.stringify(unfilteredNodeChartData.value))
 
-      for (const data of [chartData.value, nodeChartData.value]) {
-        const datasets = data?.datasets
-        if (datasets == null) {
-          console.warn('No datasets found when filtering data quality')
-          continue
-        }
-        // loop over each point in the swot datasets and update the point style
-        datasets.forEach((dataset) => {
-          dataQualityFilterSingleDataset(dataset)
-          // update the line visibility
-          dataset.showLine = showLine.value
-        })
+    for (const data of [chartData.value, nodeChartData.value]) {
+      const datasets = data?.datasets
+      if (datasets == null) {
+        console.warn('No datasets found when filtering data quality')
+        continue
       }
+      // loop over each point in the swot datasets and update the point style
+      datasets.forEach((dataset) => {
+        dataQualityFilterSingleDataset(dataset)
+        // update the line visibility
+        dataset.showLine = showLineVsPoints.value
+        // https://www.chartjs.org/docs/latest/charts/line.html#dataset-properties
+        // storedChart.chart.options.elements.point.pointstyle = false
+      })
     }
+  }
 
     const dataQualityFilterSingleDataset = (dataset) => {
       // Filter the dataset to only include points that have a data quality flag
@@ -667,7 +669,7 @@ export const useChartsStore = defineStore(
 
     const getDataSetStyle = () => {
       const style = {
-        showLine: showLine.value,
+        showLine: showLineVsPoints.value,
         fill: true,
         pointBorderColor: (ctx) => getPointBorderColors(ctx.dataset),
         pointStyle: (ctx) => getPointStyles(ctx.dataset),
@@ -711,7 +713,7 @@ export const useChartsStore = defineStore(
     const getNodeDataSetStyle = (dataSet) => {
       const colors = getDateGradientColors(dataSet)
       return {
-        showLine: showLine.value,
+        showLine: showLineVsPoints.value,
         pointRadius: 5,
         pointHoverRadius: 15,
         //fill: styles.dynamicColors,
@@ -747,7 +749,7 @@ export const useChartsStore = defineStore(
       })
     }
 
-    const updateShowLine = () => {
+    const updateLineVsPoints = () => {
       // iterate over stored charts and update the line visibility
       storedCharts.value.forEach((storedChart) => {
         try {
@@ -755,14 +757,16 @@ export const useChartsStore = defineStore(
             storedChart.chart.data.datasets
               .filter((ds) => ds.seriesType != 'computed_series')
               .forEach((dataset) => {
-                dataset.showLine = showLine.value
-              })
+                dataset.showLine = showLineVsPoints.value
+                storedChart.chart.options.elements.point.pointStyle = false
+        })
             storedChart.chart.update()
           }
         } catch (error) {
           console.error('Error updating chart lines', error)
         }
-      })
+        console.log(storedChart.chart.options.elements.point)
+    })
     }
 
     const updateAllCharts = () => {
@@ -809,7 +813,7 @@ export const useChartsStore = defineStore(
       const query = {
         variables: activePlt.value.abbreviation,
         plot: chartTab.value,
-        showLine: showLine.value,
+        showLine: showLineVsPoints.value,
         showStatistics: showStatistics.value,
         dataQualityFlags: dataQualityFlags.value
         // timeRange: timeRange.value,
@@ -841,7 +845,7 @@ export const useChartsStore = defineStore(
         }
       }
       if (query.showLine) {
-        showLine.value = query.showLine == 'true'
+        showLineVsPoints.value = query.showLine == 'true'
       }
       if (query.showStatistics) {
         showStatistics.value = query.showStatistics == 'true'
@@ -873,8 +877,8 @@ export const useChartsStore = defineStore(
         console.log('Active PLT Changed', pre, post)
         updateRouteAfterPlotChange()
       })
-      watch(showLine, () => {
-        console.log('Show Line Changed', showLine.value)
+      watch(showLineVsPoints, () => {
+        console.log('Show Line Changed', showLineVsPoints.value)
         updateRouteAfterPlotChange()
       })
       watch(showStatistics, () => {
@@ -917,8 +921,8 @@ export const useChartsStore = defineStore(
       nodeCharts,
       reachCharts,
       showStatistics,
-      showLine,
-      updateShowLine,
+      showLineVsPoints,
+      updateLineVsPoints,
       storeMountedChart,
       activePlt,
       generateDataQualityLegend,

@@ -6,12 +6,9 @@
         <StatisticsToggle v-if="chartStore.chartTab === 'distance'" />
         <v-select
           label="Plot Style"
-          v-model="showLine"
-          :items="[
-            { title: 'Scatter', value: false },
-            { title: 'Connected', value: true }
-          ]"
-          @update:modelValue="chartStore.updateShowLine"
+          v-model="showLineVsPoints"
+          :items="[{title: 'Scatter', value: false}, {title: 'Connected', value: true}]"
+          @update:modelValue="chartStore.updateLineVsPoints"
         ></v-select>
       </v-expansion-panel-text>
     </v-expansion-panel>
@@ -24,5 +21,5 @@ import { storeToRefs } from 'pinia'
 import StatisticsToggle from './StatisticsToggle.vue'
 
 const chartStore = useChartsStore()
-const { showLine } = storeToRefs(chartStore)
+const { showLineVsPoints } = storeToRefs(chartStore)
 </script>
