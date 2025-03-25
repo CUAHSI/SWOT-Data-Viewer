@@ -111,7 +111,7 @@ onMounted(async () => {
 
   // push the chart to the store
   chartStore.storeMountedChart(activeReachChart.value)
-  chartStore.updateLineVsPoints()
+  chartStore.updateSymbology()
 })
 
 const getParsing = () => {

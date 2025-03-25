@@ -57,7 +57,7 @@ onMounted(async () => {
 
   // push the chart to the store
   chartStore.storeMountedChart(activeNodeChart.value)
-  chartStore.updateLineVsPoints()
+  chartStore.updateSymbology()
 })
 
 const resetZoom = () => {

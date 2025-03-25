@@ -22,7 +22,7 @@ export const useChartsStore = defineStore(
     const hasNodeData = ref(false)
     const chartTab = ref('timeseries')
     const showStatistics = ref(false)
-    const showLineVsPoints = ref(true)
+    const symbology = ref(['Lines', 'Markers'])
     const dataQualityFlags = ref([0, 1, 2]) // by default don't show bad data
     let colorScale = chroma.scale('YlGnBu').mode('lch').colors(3)
     const router = useRouter()
@@ -141,6 +141,14 @@ export const useChartsStore = defineStore(
       hasNodeData.value = false
     }
 
+    const symbologyContains = (value) => {
+      // check if symbology.value is an array
+      if (Array.isArray(symbology.value)) {
+        return symbology.value.includes(value)
+      }
+      return false
+    }
+
     const getLabels = (selectedFeatures) => {
       // TODO: for now we just use the first query
       // when compact = true, there will only be a single feature
@@ -224,22 +232,22 @@ export const useChartsStore = defineStore(
       chartData.value = JSON.parse(JSON.stringify(unfilteredChartData.value))
       nodeChartData.value = JSON.parse(JSON.stringify(unfilteredNodeChartData.value))
 
-    for (const data of [chartData.value, nodeChartData.value]) {
-      const datasets = data?.datasets
-      if (datasets == null) {
-        console.warn('No datasets found when filtering data quality')
-        continue
+      for (const data of [chartData.value, nodeChartData.value]) {
+        const datasets = data?.datasets
+        if (datasets == null) {
+          console.warn('No datasets found when filtering data quality')
+          continue
+        }
+        // loop over each point in the swot datasets and update the point style
+        datasets.forEach((dataset) => {
+          dataQualityFilterSingleDataset(dataset)
+          // update the line visibility
+          dataset.showLine = symbologyContains('Lines')
+          // https://www.chartjs.org/docs/latest/charts/line.html#dataset-properties
+          // storedChart.chart.options.elements.point.pointstyle = false
+        })
       }
-      // loop over each point in the swot datasets and update the point style
-      datasets.forEach((dataset) => {
-        dataQualityFilterSingleDataset(dataset)
-        // update the line visibility
-        dataset.showLine = showLineVsPoints.value
-        // https://www.chartjs.org/docs/latest/charts/line.html#dataset-properties
-        // storedChart.chart.options.elements.point.pointstyle = false
-      })
     }
-  }
 
     const dataQualityFilterSingleDataset = (dataset) => {
       // Filter the dataset to only include points that have a data quality flag
@@ -669,7 +677,7 @@ export const useChartsStore = defineStore(
 
     const getDataSetStyle = () => {
       const style = {
-        showLine: showLineVsPoints.value,
+        showLine: symbologyContains('Lines'),
         fill: true,
         pointBorderColor: (ctx) => getPointBorderColors(ctx.dataset),
         pointStyle: (ctx) => getPointStyles(ctx.dataset),
@@ -713,7 +721,7 @@ export const useChartsStore = defineStore(
     const getNodeDataSetStyle = (dataSet) => {
       const colors = getDateGradientColors(dataSet)
       return {
-        showLine: showLineVsPoints.value,
+        showLine: symbologyContains('Lines'),
         pointRadius: 5,
         pointHoverRadius: 15,
         //fill: styles.dynamicColors,
@@ -749,7 +757,14 @@ export const useChartsStore = defineStore(
       })
     }
 
-    const updateLineVsPoints = () => {
+    const updateSymbology = () => {
+      let showLine = true
+      let showMarkers = false
+      // if symbology.value is an array of strings, check if it includes 'Lines' or 'Markers'
+      if (Array.isArray(symbology.value)) {
+        showLine = symbology.value.includes('Lines')
+        showMarkers = symbology.value.includes('Markers')
+      }
       // iterate over stored charts and update the line visibility
       storedCharts.value.forEach((storedChart) => {
         try {
@@ -757,16 +772,17 @@ export const useChartsStore = defineStore(
             storedChart.chart.data.datasets
               .filter((ds) => ds.seriesType != 'computed_series')
               .forEach((dataset) => {
-                dataset.showLine = showLineVsPoints.value
-                storedChart.chart.options.elements.point.pointStyle = false
-        })
+                dataset.showLine = showLine
+                // TODO: CAM-399 can't show lines without markers
+                storedChart.chart.options.elements.point.pointStyle = showMarkers
+                dataset.hidden = !showMarkers
+              })
             storedChart.chart.update()
           }
         } catch (error) {
           console.error('Error updating chart lines', error)
         }
-        console.log(storedChart.chart.options.elements.point)
-    })
+      })
     }
 
     const updateAllCharts = () => {
@@ -813,7 +829,7 @@ export const useChartsStore = defineStore(
       const query = {
         variables: activePlt.value.abbreviation,
         plot: chartTab.value,
-        showLine: showLineVsPoints.value,
+        symbology: symbology.value,
         showStatistics: showStatistics.value,
         dataQualityFlags: dataQualityFlags.value
         // timeRange: timeRange.value,
@@ -844,11 +860,19 @@ export const useChartsStore = defineStore(
           console.error('Invalid Plot Abbreviation', query.variables)
         }
       }
-      if (query.showLine) {
-        showLineVsPoints.value = query.showLine == 'true'
-      }
       if (query.showStatistics) {
         showStatistics.value = query.showStatistics == 'true'
+      }
+      if (query.symbology) {
+        // if the query is a string, convert it to an array
+        if (typeof query.symbology === 'string') {
+          query.symbology = [query.symbology]
+        }
+
+        // and remove duplicates
+        query.symbology = [...new Set(query.symbology)]
+
+        symbology.value = query.symbology
       }
       if (query.dataQualityFlags) {
         // if the query is a string, convert it to an array
@@ -877,8 +901,8 @@ export const useChartsStore = defineStore(
         console.log('Active PLT Changed', pre, post)
         updateRouteAfterPlotChange()
       })
-      watch(showLineVsPoints, () => {
-        console.log('Show Line Changed', showLineVsPoints.value)
+      watch(symbology, () => {
+        console.log('Symbology Changed', symbology.value)
         updateRouteAfterPlotChange()
       })
       watch(showStatistics, () => {
@@ -921,8 +945,8 @@ export const useChartsStore = defineStore(
       nodeCharts,
       reachCharts,
       showStatistics,
-      showLineVsPoints,
-      updateLineVsPoints,
+      symbology,
+      updateSymbology,
       storeMountedChart,
       activePlt,
       generateDataQualityLegend,
