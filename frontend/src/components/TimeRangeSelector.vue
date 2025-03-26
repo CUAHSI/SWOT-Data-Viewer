@@ -80,7 +80,8 @@ const timeRangeUpdateComplete = async () => {
     chartStore.updateNodeChartData(datasets)
 
     // update the chart
-    chartStore.updateAllCharts()
+    chartStore.refreshAllCharts()
+    statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
   }
 }
 

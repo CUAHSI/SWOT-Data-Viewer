@@ -75,6 +75,7 @@ import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
 import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from '@mdi/js'
 import { convertDateStringToSeconds } from '@/_helpers/time'
+import { useStatsStore } from '../stores/stats'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])
@@ -83,6 +84,7 @@ const selectedTimeseriesPoints = ref([])
 const hasSelectedTimeseriesPoints = computed(() => selectedTimeseriesPoints.value.length > 0)
 
 const chartStore = useChartsStore()
+const statsStore = useStatsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
@@ -111,7 +113,7 @@ onMounted(async () => {
 
   // push the chart to the store
   chartStore.storeMountedChart(activeReachChart.value)
-  chartStore.updateShowLine()
+  chartStore.updateSymbology()
 })
 
 const getParsing = () => {
@@ -272,7 +274,9 @@ const viewLongProfileByDates = () => {
   // chartStore.filterDatasetsToTimeRange()
   chartStore.chartTab = 'distance'
   chartStore.updateNodeDataSetStyles()
-  chartStore.updateAllCharts()
+  chartStore.refreshAllCharts()
+  // if stats are turned on, the stats will be stale
+  statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
 }
 
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {

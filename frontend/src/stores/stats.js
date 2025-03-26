@@ -126,7 +126,7 @@ export const useStatsStore = defineStore('stats', () => {
     chartStore.updateNodeChartData(updatedDatasets)
 
     // update the charts
-    chartStore.updateAllCharts()
+    chartStore.updateAllChartsData()
   }
 
   return {

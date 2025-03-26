@@ -32,10 +32,12 @@
 
 <script setup>
 import { useChartsStore } from '@/stores/charts'
+import { useStatsStore } from '../stores/stats'
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 
 const chartStore = useChartsStore()
+const statsStore = useStatsStore()
 const { dataQualityFlags } = storeToRefs(chartStore)
 const panel = ref([])
 
@@ -45,6 +47,9 @@ function qualityHasChanged() {
 
   // apply the time slider filter to the data
   chartStore.filterDatasetsToTimeRange()
-  chartStore.updateAllCharts()
+  chartStore.refreshAllCharts()
+
+  // stats are not shown after update of data quality
+  statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
 }
 </script>

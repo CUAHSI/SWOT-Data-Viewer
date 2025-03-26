@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
@@ -22,7 +22,7 @@ export const useChartsStore = defineStore(
     const hasNodeData = ref(false)
     const chartTab = ref('timeseries')
     const showStatistics = ref(false)
-    const showLine = ref(true)
+    const symbology = ref(['Lines', 'Markers'])
     const dataQualityFlags = ref([0, 1, 2]) // by default don't show bad data
     let colorScale = chroma.scale('YlGnBu').mode('lch').colors(3)
     const router = useRouter()
@@ -141,17 +141,29 @@ export const useChartsStore = defineStore(
       hasNodeData.value = false
     }
 
+    const symbologyContains = (value) => {
+      // check if symbology.value is an array
+      if (Array.isArray(symbology.value)) {
+        return symbology.value.includes(value)
+      }
+      return false
+    }
+
     const getLabels = (selectedFeatures) => {
       // TODO: for now we just use the first query
       // when compact = true, there will only be a single feature
-      const propertyObject = selectedFeatures[0].queries[0].results.geojson.features[0].properties
-      const labels = propertyObject.time_str.map((time_str) => {
-        if (time_str == 'no_data') {
-          return
-        }
-        return time_str
-      })
-      return labels.filter((l) => l != undefined)
+      try {
+        const propertyObject = selectedFeatures[0].queries[0].results.geojson.features[0].properties
+        const labels = propertyObject.time_str.map((time_str) => {
+          if (time_str == 'no_data') {
+            return
+          }
+          return time_str
+        })
+        return labels.filter((l) => l != undefined)
+      } catch (error) {
+        console.error('Error getting labels', error)
+      }
     }
 
     const getTitle = () => {
@@ -234,7 +246,9 @@ export const useChartsStore = defineStore(
         datasets.forEach((dataset) => {
           dataQualityFilterSingleDataset(dataset)
           // update the line visibility
-          dataset.showLine = showLine.value
+          dataset.showLine = symbologyContains('Lines')
+          // https://www.chartjs.org/docs/latest/charts/line.html#dataset-properties
+          // storedChart.chart.options.elements.point.pointstyle = false
         })
       }
     }
@@ -257,7 +271,7 @@ export const useChartsStore = defineStore(
       dataset.pointBorderColor = getPointBorderColors(dataset)
     }
 
-    const filterDatasetsToTimeRange = (start, end, tolerance) => {
+    const filterDatasetsToTimeRange = async (start, end, tolerance) => {
       // if end is null, use now
       const featureStore = useFeaturesStore()
       const { timeRange } = storeToRefs(featureStore)
@@ -338,8 +352,9 @@ export const useChartsStore = defineStore(
           }
         })
       }
+      await nextTick()
       updateNodeDataSetStyles()
-      updateAllCharts()
+      refreshAllCharts()
     }
 
     const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {
@@ -667,7 +682,7 @@ export const useChartsStore = defineStore(
 
     const getDataSetStyle = () => {
       const style = {
-        showLine: showLine.value,
+        showLine: symbologyContains('Lines'),
         fill: true,
         pointBorderColor: (ctx) => getPointBorderColors(ctx.dataset),
         pointStyle: (ctx) => getPointStyles(ctx.dataset),
@@ -711,7 +726,7 @@ export const useChartsStore = defineStore(
     const getNodeDataSetStyle = (dataSet) => {
       const colors = getDateGradientColors(dataSet)
       return {
-        showLine: showLine.value,
+        showLine: symbologyContains('Lines'),
         pointRadius: 5,
         pointHoverRadius: 15,
         //fill: styles.dynamicColors,
@@ -745,9 +760,17 @@ export const useChartsStore = defineStore(
           }
         }
       })
+      updateSymbology()
     }
 
-    const updateShowLine = () => {
+    const updateSymbology = () => {
+      let showLine = true
+      let showMarkers = false
+      // if symbology.value is an array of strings, check if it includes 'Lines' or 'Markers'
+      if (Array.isArray(symbology.value)) {
+        showLine = symbology.value.includes('Lines')
+        showMarkers = symbology.value.includes('Markers')
+      }
       // iterate over stored charts and update the line visibility
       storedCharts.value.forEach((storedChart) => {
         try {
@@ -755,7 +778,8 @@ export const useChartsStore = defineStore(
             storedChart.chart.data.datasets
               .filter((ds) => ds.seriesType != 'computed_series')
               .forEach((dataset) => {
-                dataset.showLine = showLine.value
+                dataset.showLine = showLine
+                dataset.pointRadius = showMarkers ? 5 : 0
               })
             storedChart.chart.update()
           }
@@ -765,7 +789,7 @@ export const useChartsStore = defineStore(
       })
     }
 
-    const updateAllCharts = () => {
+    const updateAllChartsData = () => {
       // iterate over stored charts and update the line visibility
       storedCharts.value.forEach((storedChart) => {
         try {
@@ -776,6 +800,7 @@ export const useChartsStore = defineStore(
           } else {
             storedChart.chart.data.datasets = chartData.value.datasets
           }
+          updateSymbology()
           storedChart.chart.update()
 
           // if all datasets in the chart are hidden, alert the user!
@@ -798,6 +823,18 @@ export const useChartsStore = defineStore(
       })
     }
 
+    const refreshAllCharts = async () => {
+      // iterate over stored charts and refresh
+      storedCharts.value.forEach(async (storedChart) => {
+        try {
+          await storedChart.chart.update()
+        } catch (error) {
+          console.error('Error refreshing chart', error)
+        }
+      })
+      return
+    }
+
     const storeMountedChart = (chart) => {
       storedCharts.value.push(chart)
 
@@ -809,7 +846,7 @@ export const useChartsStore = defineStore(
       const query = {
         variables: activePlt.value.abbreviation,
         plot: chartTab.value,
-        showLine: showLine.value,
+        symbology: symbology.value,
         showStatistics: showStatistics.value,
         dataQualityFlags: dataQualityFlags.value
         // timeRange: timeRange.value,
@@ -840,11 +877,19 @@ export const useChartsStore = defineStore(
           console.error('Invalid Plot Abbreviation', query.variables)
         }
       }
-      if (query.showLine) {
-        showLine.value = query.showLine == 'true'
-      }
       if (query.showStatistics) {
         showStatistics.value = query.showStatistics == 'true'
+      }
+      if (query.symbology) {
+        // if the query is a string, convert it to an array
+        if (typeof query.symbology === 'string') {
+          query.symbology = [query.symbology]
+        }
+
+        // and remove duplicates
+        query.symbology = [...new Set(query.symbology)]
+
+        symbology.value = query.symbology
       }
       if (query.dataQualityFlags) {
         // if the query is a string, convert it to an array
@@ -873,8 +918,8 @@ export const useChartsStore = defineStore(
         console.log('Active PLT Changed', pre, post)
         updateRouteAfterPlotChange()
       })
-      watch(showLine, () => {
-        console.log('Show Line Changed', showLine.value)
+      watch(symbology, () => {
+        console.log('Symbology Changed', symbology.value)
         updateRouteAfterPlotChange()
       })
       watch(showStatistics, () => {
@@ -906,7 +951,8 @@ export const useChartsStore = defineStore(
       hasNodeData,
       dynamicColors,
       dataQualityFilterAllDatasets,
-      updateAllCharts,
+      updateAllChartsData,
+      refreshAllCharts,
       filterDatasetsToTimeRange,
       filterDatasetsBySetOfDates,
       dataQualityOptions,
@@ -917,8 +963,8 @@ export const useChartsStore = defineStore(
       nodeCharts,
       reachCharts,
       showStatistics,
-      showLine,
-      updateShowLine,
+      symbology,
+      updateSymbology,
       storeMountedChart,
       activePlt,
       generateDataQualityLegend,

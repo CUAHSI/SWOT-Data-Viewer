@@ -34,6 +34,7 @@
 
 <script setup>
 import { useChartsStore } from '../stores/charts'
+import { useStatsStore } from '../stores/stats'
 import { useFeaturesStore } from '../stores/features'
 import { RouterLink, useRouter } from 'vue-router'
 import { computed, watch, onMounted } from 'vue'
@@ -51,7 +52,9 @@ const router = useRouter()
 
 const chartStore = useChartsStore()
 const featuresStore = useFeaturesStore()
+const statsStore = useStatsStore()
 const { querying, activeFeature, selectedFeatures } = storeToRefs(featuresStore)
+const { showStatistics } = storeToRefs(chartStore)
 
 // use a watcher to run the query once the active feature is set
 // we do this because it seems that async queries from esri leaflet
@@ -89,6 +92,8 @@ const runQuery = async () => {
   await getNodeDataForReach(activeFeature.value)
   querying.value.nodes = false
   chartStore.buildDistanceChart(featuresStore.nodes)
+  // show stats if they are enabled
+  statsStore.toggleSeriesStatistics(showStatistics.value)
 }
 
 let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
