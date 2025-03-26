@@ -152,7 +152,7 @@ export const useChartsStore = defineStore(
     const getLabels = (selectedFeatures) => {
       // TODO: for now we just use the first query
       // when compact = true, there will only be a single feature
-      try{
+      try {
         const propertyObject = selectedFeatures[0].queries[0].results.geojson.features[0].properties
         const labels = propertyObject.time_str.map((time_str) => {
           if (time_str == 'no_data') {

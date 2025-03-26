@@ -48,7 +48,7 @@ function qualityHasChanged() {
   // apply the time slider filter to the data
   chartStore.filterDatasetsToTimeRange()
   chartStore.refreshAllCharts()
-  
+
   // stats are not shown after update of data quality
   statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
 }
