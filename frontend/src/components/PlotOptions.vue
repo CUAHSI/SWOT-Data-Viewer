@@ -29,9 +29,8 @@ const { symbology } = storeToRefs(chartStore)
 
 const rules = {
   filter: (v) => {
-    // TODO: cam-399 we don't currently support showing lines without markers
-    if (v.includes('Lines') && !v.includes('Markers')) {
-      return 'We do not currently support showing lines without markers.'
+    if (!v.includes('Lines') && !v.includes('Markers')) {
+      return 'No datasets will be displayed - this can be useful for exploring statistics.'
     }
     return true
   }

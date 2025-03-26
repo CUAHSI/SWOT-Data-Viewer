@@ -152,14 +152,18 @@ export const useChartsStore = defineStore(
     const getLabels = (selectedFeatures) => {
       // TODO: for now we just use the first query
       // when compact = true, there will only be a single feature
-      const propertyObject = selectedFeatures[0].queries[0].results.geojson.features[0].properties
-      const labels = propertyObject.time_str.map((time_str) => {
-        if (time_str == 'no_data') {
-          return
-        }
-        return time_str
-      })
-      return labels.filter((l) => l != undefined)
+      try{
+        const propertyObject = selectedFeatures[0].queries[0].results.geojson.features[0].properties
+        const labels = propertyObject.time_str.map((time_str) => {
+          if (time_str == 'no_data') {
+            return
+          }
+          return time_str
+        })
+        return labels.filter((l) => l != undefined)
+      } catch (error) {
+        console.error('Error getting labels', error)
+      }
     }
 
     const getTitle = () => {
@@ -758,6 +762,7 @@ export const useChartsStore = defineStore(
     }
 
     const updateSymbology = () => {
+      // TODO: CAM-399 toggling stats will reset the symbology
       let showLine = true
       let showMarkers = false
       // if symbology.value is an array of strings, check if it includes 'Lines' or 'Markers'
@@ -773,9 +778,7 @@ export const useChartsStore = defineStore(
               .filter((ds) => ds.seriesType != 'computed_series')
               .forEach((dataset) => {
                 dataset.showLine = showLine
-                // TODO: CAM-399 can't show lines without markers
-                storedChart.chart.options.elements.point.pointStyle = showMarkers
-                dataset.hidden = !showMarkers
+                dataset.pointRadius = showMarkers ? 5 : 0
               })
             storedChart.chart.update()
           }
