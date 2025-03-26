@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
@@ -271,7 +271,7 @@ export const useChartsStore = defineStore(
       dataset.pointBorderColor = getPointBorderColors(dataset)
     }
 
-    const filterDatasetsToTimeRange = (start, end, tolerance) => {
+    const filterDatasetsToTimeRange = async (start, end, tolerance) => {
       // if end is null, use now
       const featureStore = useFeaturesStore()
       const { timeRange } = storeToRefs(featureStore)
@@ -352,8 +352,9 @@ export const useChartsStore = defineStore(
           }
         })
       }
+      await nextTick()
       updateNodeDataSetStyles()
-      updateAllCharts()
+      refreshAllCharts()
     }
 
     const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {
@@ -759,10 +760,10 @@ export const useChartsStore = defineStore(
           }
         }
       })
+      updateSymbology()
     }
 
     const updateSymbology = () => {
-      // TODO: CAM-399 toggling stats will reset the symbology
       let showLine = true
       let showMarkers = false
       // if symbology.value is an array of strings, check if it includes 'Lines' or 'Markers'
@@ -788,7 +789,7 @@ export const useChartsStore = defineStore(
       })
     }
 
-    const updateAllCharts = () => {
+    const updateAllChartsData = () => {
       // iterate over stored charts and update the line visibility
       storedCharts.value.forEach((storedChart) => {
         try {
@@ -799,6 +800,7 @@ export const useChartsStore = defineStore(
           } else {
             storedChart.chart.data.datasets = chartData.value.datasets
           }
+          updateSymbology()
           storedChart.chart.update()
 
           // if all datasets in the chart are hidden, alert the user!
@@ -819,6 +821,18 @@ export const useChartsStore = defineStore(
           console.error('Error updating chart', error)
         }
       })
+    }
+
+    const refreshAllCharts = async () => {
+      // iterate over stored charts and refresh
+      storedCharts.value.forEach(async (storedChart) => {
+        try {
+          await storedChart.chart.update()
+        } catch (error) {
+          console.error('Error refreshing chart', error)
+        }
+      })
+      return
     }
 
     const storeMountedChart = (chart) => {
@@ -937,7 +951,8 @@ export const useChartsStore = defineStore(
       hasNodeData,
       dynamicColors,
       dataQualityFilterAllDatasets,
-      updateAllCharts,
+      updateAllChartsData,
+      refreshAllCharts,
       filterDatasetsToTimeRange,
       filterDatasetsBySetOfDates,
       dataQualityOptions,
