@@ -5,3 +5,5 @@ matplotlib
 contextily
 earthaccess
 plotly
+jupyter
+requests
