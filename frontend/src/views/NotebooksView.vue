@@ -7,7 +7,24 @@
         learn more about it <a href="https://jupyter.org/">here</a>.
       </p>
     </div>
-    <v-row gutter="4" class="mb-4">
+    <v-row v-if="resourcesMetadata.length === 0" class="mb-4">
+      <v-col v-for="i in 3" :key="i" cols="12">
+        <v-card class="mx-auto" variant="elevated" outlined>
+          <v-card-item>
+            <div>
+              <v-skeleton-loader
+                class="mx-auto"
+                type="card"
+                :loading="true"
+                :height="200"
+                :width="100"
+              ></v-skeleton-loader>
+            </div>
+          </v-card-item>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row v-else gutter="4" class="mb-4">
       <v-col v-for="resource in resourcesMetadata" :key="resource.id">
         <v-card class="mx-auto" variant="elevated" outlined>
           <v-card-item>
@@ -81,25 +98,48 @@
 </template>
 
 <script setup>
-import { computed, ref, onBeforeMount } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { mdiDownloadBox, mdiNotebook, mdiRocketLaunch } from '@mdi/js'
 // TODO use the collection
 // import { VITE_HYDROSHARE_NOTEBOOKS_COLLECTION } from '@/constants'
+const VITE_HYDROSHARE_NOTEBOOKS_COLLECTION = 'ac6cc75dcb0146cf9cc17a974f4bb08b'
 
 const resourcesMetadata = ref([])
 
-// TODO get a list of resource ids from the HS collection
-// for now we just use one
-const resourceIds = ['ff48614339034212bb7b31cb719c0aa0']
+// get a list of resource ids from the VITE_HYDROSHARE_NOTEBOOKS_COLLECTION
+let resourceIds = []
 
-onBeforeMount(async () => {
+onMounted(async () => {
+  const hydroshare_json_endpoint = `https://www.hydroshare.org/hsapi2/resource/${VITE_HYDROSHARE_NOTEBOOKS_COLLECTION}/json/`
+
+  resourceIds = await fetch(hydroshare_json_endpoint)
+    .then((response) => response.json())
+    .then((data) => {
+      // get the resource ids from the collection
+      resourceIds = data.relations.map((relation) => {
+        // if relation.type = "This resource includes" then parse the resource id from the relation.value
+        if (relation.type === 'This resource includes') {
+          const regex = /\/resource\/([^/]+)/ // regex to match the resource id
+          const match = relation.value.match(regex)
+          if (match) {
+            return match[1] // return the resource id
+          }
+        }
+      })
+      console.log('Found the following resources in the collection', resourceIds)
+      return resourceIds
+    })
+    .catch((error) => {
+      console.error('Error fetching collection JSON:', error)
+    })
+
   // get the metadata for each resource id, using the HydroShare API
   resourcesMetadata.value = await Promise.all(
     resourceIds.map(async (resourceId) => {
       return await getResourceMetadata(resourceId)
     })
   )
-  console.log('resourcesMetadata', resourcesMetadata.value)
+  console.log('Collected the following resource metadata', resourcesMetadata.value)
 })
 
 // notebooks is an array of resource objects, each with metadata
