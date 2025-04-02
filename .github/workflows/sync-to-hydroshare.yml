@@ -1,11 +1,6 @@
 name: Sync Notebooks to Hydroshare
 
 on:
-  push:
-    branches:
-      - main
-      # TODO: remove once merged to main
-      - develop
   workflow_dispatch:
     inputs:
       hydro-resource-id:
