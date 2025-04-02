@@ -7,42 +7,70 @@
         learn more about it <a href="https://jupyter.org/">here</a>.
       </p>
     </div>
-    <v-alert v-if="isDev" type="warning" class="my-4">
-      Notebooks must be manually rendered after updates. Run ./nbconvert/nvconvert.sh to build the
-      notebooks.
-    </v-alert>
     <v-row gutter="4" class="mb-4">
-      <v-col v-for="notebook in notebooks" :key="notebook.filename">
+      <v-col v-for="resource in resourcesMetadata" :key="resource.id">
         <v-card class="mx-auto" variant="elevated" outlined>
           <v-card-item>
             <div>
               <div class="text-overline mb-1">
                 {{ variant }}
               </div>
-              <v-card-title>{{ getTitle(notebook) }}</v-card-title>
-              <v-card-subtitle>{{ notebook.META_SUBTITLE }}</v-card-subtitle>
+              <v-card-title>{{ resource.title }}</v-card-title>
+              <v-card-subtitle>{{ authors(resource) }}</v-card-subtitle>
             </div>
           </v-card-item>
           <v-card-text>
-            {{ notebook.META_DESCRIPTION }}
+            {{ resource.abstract }}
+            <div class="my-2" style="color: grey">
+              {{ resource.citation }}
+            </div>
           </v-card-text>
           <v-card-actions>
-            <v-btn :href="nbviewer_url(notebook.filename)" text target="_blank">
-              <v-icon left>{{ mdiNotebook }}</v-icon>
+            <v-btn>
               View
-              <v-tooltip activator="parent" location="bottom">
-                View a rendered copy at nbviewer.org
-              </v-tooltip>
+              <v-menu activator="parent">
+                <v-list
+                  v-if="resource.notebooks.length > 1"
+                  dense
+                  class="pa-0"
+                  style="width: 300px"
+                  max-height="400px"
+                  overflow-y="auto"
+                >
+                  <v-list-item
+                    v-for="notebookUrl in resource.notebooks"
+                    :key="notebookUrl"
+                    :value="notebookUrl"
+                    :href="nbviewer_url(notebookUrl)"
+                    target="_blank"
+                  >
+                    <v-list-item-title>
+                      <v-icon left>{{ mdiNotebook }}</v-icon>
+                      {{ notebookUrl.split('/').pop() }}
+                      <v-tooltip activator="parent" location="bottom">
+                        View a rendered copy at nbviewer.org
+                      </v-tooltip>
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+                <v-btn v-else :href="nbviewer_url(resource.notebooks[0])" target="_blank">
+                  <v-icon left>{{ mdiNotebook }}</v-icon>
+                  {{ resource.notebooks[0].split('/').pop() }}
+                  <v-tooltip activator="parent" location="bottom">
+                    View a rendered copy at nbviewer.org
+                  </v-tooltip>
+                </v-btn>
+              </v-menu>
             </v-btn>
-            <v-btn :href="`/notebooks/${notebook.filename}`" download>
+            <v-btn :href="hydroShareBagUrl(resource)" download>
               <v-icon left>{{ mdiDownloadBox }}</v-icon>
               Download
             </v-btn>
-            <v-btn :href="binder_url(notebook.filename)" target="_blank">
+            <v-btn :href="cuahsi_jh_url(resource)" target="_blank">
               <v-icon left>{{ mdiRocketLaunch }}</v-icon>
               Launch
               <v-tooltip activator="parent" location="bottom">
-                Launch {{ notebook.filename }} using myBinder.org
+                Launch using CUAHSI JupyterHub
               </v-tooltip>
             </v-btn>
           </v-card-actions>
@@ -53,26 +81,64 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onBeforeMount } from 'vue'
 import { mdiDownloadBox, mdiNotebook, mdiRocketLaunch } from '@mdi/js'
+// TODO use the collection
+// import { VITE_HYDROSHARE_NOTEBOOKS_COLLECTION } from '@/constants'
 
-const isDev = computed(() => process.env.NODE_ENV === 'development')
-// TODO: update once merged
-const REPO_BRANCH = 'develop'
+const resourcesMetadata = ref([])
 
-// the public dir contains the rendered notebooks, for example:
-// http://localhost:5173/notebooks/SWOT_GISshapefiles.html
-// https://localhost/notebooks/SWOT_GISshapefiles.html
+// TODO get a list of resource ids from the HS collection
+// for now we just use one
+const resourceIds = ['ff48614339034212bb7b31cb719c0aa0']
 
-// notebooks is an array of notebook objects, each with metadata
-import { notebooks } from '@/notebooks'
+onBeforeMount(async () => {
+  // get the metadata for each resource id, using the HydroShare API
+  resourcesMetadata.value = await Promise.all(
+    resourceIds.map(async (resourceId) => {
+      return await getResourceMetadata(resourceId)
+    })
+  )
+  console.log('resourcesMetadata', resourcesMetadata.value)
+})
 
-const removeExtension = (name) => name.replace('.html', '').replace('.ipynb', '')
-const binder_url = (name) =>
-  `https://mybinder.org/v2/gh/CUAHSI/SWOT-Data-Viewer/${REPO_BRANCH}?urlpath=%2Fdoc%2Ftree%2Ffrontend%2Fpublic%2Fnotebooks%2F${name}`
-const nbviewer_url = (name) =>
-  `https://nbviewer.org/github/CUAHSI/SWOT-Data-Viewer/blob/${REPO_BRANCH}/frontend/public/notebooks/${name}`
-const getTitle = computed(
-  () => (notebook) => notebook.META_TITLE || removeExtension(notebook.filename)
+// notebooks is an array of resource objects, each with metadata
+
+const cuahsi_jh_url = (resource) =>
+  `https://jupyterhub.cuahsi.org/hub/spawn?next=/user-redirect/nbfetch/hs-pull?id=${resource.id}`
+
+const nbviewer_url = (notebookUrl) => {
+  return `https://nbviewer.org/urls/${notebookUrl}`
+}
+
+const notebooks_in_resource = async (resourceId) => {
+  // for the resource, get a list of all the notebook files
+  const fetchUrl = `https://www.hydroshare.org/hsapi/resource/${resourceId}/files/`
+  const files = await fetch(fetchUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      return data.results.filter((file) => file.file_name.endsWith('.ipynb'))
+    })
+  // strip the scheme from the urls
+  const urls = files.map((file) => file.url.replace('https://', '').replace('http://', ''))
+  return urls
+}
+
+const authors = computed(
+  () => (resource) => resource.creators.map((author) => author.name).join(', ')
 )
+const hydroShareBagUrl = (resource) => {
+  // todo: this will only work if the bag has been generated
+  return `https://www.hydroshare.org/hsapi/resource/${resource.id}/`
+}
+
+const getResourceMetadata = async (resourceId) => {
+  const response = await fetch(`https://www.hydroshare.org/hsapi2/resource/${resourceId}/json/`)
+  const metadata = await response.json()
+  // add the resourceId to the metadata
+  metadata.id = resourceId
+  // also add the files in the resource
+  metadata.notebooks = await notebooks_in_resource(resourceId)
+  return metadata
+}
 </script>
