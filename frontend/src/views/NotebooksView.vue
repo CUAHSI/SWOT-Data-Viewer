@@ -26,7 +26,7 @@
     </v-row>
     <v-row v-else gutter="4" class="mb-4">
       <v-col v-for="resource in resourcesMetadata" :key="resource.id">
-        <v-card class="mx-auto" variant="elevated" outlined>
+        <v-card class="d-flex flex-column" variant="elevated" outlined height="300">
           <v-card-item>
             <div>
               <div class="text-overline mb-1">
@@ -37,17 +37,26 @@
             </div>
           </v-card-item>
           <v-card-text>
+            <v-chip v-for="subject in resource.subjects" :key="subject">
+              {{ subject }}
+            </v-chip>
+            <v-spacer></v-spacer>
             {{ resource.abstract }}
+            <v-spacer></v-spacer>
             <div class="my-2" style="color: grey">
               {{ resource.citation }}
             </div>
           </v-card-text>
+          <v-spacer></v-spacer>
           <v-card-actions>
-            <v-btn>
+            <v-btn v-if="resource.notebooks.length > 1">
+              <v-tooltip activator="parent" location="bottom">
+                View a rendered coppies at nbviewer.org
+              </v-tooltip>
+              <v-icon left>{{ mdiNotebook }}</v-icon>
               View
               <v-menu activator="parent">
                 <v-list
-                  v-if="resource.notebooks.length > 1"
                   dense
                   class="pa-0"
                   style="width: 300px"
@@ -62,22 +71,18 @@
                     target="_blank"
                   >
                     <v-list-item-title>
-                      <v-icon left>{{ mdiNotebook }}</v-icon>
                       {{ notebookUrl.split('/').pop() }}
-                      <v-tooltip activator="parent" location="bottom">
-                        View a rendered copy at nbviewer.org
-                      </v-tooltip>
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
-                <v-btn v-else :href="nbviewer_url(resource.notebooks[0])" target="_blank">
-                  <v-icon left>{{ mdiNotebook }}</v-icon>
-                  {{ resource.notebooks[0].split('/').pop() }}
-                  <v-tooltip activator="parent" location="bottom">
-                    View a rendered copy at nbviewer.org
-                  </v-tooltip>
-                </v-btn>
               </v-menu>
+            </v-btn>
+            <v-btn v-else :href="nbviewer_url(resource.notebooks[0])" target="_blank">
+              <v-tooltip activator="parent" location="bottom">
+                View a rendered copy at nbviewer.org
+              </v-tooltip>
+              <v-icon left>{{ mdiNotebook }}</v-icon>
+              Preview
             </v-btn>
             <v-btn :href="hydroShareBagUrl(resource)" download>
               <v-icon left>{{ mdiDownloadBox }}</v-icon>
@@ -85,7 +90,14 @@
             </v-btn>
             <v-btn :href="cuahsi_jh_url(resource)" target="_blank">
               <v-icon left>{{ mdiRocketLaunch }}</v-icon>
-              Launch
+              Launch in CUAHSI
+              <v-tooltip activator="parent" location="bottom">
+                Launch using CUAHSI JupyterHub
+              </v-tooltip>
+            </v-btn>
+            <v-btn :href="binder_url(resource)" target="_blank">
+              <v-icon left>{{ mdiLaunch }}</v-icon>
+              Launch in MyBinder
               <v-tooltip activator="parent" location="bottom">
                 Launch using CUAHSI JupyterHub
               </v-tooltip>
@@ -99,7 +111,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { mdiDownloadBox, mdiNotebook, mdiRocketLaunch } from '@mdi/js'
+import { mdiDownloadBox, mdiNotebook, mdiRocketLaunch, mdiLaunch } from '@mdi/js'
 // TODO use the collection
 // import { VITE_HYDROSHARE_NOTEBOOKS_COLLECTION } from '@/constants'
 const VITE_HYDROSHARE_NOTEBOOKS_COLLECTION = 'ac6cc75dcb0146cf9cc17a974f4bb08b'
@@ -149,6 +161,10 @@ const cuahsi_jh_url = (resource) =>
 
 const nbviewer_url = (notebookUrl) => {
   return `https://nbviewer.org/urls/${notebookUrl}`
+}
+
+const binder_url = (resource) => {
+  return `https://mybinder.org/v2/hydroshare/${resource.id}`
 }
 
 const notebooks_in_resource = async (resourceId) => {
