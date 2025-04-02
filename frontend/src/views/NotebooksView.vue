@@ -11,8 +11,8 @@
       Notebooks must be manually rendered after updates. Run ./nbconvert/nvconvert.sh to build the
       notebooks.
     </v-alert>
-    <v-row align="center" justify="center">
-      <v-col v-for="notebook in notebooks" :key="notebook.filename" cols="auto">
+    <v-row gutter="4" class="mb-4">
+      <v-col v-for="notebook in notebooks" :key="notebook.filename">
         <v-card class="mx-auto" variant="elevated" outlined>
           <v-card-item>
             <div>
@@ -25,39 +25,24 @@
           </v-card-item>
           <v-card-text>
             {{ notebook.META_DESCRIPTION }}
-            <!-- render a small view of the html -->
-            <iframe
-              :src="`/notebooks/${notebook_html_from_ipynb(notebook.filename)}`"
-              width="100%"
-              height="200"
-              frameborder="0"
-              scrolling="yes"
-            ></iframe>
           </v-card-text>
           <v-card-actions>
-            <v-btn
-              :href="`/notebooks/${notebook_html_from_ipynb(notebook.filename)}`"
-              text
-              target="_blank"
-            >
+            <v-btn :href="nbviewer_url(notebook.filename)" text target="_blank">
               <v-icon left>{{ mdiNotebook }}</v-icon>
               View
               <v-tooltip activator="parent" location="bottom">
-                View rendered copy of {{ notebook_html_from_ipynb(notebook.filename) }}
+                View a rendered copy at nbviewer.org
               </v-tooltip>
             </v-btn>
             <v-btn :href="`/notebooks/${notebook.filename}`" download>
               <v-icon left>{{ mdiDownloadBox }}</v-icon>
               Download
-              <v-tooltip activator="parent" location="bottom">
-                Download {{ notebook.filename }}
-              </v-tooltip>
             </v-btn>
             <v-btn :href="binder_url(notebook.filename)" target="_blank">
               <v-icon left>{{ mdiRocketLaunch }}</v-icon>
               Launch
               <v-tooltip activator="parent" location="bottom">
-                Launch {{ notebook.filename }} in Binder (JupyterHub)
+                Launch {{ notebook.filename }} using myBinder.org
               </v-tooltip>
             </v-btn>
           </v-card-actions>
@@ -83,9 +68,10 @@ const REPO_BRANCH = 'develop'
 import { notebooks } from '@/notebooks'
 
 const removeExtension = (name) => name.replace('.html', '').replace('.ipynb', '')
-const notebook_html_from_ipynb = (html_name) => html_name.replace('.ipynb', '.html')
 const binder_url = (name) =>
   `https://mybinder.org/v2/gh/CUAHSI/SWOT-Data-Viewer/${REPO_BRANCH}?urlpath=%2Fdoc%2Ftree%2Ffrontend%2Fpublic%2Fnotebooks%2F${name}`
+const nbviewer_url = (name) =>
+  `https://nbviewer.org/github/CUAHSI/SWOT-Data-Viewer/blob/${REPO_BRANCH}/frontend/public/notebooks/${name}`
 const getTitle = computed(
   () => (notebook) => notebook.META_TITLE || removeExtension(notebook.filename)
 )
