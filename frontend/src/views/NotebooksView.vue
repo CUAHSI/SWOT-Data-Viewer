@@ -89,7 +89,7 @@
                 Launch using CUAHSI JupyterHub
               </v-tooltip>
             </v-btn>
-            <v-btn :href="binder_url(resource)" target="_blank">
+            <v-btn :href="binder_url(resource)" target="_blank" disabled>
               <v-icon left>{{ mdiLaunch }}</v-icon>
               Launch in MyBinder
               <v-tooltip activator="parent" location="bottom">
