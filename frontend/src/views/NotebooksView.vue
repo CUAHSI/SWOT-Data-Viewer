@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <div>
       <p>
         This page provides example notebooks for interacting with SWOT data. These notebooks are
@@ -24,30 +24,24 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-row v-else gutter="4" class="mb-4">
+    <v-row v-else class="mb-4" dense>
       <v-col v-for="resource in resourcesMetadata" :key="resource.id">
         <v-card class="d-flex flex-column" variant="elevated" outlined height="300">
           <v-card-item>
-            <div>
-              <div class="text-overline mb-1">
-                {{ variant }}
-              </div>
-              <v-card-title>{{ resource.title }}</v-card-title>
-              <v-card-subtitle>{{ authors(resource) }}</v-card-subtitle>
-            </div>
+            <v-card-title>{{ resource.title }}</v-card-title>
+            <v-card-subtitle>{{ authors(resource) }}</v-card-subtitle>
           </v-card-item>
           <v-card-text>
             <v-chip v-for="subject in resource.subjects" :key="subject">
               {{ subject }}
             </v-chip>
-            <v-spacer></v-spacer>
-            {{ resource.abstract }}
-            <v-spacer></v-spacer>
+            <div class="my-2">
+              {{ resource.abstract }}
+            </div>
             <div class="my-2" style="color: grey">
               {{ resource.citation }}
             </div>
           </v-card-text>
-          <v-spacer></v-spacer>
           <v-card-actions>
             <v-btn v-if="resource.notebooks.length > 1">
               <v-tooltip activator="parent" location="bottom">
