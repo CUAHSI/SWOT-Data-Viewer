@@ -51,7 +51,7 @@
           <v-card-actions>
             <v-btn v-if="resource.notebooks.length > 1">
               <v-tooltip activator="parent" location="bottom">
-                View a rendered coppies at nbviewer.org
+                View rendered copies at nbviewer.org
               </v-tooltip>
               <v-icon left>{{ mdiNotebook }}</v-icon>
               View
