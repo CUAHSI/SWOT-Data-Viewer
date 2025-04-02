@@ -1,12 +1,12 @@
 <template>
   <v-container fluid>
-    <div>
-      <p>
-        This page provides example notebooks for interacting with SWOT data. These notebooks are
-        designed to be run in a Jupyter environment. If you are not familiar with Jupyter, you can
-        learn more about it <a href="https://jupyter.org/">here</a>.
-      </p>
-    </div>
+    <h2>Notebooks</h2>
+    <hr />
+    <p class="content">
+      This page provides example notebooks for interacting with SWOT data. These notebooks are
+      designed to be run in a Jupyter environment. If you are not familiar with Jupyter, you can
+      learn more about it <a href="https://jupyter.org/">here</a>.
+    </p>
     <v-row v-if="resourcesMetadata.length === 0" class="mb-4">
       <v-col v-for="i in 3" :key="i" cols="12">
         <v-card class="mx-auto" variant="elevated" outlined>
@@ -192,3 +192,19 @@ const getResourceMetadata = async (resourceId) => {
   return metadata
 }
 </script>
+
+<style scoped>
+h2 {
+  color: #2c3e50;
+  margin-top: .5em;
+  margin-bottom: 0.5em;
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+}
+.content {
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 1.5em;
+}
+</style>
