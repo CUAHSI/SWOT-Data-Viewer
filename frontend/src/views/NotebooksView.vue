@@ -81,6 +81,9 @@
             <v-btn :href="hydroShareBagUrl(resource)" download>
               <v-icon left>{{ mdiDownloadBox }}</v-icon>
               Download
+              <v-tooltip activator="parent" location="bottom">
+                Download the full HydroShare resource including metadata
+              </v-tooltip>
             </v-btn>
             <v-btn :href="cuahsi_jh_url(resource)" target="_blank">
               <v-icon left>{{ mdiRocketLaunch }}</v-icon>
@@ -196,7 +199,7 @@ const getResourceMetadata = async (resourceId) => {
 <style scoped>
 h2 {
   color: #2c3e50;
-  margin-top: .5em;
+  margin-top: 0.5em;
   margin-bottom: 0.5em;
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
