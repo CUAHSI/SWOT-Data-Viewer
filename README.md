@@ -37,3 +37,6 @@ make format
 ## Adding notebooks
 
 Notebooks from [this collection](https://www.hydroshare.org/resource/ac6cc75dcb0146cf9cc17a974f4bb08b/) will be rendered as examples
+
+## More info
+[CI/CD info](https://develop.cuahsi.io/swotviz/ci_cd/)
