@@ -3,15 +3,12 @@
     <h2>Notebooks</h2>
     <hr />
     <p class="content">
-      This page provides example notebooks for interacting with SWOT data. These notebooks are
-      designed to be run in a Jupyter environment. If you are not familiar with Jupyter, you can
-      learn more about it <a href="https://jupyter.org/">here</a>. The notebooks are hosted on
-      HydroShare, a data sharing platform for the hydrologic sciences. The HydroShare resources are
-      part of a publicly available collection:
+      This page provides example notebooks for interacting with SWOT data. The notebooks are hosted
+      on HydroShare in a
       <a
         :href="`https://www.hydroshare.org/resource/${VITE_HYDROSHARE_NOTEBOOKS_COLLECTION}/`"
         target="_blank"
-        >SWOT Data Notebooks</a
+        >publicly available collection</a
       >.
     </p>
     <v-row v-if="resourcesMetadata.length === 0" class="mb-4">
@@ -33,7 +30,7 @@
     </v-row>
     <v-row v-else class="mb-4" dense>
       <v-col v-for="resource in resourcesMetadata" :key="resource.id">
-        <v-card class="d-flex flex-column" variant="elevated" outlined height="300">
+        <v-card class="d-flex flex-column" variant="elevated" outlined height="100%">
           <v-card-item>
             <v-card-title>{{ resource.title }}</v-card-title>
             <v-card-subtitle>{{ authors(resource) }}</v-card-subtitle>
@@ -47,6 +44,12 @@
             </div>
             <div class="my-2" style="color: grey">
               {{ resource.citation }}
+            </div>
+            <div class="my-2">
+              Rendered from HydroShare Resource:
+              <a :href="`https://www.hydroshare.org/resource/${resource.id}/`" target="_blank">{{
+                resource.id
+              }}</a>
             </div>
           </v-card-text>
           <v-card-actions>
