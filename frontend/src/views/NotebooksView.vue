@@ -176,7 +176,7 @@ onMounted(async () => {
 // notebooks is an array of resource objects, each with metadata
 
 const cuahsi_jh_url = (resource) =>
-  `https://jupyterhub.cuahsi.org/hub/spawn?next=/user-redirect/nbfetch/hs-pull?id=${resource.id}`
+  `https://jupyterhub.cuahsi.org/hub/spawn?next=/user-redirect/nbfetch/hs-pull?id=${resource.id}%26app=lab`
 
 const nbviewer_url = (notebookUrl) => {
   return `https://nbviewer.org/urls/${notebookUrl}`
