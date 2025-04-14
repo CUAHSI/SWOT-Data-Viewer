@@ -33,10 +33,22 @@
         <v-card class="d-flex flex-column" variant="elevated" outlined height="100%">
           <v-card-item>
             <v-card-title>{{ resource.title }}</v-card-title>
-            <v-card-subtitle>{{ authors(resource) }}</v-card-subtitle>
+            <v-card-subtitle>
+              <v-chip v-for="creator in resource.creators" :key="creator" class="mr-2" label
+                >{{ creator.name }}
+              </v-chip>
+            </v-card-subtitle>
           </v-card-item>
           <v-card-text>
-            <v-chip v-for="subject in resource.subjects" :key="subject" class="mr-1" small>
+            <v-chip
+              v-for="subject in resource.subjects"
+              :key="subject"
+              class="mr-1"
+              small
+              color="grey lighten-1"
+              text-color="grey darken"
+              style="font-size: 0.8em"
+            >
               {{ subject }}
             </v-chip>
             <div class="my-2">
@@ -117,7 +129,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { mdiDownloadBox, mdiNotebook, mdiRocketLaunch, mdiLaunch } from '@mdi/js'
 // TODO use the collection
 // import { VITE_HYDROSHARE_NOTEBOOKS_COLLECTION } from '@/constants'
@@ -186,10 +198,6 @@ const notebooks_in_resource = async (resourceId) => {
   const urls = files.map((file) => file.url.replace('https://', '').replace('http://', ''))
   return urls
 }
-
-const authors = computed(
-  () => (resource) => resource.creators.map((author) => author.name).join(', ')
-)
 const hydroShareBagUrl = (resource) => {
   // todo: this will only work if the bag has been generated
   return `https://www.hydroshare.org/hsapi/resource/${resource.id}/`
@@ -214,6 +222,7 @@ h2 {
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
 }
+
 .content {
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
