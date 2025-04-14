@@ -16,8 +16,13 @@
         <v-card class="mx-auto" variant="elevated" outlined>
           <v-card-item>
             <div>
-              <v-skeleton-loader class="mx-auto" type="card" :loading="true" :height="200"
-                :width="100"></v-skeleton-loader>
+              <v-skeleton-loader
+                class="mx-auto"
+                type="card"
+                :loading="true"
+                :height="200"
+                :width="100"
+              ></v-skeleton-loader>
             </div>
           </v-card-item>
         </v-card>
@@ -29,13 +34,21 @@
           <v-card-item>
             <v-card-title>{{ resource.title }}</v-card-title>
             <v-card-subtitle>
-              <v-chip v-for="creator in resource.creators" :key="creator" class="mr-2" label>{{ creator.name }}
+              <v-chip v-for="creator in resource.creators" :key="creator" class="mr-2" label
+                >{{ creator.name }}
               </v-chip>
             </v-card-subtitle>
           </v-card-item>
           <v-card-text>
-            <v-chip v-for="subject in resource.subjects" :key="subject" class="mr-1" small color="grey lighten-1"
-              text-color="grey darken" style="font-size: 0.8em">
+            <v-chip
+              v-for="subject in resource.subjects"
+              :key="subject"
+              class="mr-1"
+              small
+              color="grey lighten-1"
+              text-color="grey darken"
+              style="font-size: 0.8em"
+            >
               {{ subject }}
             </v-chip>
             <div class="my-2">
@@ -59,9 +72,20 @@
               <v-icon left>{{ mdiNotebook }}</v-icon>
               View
               <v-menu activator="parent">
-                <v-list dense class="pa-0" style="width: 300px" max-height="400px" overflow-y="auto">
-                  <v-list-item v-for="notebookUrl in resource.notebooks" :key="notebookUrl" :value="notebookUrl"
-                    :href="nbviewer_url(notebookUrl)" target="_blank">
+                <v-list
+                  dense
+                  class="pa-0"
+                  style="width: 300px"
+                  max-height="400px"
+                  overflow-y="auto"
+                >
+                  <v-list-item
+                    v-for="notebookUrl in resource.notebooks"
+                    :key="notebookUrl"
+                    :value="notebookUrl"
+                    :href="nbviewer_url(notebookUrl)"
+                    target="_blank"
+                  >
                     <v-list-item-title>
                       {{ notebookUrl.split('/').pop() }}
                     </v-list-item-title>
@@ -105,7 +129,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { mdiDownloadBox, mdiNotebook, mdiRocketLaunch, mdiLaunch } from '@mdi/js'
 // TODO use the collection
 // import { VITE_HYDROSHARE_NOTEBOOKS_COLLECTION } from '@/constants'
