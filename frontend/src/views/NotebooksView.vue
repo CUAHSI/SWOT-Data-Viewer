@@ -3,8 +3,8 @@
     <h2>Notebooks</h2>
     <hr />
     <p class="content">
-      This page provides example notebooks for interacting with SWOT data. The notebooks are hosted on
-      HydroShare in a
+      This page provides example notebooks for interacting with SWOT data. The notebooks are hosted
+      on HydroShare in a
       <a
         :href="`https://www.hydroshare.org/resource/${VITE_HYDROSHARE_NOTEBOOKS_COLLECTION}/`"
         target="_blank"
