@@ -48,6 +48,14 @@
             <div class="my-2" style="color: grey">
               {{ resource.citation }}
             </div>
+            <div class="my-2">
+              Rendered from HydroShare Resource:
+              <a
+                :href="`https://www.hydroshare.org/resource/${resource.id}/`"
+                target="_blank"
+                >{{ resource.id }}</a
+              >
+            </div>
           </v-card-text>
           <v-card-actions>
             <v-btn v-if="resource.notebooks.length > 1">
