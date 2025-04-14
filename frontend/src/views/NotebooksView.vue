@@ -16,13 +16,8 @@
         <v-card class="mx-auto" variant="elevated" outlined>
           <v-card-item>
             <div>
-              <v-skeleton-loader
-                class="mx-auto"
-                type="card"
-                :loading="true"
-                :height="200"
-                :width="100"
-              ></v-skeleton-loader>
+              <v-skeleton-loader class="mx-auto" type="card" :loading="true" :height="200"
+                :width="100"></v-skeleton-loader>
             </div>
           </v-card-item>
         </v-card>
@@ -33,10 +28,14 @@
         <v-card class="d-flex flex-column" variant="elevated" outlined height="100%">
           <v-card-item>
             <v-card-title>{{ resource.title }}</v-card-title>
-            <v-card-subtitle>{{ authors(resource) }}</v-card-subtitle>
+            <v-card-subtitle>
+              <v-chip v-for="creator in resource.creators" :key="creator" class="mr-2" label>{{ creator.name }}
+              </v-chip>
+            </v-card-subtitle>
           </v-card-item>
           <v-card-text>
-            <v-chip v-for="subject in resource.subjects" :key="subject" class="mr-1" small>
+            <v-chip v-for="subject in resource.subjects" :key="subject" class="mr-1" small color="grey lighten-1"
+              text-color="grey darken" style="font-size: 0.8em">
               {{ subject }}
             </v-chip>
             <div class="my-2">
@@ -60,20 +59,9 @@
               <v-icon left>{{ mdiNotebook }}</v-icon>
               View
               <v-menu activator="parent">
-                <v-list
-                  dense
-                  class="pa-0"
-                  style="width: 300px"
-                  max-height="400px"
-                  overflow-y="auto"
-                >
-                  <v-list-item
-                    v-for="notebookUrl in resource.notebooks"
-                    :key="notebookUrl"
-                    :value="notebookUrl"
-                    :href="nbviewer_url(notebookUrl)"
-                    target="_blank"
-                  >
+                <v-list dense class="pa-0" style="width: 300px" max-height="400px" overflow-y="auto">
+                  <v-list-item v-for="notebookUrl in resource.notebooks" :key="notebookUrl" :value="notebookUrl"
+                    :href="nbviewer_url(notebookUrl)" target="_blank">
                     <v-list-item-title>
                       {{ notebookUrl.split('/').pop() }}
                     </v-list-item-title>
@@ -186,10 +174,6 @@ const notebooks_in_resource = async (resourceId) => {
   const urls = files.map((file) => file.url.replace('https://', '').replace('http://', ''))
   return urls
 }
-
-const authors = computed(
-  () => (resource) => resource.creators.map((author) => author.name).join(', ')
-)
 const hydroShareBagUrl = (resource) => {
   // todo: this will only work if the bag has been generated
   return `https://www.hydroshare.org/hsapi/resource/${resource.id}/`
@@ -214,6 +198,7 @@ h2 {
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
 }
+
 .content {
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
