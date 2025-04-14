@@ -5,14 +5,14 @@
     <p class="content">
       This page provides example notebooks for interacting with SWOT data. These notebooks are
       designed to be run in a Jupyter environment. If you are not familiar with Jupyter, you can
-      learn more about it <a href="https://jupyter.org/">here</a>.
-      The notebooks are hosted on HydroShare, a data sharing platform for the
-      hydrologic sciences. The HydroShare resources are part of a publicly available collection:
+      learn more about it <a href="https://jupyter.org/">here</a>. The notebooks are hosted on
+      HydroShare, a data sharing platform for the hydrologic sciences. The HydroShare resources are
+      part of a publicly available collection:
       <a
         :href="`https://www.hydroshare.org/resource/${VITE_HYDROSHARE_NOTEBOOKS_COLLECTION}/`"
         target="_blank"
         >SWOT Data Notebooks</a
-      >. 
+      >.
     </p>
     <v-row v-if="resourcesMetadata.length === 0" class="mb-4">
       <v-col v-for="i in 3" :key="i" cols="12">
