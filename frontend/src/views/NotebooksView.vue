@@ -118,7 +118,9 @@
               <v-icon left>{{ mdiLaunch }}</v-icon>
               Launch in MyBinder
               <v-tooltip activator="parent" location="bottom">
-                Launch using CUAHSI JupyterHub
+                MyBinder is a free service that allows you to run Jupyter notebooks in the cloud. 
+                Please note the environment provided might not have all the necessary packages installed. 
+                If you encounter any issues, please use the CUAHSI JupyterHub service instead.
               </v-tooltip>
             </v-btn>
           </v-card-actions>
