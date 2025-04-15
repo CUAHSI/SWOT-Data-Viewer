@@ -114,7 +114,7 @@
                 Launch using CUAHSI JupyterHub
               </v-tooltip>
             </v-btn>
-            <v-btn :href="binder_url(resource)" target="_blank" disabled>
+            <v-btn :href="binder_url(resource)" target="_blank">
               <v-icon left>{{ mdiLaunch }}</v-icon>
               Launch in MyBinder
               <v-tooltip activator="parent" location="bottom">
@@ -183,7 +183,10 @@ const nbviewer_url = (notebookUrl) => {
 }
 
 const binder_url = (resource) => {
-  return `https://mybinder.org/v2/hydroshare/${resource.id}`
+  // the hydroshare binder functionality is currently broken
+  // return `https://mybinder.org/v2/hydroshare/${resource.id}`
+  // instead, rely on https://github.com/hydroshare/hydroshare_github_sync
+  return `https://mybinder.org/v2/gh/hydroshare/hydroshare_github_sync/main?urlpath=/doc/tree/${resource.id}/data/contents`
 }
 
 const notebooks_in_resource = async (resourceId) => {

@@ -40,3 +40,10 @@ Notebooks from [this collection](https://www.hydroshare.org/resource/ac6cc75dcb0
 
 ## More info
 [CI/CD info](https://develop.cuahsi.io/swotviz/ci_cd/)
+
+## MyBinder 
+
+The functionality to launch into MyBinder relies on a separate repo:
+[https://github.com/hydroshare/hydroshare_github_sync](https://github.com/hydroshare/hydroshare_github_sync)
+
+This is because the direct hydroshare launch into MyBinder is broken at this time...
