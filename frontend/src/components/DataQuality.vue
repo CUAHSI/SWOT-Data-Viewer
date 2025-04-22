@@ -38,7 +38,7 @@ import { storeToRefs } from 'pinia'
 
 const chartStore = useChartsStore()
 const statsStore = useStatsStore()
-const { dataQualityFlags } = storeToRefs(chartStore)
+const { dataQualityFlags, showStatistics } = storeToRefs(chartStore)
 const panel = ref([])
 
 function qualityHasChanged() {
@@ -50,6 +50,6 @@ function qualityHasChanged() {
   chartStore.refreshAllCharts()
 
   // stats are not shown after update of data quality
-  statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
+  statsStore.toggleSeriesStatistics(showStatistics.value)
 }
 </script>
