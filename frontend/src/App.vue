@@ -62,12 +62,12 @@ const paths = [
   //   label: "API",
   // },
   {
-    attrs: { to: '/about' },
-    label: 'About'
-  },
-  {
     attrs: { to: '/notebooks' },
     label: 'Notebooks'
+  },
+  {
+    attrs: { to: '/about' },
+    label: 'About'
   }
 ]
 
