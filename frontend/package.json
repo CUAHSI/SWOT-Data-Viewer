@@ -12,10 +12,12 @@
     "test:unit:dev": "cypress open --component",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --ignore-path .gitignore",
     "lint-fix": "eslint --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore .",
-    "format": "prettier --write src/",
-    "validate": "npm-run-all --parallel lint format",
-    "precommit": "npm run validate",
-    "prepush": "npm run validate",
+    "format": "prettier --check src/",
+    "format-fix": "prettier --write src/",
+    "lint-format": "npm-run-all --parallel lint format",
+    "lint-format-fix": "npm-run-all --parallel lint-fix format-fix",
+    "precommit": "npm run lint-format",
+    "prepush": "npm run lint-format",
     "prepare": "cd .. && husky frontend/.husky"
   },
   "dependencies": {

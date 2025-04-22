@@ -33,6 +33,11 @@ More detailed info is available in the [frontend readme](frontend/README.md)
 ```console
 make format
 ```
+Formatting and linting is run with a git pre-commit hook using Husky.
+It requires the Docker daemon to be running.
+If you are having trouble with the formatting and linting, you can see here how to skip the git hook:
+https://typicode.github.io/husky/how-to.html#skipping-git-hooks
+However note that this is not recommended -- let's keep our code clean!
 
 ## Adding notebooks
 
