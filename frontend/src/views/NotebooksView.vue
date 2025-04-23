@@ -171,11 +171,13 @@ onMounted(async () => {
     })
 
   // get the metadata for each resource id, using the HydroShare API
-  resourcesMetadata.value = await Promise.all(
-    resourceIds.map(async (resourceId) => {
-      return await getResourceMetadata(resourceId)
-    })
-  )
+  resourcesMetadata.value = (
+    await Promise.all(
+      resourceIds.map(async (resourceId) => {
+        return await getResourceMetadata(resourceId)
+      })
+    )
+  ).filter((metadata) => metadata !== null && metadata !== undefined)
   console.log('Collected the following resource metadata', resourcesMetadata.value)
 })
 
@@ -213,13 +215,29 @@ const hydroShareBagUrl = (resource) => {
 }
 
 const getResourceMetadata = async (resourceId) => {
-  const response = await fetch(`https://www.hydroshare.org/hsapi2/resource/${resourceId}/json/`)
-  const metadata = await response.json()
-  // add the resourceId to the metadata
-  metadata.id = resourceId
-  // also add the files in the resource
-  metadata.notebooks = await notebooks_in_resource(resourceId)
-  return metadata
+  try {
+    const response = await fetch(`https://www.hydroshare.org/hsapi2/resource/${resourceId}/json/`)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch metadata for resource ${resourceId}: ${response.statusText}`)
+    }
+    const metadata = await response.json()
+    // add the resourceId to the metadata
+    metadata.id = resourceId
+    // also add the files in the resource
+    metadata.notebooks = await notebooks_in_resource(resourceId)
+    return metadata
+  } catch (error) {
+    console.error(`Error fetching metadata for resource ${resourceId}:`, error)
+    return {
+      id: resourceId,
+      title: 'Error fetching metadata',
+      creators: [],
+      subjects: [],
+      abstract: 'Unable to fetch metadata for this resource.',
+      citation: '',
+      notebooks: []
+    }
+  }
 }
 </script>
 
