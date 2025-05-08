@@ -7,6 +7,7 @@ import chroma from 'chroma-js'
 import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { useAlertStore } from '@/stores/alerts'
+import { useStatsStore } from './stats'
 import { useRouter } from 'vue-router'
 
 export const useChartsStore = defineStore(
@@ -916,6 +917,9 @@ export const useChartsStore = defineStore(
       })
       watch(activePlt, (pre, post) => {
         console.log('Active PLT Changed', pre, post)
+        // refresh stats when the active plot changes
+        const statsStore = useStatsStore()
+        statsStore.toggleSeriesStatistics(showStatistics.value)
         updateRouteAfterPlotChange()
       })
       watch(symbology, () => {
