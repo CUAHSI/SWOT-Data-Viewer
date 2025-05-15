@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, ref, watch, shallowRef } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
@@ -24,7 +24,7 @@ export const useChartsStore = defineStore(
     const showStatistics = ref(false)
     const symbology = ref(['Lines', 'Markers'])
     const dataQualityFlags = ref([0, 1, 2]) // by default don't show bad data
-    let colorScale = chroma.scale('YlGnBu').mode('lch').colors(3)
+    const colorScale = shallowRef({})
     const router = useRouter()
 
     const dataQualityOptions = [
@@ -354,6 +354,7 @@ export const useChartsStore = defineStore(
       }
       await nextTick()
       updateNodeDataSetStyles()
+      updateAllChartsData()
       refreshAllCharts()
     }
 
@@ -530,7 +531,7 @@ export const useChartsStore = defineStore(
         .scale('YlGnBu')
         .mode('lch')
         .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
-      colorScale = newColorScale
+      colorScale.value = newColorScale
     }
 
     const getNodeChartDatasets = (nodes) => {
@@ -558,6 +559,7 @@ export const useChartsStore = defineStore(
       const timeStampGroups = getNodeTimeStamps(measurements)
 
       const datasets = []
+      updateColorScale()
       for (const date in timeStampGroups) {
         const timeStampGroup = timeStampGroups[date]
         datasets.push({
@@ -603,7 +605,7 @@ export const useChartsStore = defineStore(
         date = new Date(date)
       }
       try {
-        const scale = colorScale(date)
+        const scale = colorScale.value(date)
         const hex = scale.hex()
         return hex
       } catch (error) {
@@ -613,7 +615,6 @@ export const useChartsStore = defineStore(
     }
 
     const getDateGradientColors = (dataSet) => {
-      updateColorScale()
       if (dataSet.length == 0) {
         return []
       }
@@ -748,6 +749,7 @@ export const useChartsStore = defineStore(
       if (!hasNodeData.value) {
         return
       }
+      updateColorScale()
       nodeChartData.value.datasets.forEach((dataset) => {
         // replace the dataset properties with those from getNodeDataSetStyle
         const updatedStyles = getNodeDataSetStyle(dataset.data)
