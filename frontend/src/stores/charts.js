@@ -527,9 +527,11 @@ export const useChartsStore = defineStore(
         ),
         maxDateTime: new Date(timeRange.value[1] * 1000)
       }
+      // Green/Blue selected for colorblind safety
+      // https://colorbrewer2.org/#type=sequential&scheme=GnBu&n=5
       const newColorScale = chroma
-        .scale('YlGnBu')
-        .mode('lch')
+        .scale('GnBu')
+        .padding([0.25, 0])
         .domain([chartDates.minDateTime, chartDates.medianDateTime, chartDates.maxDateTime])
       colorScale.value = newColorScale
     }
