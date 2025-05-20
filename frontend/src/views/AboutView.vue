@@ -1,7 +1,6 @@
 <template>
   <v-container>
-    <div class="about-page">    
-
+    <div class="about-page">
       <!-- Table of Contents Section -->
       <nav class="toc">
         <h3>Table of Contents</h3>
@@ -19,46 +18,45 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { marked } from 'marked';
-import about_page_url from '@/assets/about_page.md';
+import { ref, onMounted } from 'vue'
+import { marked } from 'marked'
+import about_page_url from '@/assets/about_page.md'
 
 // use the about_page_url to fetch the markdown content
-const aboutHtml = ref('');
-const tocItems = ref([]); // toc (table of contents) items
+const aboutHtml = ref('')
+const tocItems = ref([]) // toc (table of contents) items
 
 // fetch and process the markdown content
 onMounted(async () => {
-  const response = await fetch(about_page_url);
-  const markdownText = await response.text();
+  const response = await fetch(about_page_url)
+  const markdownText = await response.text()
 
   // convert markdown to HTML and set it
-  aboutHtml.value = marked(markdownText, { gfm: true });
+  aboutHtml.value = marked(markdownText, { gfm: true })
 
   // extract headings from the markdown content for the TOC
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = aboutHtml.value;
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = aboutHtml.value
 
   // extract headings and generate TOC items with IDs
-  tocItems.value = Array.from(tempDiv.querySelectorAll('h2')).map((heading, index) => {
-    const id = heading.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    heading.id = id; // Set the ID on the heading itself
+  tocItems.value = Array.from(tempDiv.querySelectorAll('h2')).map((heading) => {
+    const id = heading.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    heading.id = id // Set the ID on the heading itself
     return {
       id,
       text: heading.innerText
-    };
-  });
+    }
+  })
 
-  
   // set the modified HTML back to the aboutHtml
-  aboutHtml.value = tempDiv.innerHTML;
-});
+  aboutHtml.value = tempDiv.innerHTML
+})
 
 // Scroll to the section smoothly
 function scrollToSection(id) {
-  const element = document.getElementById(id);
+  const element = document.getElementById(id)
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 }
 </script>
@@ -85,7 +83,8 @@ function scrollToSection(id) {
   border: 1px solid #ddd;
 }
 
-.about-content th, .about-content td {
+.about-content th,
+.about-content td {
   border: 1px solid #ddd;
   padding: 8px;
 }
@@ -96,7 +95,12 @@ function scrollToSection(id) {
   text-align: left;
 }
 
-.about-content h1, .about-content h2, .about-content h3, .about-content h4, .about-content h5, .about-content h6 {
+.about-content h1,
+.about-content h2,
+.about-content h3,
+.about-content h4,
+.about-content h5,
+.about-content h6 {
   color: #2c3e50;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
@@ -106,7 +110,8 @@ function scrollToSection(id) {
   margin-bottom: 1em;
 }
 
-.about-content ul, .about-content ol {
+.about-content ul,
+.about-content ol {
   margin: 1em 0;
   padding-left: 1.5em;
 }
@@ -151,7 +156,7 @@ function scrollToSection(id) {
 }
 
 .toc h3 {
-  font-size: .75em;
+  font-size: 0.75em;
   margin-bottom: 0.5em;
 }
 

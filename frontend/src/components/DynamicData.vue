@@ -1,41 +1,41 @@
 <template>
   <v-btn v-if="!hasData" @click="query" color="primary" :loading="querying.hydrocron"
-  >Query HydroCron</v-btn
->
+    >Query HydroCron</v-btn
+  >
   <v-sheet v-if="hasData" class="mx-auto" elevation="8">
     <v-card v-if="featureStore.activeFeature" height="100%">
-        <v-expansion-panels v-if="hasData">
-          <v-expansion-panel>
-            <v-expansion-panel-title>
-              <v-icon :icon="mdiTimelineClockOutline"></v-icon>
-              <span class="ml-2">HydroCron Query</span>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <div v-for="(value, key, i) in featureStore.activeFeature.params" :key="i">
-                <v-divider v-if="i < Object.keys(featureStore.activeFeature.params).length - 1" />
+      <v-expansion-panels v-if="hasData">
+        <v-expansion-panel>
+          <v-expansion-panel-title>
+            <v-icon :icon="mdiTimelineClockOutline"></v-icon>
+            <span class="ml-2">HydroCron Query</span>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <div v-for="(value, key, i) in featureStore.activeFeature.params" :key="i">
+              <v-divider v-if="i < Object.keys(featureStore.activeFeature.params).length - 1" />
+              <div>{{ key }}: {{ value }}</div>
+            </div>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-title>
+            <v-icon :icon="mdiSatelliteVariant"></v-icon>
+            <span class="ml-2">SWOT Data ({{ featureStore.activeFeature.hits }} points)</span>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <div
+              v-for="swotFeature in featureStore.activeFeature.results.geojson.features"
+              :key="swotFeature.index"
+            >
+              <div v-for="(value, key, i) in swotFeature.properties" :key="i">
+                <v-divider v-if="i < Object.keys(swotFeature.properties).length - 1" />
                 <div>{{ key }}: {{ value }}</div>
               </div>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-          <v-expansion-panel>
-            <v-expansion-panel-title>
-              <v-icon :icon="mdiSatelliteVariant"></v-icon>
-              <span class="ml-2">SWOT Data ({{ featureStore.activeFeature.hits }} points)</span>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <div
-                v-for="swotFeature in featureStore.activeFeature.results.geojson.features"
-                :key="swotFeature.index"
-              >
-                <div v-for="(value, key, i) in swotFeature.properties" :key="i">
-                  <v-divider v-if="i < Object.keys(swotFeature.properties).length - 1" />
-                  <div>{{ key }}: {{ value }}</div>
-                </div>
-              </div>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
-        <TimeSeriesCharts v-if="hasData" />
+            </div>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
+      <TimeSeriesCharts v-if="hasData" />
     </v-card>
   </v-sheet>
 </template>

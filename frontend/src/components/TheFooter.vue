@@ -3,9 +3,15 @@
     <div class="d-flex w-100 position-relative">
       <v-spacer></v-spacer>
       <div class="poweredbycontainer">
-        <v-card href="https://cuahsi.org" class="mx-auto float-left" rel="noopener" target="_blank"
-          subtitle="Powered by" min-width="
-          16rem">
+        <v-card
+          href="https://cuahsi.org"
+          class="mx-auto float-left"
+          rel="noopener"
+          target="_blank"
+          subtitle="Powered by"
+          min-width="
+          16rem"
+        >
           <template v-slot:append>
             <v-img :src="imgUrl" cover width="8rem"></v-img>
           </template>

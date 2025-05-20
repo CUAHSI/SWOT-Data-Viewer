@@ -1,0 +1,55 @@
+name: Sync Notebooks to Hydroshare
+
+on:
+  workflow_dispatch:
+    inputs:
+      hydro-resource-id:
+        description: 'Hydroshare resource ID to sync to'
+        required: false
+        # https://www.hydroshare.org/resource/ff48614339034212bb7b31cb719c0aa0/
+        # default: 'ff48614339034212bb7b31cb719c0aa0'
+
+jobs:
+  sync:
+    strategy:
+      matrix:
+        python-version: [3.9]
+        platform: [ubuntu-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install hsclient
+    - name: Sync Notebooks to Hydroshare
+      env:
+        HYDRO_USERNAME: ${{ secrets.HYDRO_USERNAME }}
+        HYDRO_PASSWORD: ${{ secrets.HYDRO_PASSWORD }}
+        HYDRO_RESOURCE_ID: ${{ github.event.inputs.hydro-resource-id || secrets.HYDRO_RESOURCE_ID }}
+      working-directory: ${{ github.workspace }}
+      run: |
+        # python script to sync notebooks to Hydroshare
+        python -c "
+        import os
+        from hsclient import HydroShare
+        hs = HydroShare(os.getenv('HYDRO_USERNAME'), os.getenv('HYDRO_PASSWORD'))
+        res = hs.resource(os.getenv('HYDRO_RESOURCE_ID'))
+
+        dir = 'frontend/public/notebooks'
+        for root, directories, files in os.walk(dir):
+          if directories:
+            for directory in directories:
+              res.folder_create(directory)
+              file_paths = [os.path.join(root, directory, f) for f in files if f[0] != '.' and f.endswith('.ipynb')]
+              res.file_upload(*file_paths, destination_path=directory)
+          else:
+            file_paths = [os.path.join(root, f) for f in files if f[0] != '.' and f.endswith('.ipynb')]
+            res.file_upload(*file_paths)
+        "

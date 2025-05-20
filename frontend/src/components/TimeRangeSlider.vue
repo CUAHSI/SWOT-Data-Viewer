@@ -43,8 +43,8 @@
 import { ref } from 'vue'
 import { useFeaturesStore } from '../stores/features'
 import { useChartsStore } from '@/stores/charts'
-import { storeToRefs } from 'pinia';
-import { convertDateStringToSeconds, convertSecondsToDateString  } from '@/_helpers/time'
+import { storeToRefs } from 'pinia'
+import { convertDateStringToSeconds, convertSecondsToDateString } from '@/_helpers/time'
 
 // define an update event that emits the new range
 const emit = defineEmits(['update', 'updateComplete'])
@@ -78,10 +78,7 @@ const updateDateRangeComplete = () => {
 }
 
 async function filterDatasetsToTimeRange() {
-  chartStore.filterDatasetsToTimeRange(
-    dateRange.value[0],
-    dateRange.value[1]
-  )
+  chartStore.filterDatasetsToTimeRange(dateRange.value[0], dateRange.value[1])
   emit('update', timeRange.value)
 }
 
@@ -95,10 +92,20 @@ const setInitialState = () => {
 
   // compute min/max date based on the datasets, omitting computed_series (i.e. derived data)
   const minDateSec =
-    Math.min(...chartStore.nodeChartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.minDateTime)) / 1000 -
+    Math.min(
+      ...chartStore.nodeChartData.datasets
+        .filter((series) => series.seriesType != 'computed_series')
+        .map((series) => series.minDateTime)
+    ) /
+      1000 -
     offset
   const maxDateSec =
-    Math.max(...chartStore.nodeChartData.datasets.filter(series => series.seriesType != 'computed_series').map((series) => series.maxDateTime)) / 1000 +
+    Math.max(
+      ...chartStore.nodeChartData.datasets
+        .filter((series) => series.seriesType != 'computed_series')
+        .map((series) => series.maxDateTime)
+    ) /
+      1000 +
     offset
 
   featuresStore.minTime = minDateSec

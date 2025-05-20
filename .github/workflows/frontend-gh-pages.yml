@@ -44,6 +44,7 @@ jobs:
           echo VITE_APP_FULL_URL=${{ secrets.VITE_APP_FULL_URL }} >> .env
           echo VITE_APP_BASE=${{ secrets.VITE_APP_BASE }} >> .env
           echo VITE_HYDROCRON_URL=${{ secrets.VITE_HYDROCRON_URL }} >> .env
+          echo VITE_HYDROSHARE_NOTEBOOKS_COLLECTION=${{ secrets.VITE_HYDROSHARE_NOTEBOOKS_COLLECTION }} >> .env
           cp .env ../.env
       - name: Install dependencies
         run: npm install
@@ -52,7 +53,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           # Upload dist repository
           path: './frontend/dist'

@@ -14,7 +14,7 @@
             color="input"
             size="small"
             @click="resetZoom()"
-            style="position: absolute; top: 120px; right: 45px; z-index: 10;"
+            style="position: absolute; top: 120px; right: 45px; z-index: 10"
             :icon="mdiMagnifyMinusOutline"
           >
           </v-btn>
@@ -39,11 +39,11 @@
                 @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
               ></v-icon>
             </template>
-              <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-              <v-list-item-subtitle
-                >Average {{ props.chosenPlot?.abbreviation }}:
-                {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
-              >
+            <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
+            <v-list-item-subtitle
+              >Average {{ props.chosenPlot?.abbreviation }}:
+              {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
+            >
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -75,6 +75,7 @@ import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
 import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from '@mdi/js'
 import { convertDateStringToSeconds } from '@/_helpers/time'
+import { useStatsStore } from '../stores/stats'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])
@@ -83,6 +84,7 @@ const selectedTimeseriesPoints = ref([])
 const hasSelectedTimeseriesPoints = computed(() => selectedTimeseriesPoints.value.length > 0)
 
 const chartStore = useChartsStore()
+const statsStore = useStatsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
@@ -111,7 +113,7 @@ onMounted(async () => {
 
   // push the chart to the store
   chartStore.storeMountedChart(activeReachChart.value)
-  chartStore.updateShowLine()
+  chartStore.updateSymbology()
 })
 
 const getParsing = () => {
@@ -131,27 +133,27 @@ const options = {
     legend: {
       display: true,
       position: 'top',
-      align : 'end',
+      align: 'end',
       labels: {
         usePointStyle: true,
         generateLabels: () => chartStore.generateDataQualityLegend(),
         font: {
-          size: 12,
+          size: 12
         },
         boxWidth: 20,
-        padding: 10,
+        padding: 10
       },
       title: {
         display: true,
         text: 'Data Quality',
         font: {
           size: 16,
-          weight: 'bold',
+          weight: 'bold'
         },
         padding: {
-          top: 10,
-        },
-      },
+          top: 10
+        }
+      }
     },
     title: {
       display: true,
@@ -236,14 +238,19 @@ const options = {
 
 const resetZoom = () => {
   if (activeReachChart.value?.chart?.resetZoom) {
-    activeReachChart.value.chart.resetZoom();
+    activeReachChart.value.chart.resetZoom()
   } else {
-    console.error('Chart instance not found or resetZoom method is unavailable.');
+    console.error('Chart instance not found or resetZoom method is unavailable.')
   }
-};
+}
 
 const handleTimeseriesPointClick = (e) => {
-  const elems = activeReachChart.value.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+  const elems = activeReachChart.value.chart.getElementsAtEventForMode(
+    e,
+    'nearest',
+    { intersect: true },
+    false
+  )
   if (elems.length <= 0) {
     return
   }
@@ -267,7 +274,9 @@ const viewLongProfileByDates = () => {
   // chartStore.filterDatasetsToTimeRange()
   chartStore.chartTab = 'distance'
   chartStore.updateNodeDataSetStyles()
-  chartStore.updateAllCharts()
+  chartStore.refreshAllCharts()
+  // if stats are turned on, the stats will be stale
+  statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
 }
 
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
@@ -311,5 +320,4 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
     panel.value = ['plotActions']
   }
 }
-
 </script>

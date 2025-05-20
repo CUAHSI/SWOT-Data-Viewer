@@ -1,43 +1,38 @@
 <template>
-    <v-expansion-panels with="100%" v-model="panel" multiple>
-      <v-expansion-panel value="plotActions">
-        <v-expansion-panel-title>Actions</v-expansion-panel-title>
-        <v-expansion-panel-text>
-          <v-btn
-            :loading="downloading.chart"
-            @click="downloadChart()"
-            class="ma-1"
-            color="input"
-          >
-            <v-icon :icon="mdiDownloadBox"></v-icon>
-            Download Chart
-          </v-btn>
-          <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
-            <v-icon :icon="mdiFileDelimited"></v-icon>
-            Download CSV
-          </v-btn>
-          <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
-            <v-icon :icon="mdiCodeJson"></v-icon>
-            Download JSON
-          </v-btn>
-          <v-btn @click="resetZoom()" color="input" class="ma-1">
-            <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
-            Reset Zoom
-          </v-btn>
-          <v-btn v-if="isNodeChart" @click="resetData()" color="input" class="ma-1">
-            <v-icon :icon="mdiEraser"></v-icon>
-            Reset Data
-          </v-btn>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+  <v-expansion-panels with="100%" v-model="panel" multiple>
+    <v-expansion-panel value="plotActions">
+      <v-expansion-panel-title>Actions</v-expansion-panel-title>
+      <v-expansion-panel-text>
+        <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
+          <v-icon :icon="mdiDownloadBox"></v-icon>
+          Download Chart
+        </v-btn>
+        <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
+          <v-icon :icon="mdiFileDelimited"></v-icon>
+          Download CSV
+        </v-btn>
+        <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
+          <v-icon :icon="mdiCodeJson"></v-icon>
+          Download JSON
+        </v-btn>
+        <v-btn @click="resetZoom()" color="input" class="ma-1">
+          <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
+          Reset Zoom
+        </v-btn>
+        <v-btn v-if="isNodeChart" @click="resetData()" color="input" class="ma-1">
+          <v-icon :icon="mdiEraser"></v-icon>
+          Reset Data
+        </v-btn>
+      </v-expansion-panel-text>
+    </v-expansion-panel>
+  </v-expansion-panels>
 </template>
 
 <script setup>
 import 'chartjs-adapter-date-fns'
 import { useChartsStore } from '@/stores/charts'
 import { useFeaturesStore } from '@/stores/features'
-import { ref, computed, defineEmits } from 'vue'
+import { ref, computed, defineEmits, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import {
   mdiDownloadBox,
@@ -46,9 +41,22 @@ import {
   mdiMagnifyMinusOutline,
   mdiEraser
 } from '@mdi/js'
-import { downloadCsv, downloadMultiNodesCsv, downloadFeatureJson, downloadMultiNodesJson } from '../_helpers/hydroCron'
+import {
+  downloadCsv,
+  downloadMultiNodesCsv,
+  downloadFeatureJson,
+  downloadMultiNodesJson
+} from '../_helpers/hydroCron'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const panel = ref([])
+
+const pageUrl = ref(window.location.href)
+
+watch(route, () => {
+  pageUrl.value = window.location.href
+})
 
 const chartStore = useChartsStore()
 const featureStore = useFeaturesStore()
@@ -70,19 +78,37 @@ const setDefaults = () => {
 
   // set statistics switch to off in the charts store
   showStatistics.value = false
-
 }
 
 const getChartName = () => {
-  let identifier = `${chartData.value.datasets[0].label}-${props.chosenPlot.abbreviation}`
-  identifier = identifier.replace(/[^a-zA-Z0-9]/g, '_')
+  let identifier = ''
+  if (isNodeChart.value) {
+    identifier = `${nodeChartData.value.title}`
+  } else {
+    identifier = `${chartData.value.title}`
+  }
+
+  const paramsString = pageUrl.value.split('?')[1]
+  const params = new URLSearchParams(paramsString)
+  if (params) {
+    // remove any parameters that should not be included in the filename
+    const params_to_include = ['variables', 'plot']
+    for (const [key] of params.entries()) {
+      if (!params_to_include.includes(key)) {
+        params.delete(key)
+      }
+    }
+    identifier += `_${params.toString()}`
+  }
+
+  identifier = identifier.replace(/%2F/g, ',').replace(/%/g, ',')
+  identifier = identifier.replace(/ /g, '')
   return `${identifier}.png`
 }
 
 const downloadChart = async () => {
   downloading.value.chart = true
   const filename = getChartName()
-  console.log(props.chosenPlot)
   // change the chart background color to white
   // props.chosenPlot.chart.canvas.style.backgroundColor = 'white'
 

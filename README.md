@@ -33,3 +33,22 @@ More detailed info is available in the [frontend readme](frontend/README.md)
 ```console
 make format
 ```
+Formatting and linting is run with a git pre-commit hook using Husky.
+It requires the Docker daemon to be running.
+If you are having trouble with the formatting and linting, you can see here how to skip the git hook:
+https://typicode.github.io/husky/how-to.html#skipping-git-hooks
+However note that this is not recommended -- let's keep our code clean!
+
+## Adding notebooks
+
+Notebooks from [this collection](https://www.hydroshare.org/resource/ac6cc75dcb0146cf9cc17a974f4bb08b/) will be rendered as examples
+
+## More info
+[CI/CD info](https://develop.cuahsi.io/swotviz/ci_cd/)
+
+## MyBinder 
+
+The functionality to launch into MyBinder relies on a separate repo:
+[https://github.com/hydroshare/hydroshare_github_sync](https://github.com/hydroshare/hydroshare_github_sync)
+
+This is because the direct hydroshare launch into MyBinder is broken at this time...

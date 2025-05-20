@@ -14,7 +14,7 @@
             color="input"
             size="small"
             @click="resetZoom()"
-            style="position: absolute; top: 80px; right: 45px; z-index: 10;"
+            style="position: absolute; top: 80px; right: 45px; z-index: 10"
             :icon="mdiMagnifyMinusOutline"
           >
           </v-btn>
@@ -35,7 +35,7 @@ import { nextTick, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useChartsStore } from '@/stores/charts'
 import { storeToRefs } from 'pinia'
-import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from '@mdi/js'
+import { mdiMagnifyMinusOutline } from '@mdi/js'
 
 const { lgAndUp } = useDisplay()
 
@@ -46,12 +46,10 @@ const { nodeChartData, activeNodeChart } = storeToRefs(chartStore)
 
 let xLabel = 'Distance from outlet (m)'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
-let title = `${props.data.title}: ${props.chosenPlot?.name} vs Distance`
 
 let plt = props.chosenPlot
 xLabel = `${plt.xvar.name} (${plt.xvar.unit})`
 yLabel = `${plt.yvar.name} (${plt.yvar.unit})`
-title = `${props.data.title}\n${plt.title}`
 
 onMounted(async () => {
   // wait for chart to be available
@@ -59,16 +57,16 @@ onMounted(async () => {
 
   // push the chart to the store
   chartStore.storeMountedChart(activeNodeChart.value)
-  chartStore.updateShowLine()
+  chartStore.updateSymbology()
 })
 
 const resetZoom = () => {
   if (activeNodeChart.value?.chart?.resetZoom) {
-    activeNodeChart.value.chart.resetZoom();
+    activeNodeChart.value.chart.resetZoom()
   } else {
-    console.error('Chart instance not found or resetZoom method is unavailable.');
+    console.error('Chart instance not found or resetZoom method is unavailable.')
   }
-};
+}
 
 const getParsing = () => {
   let parsing = {}
@@ -85,27 +83,27 @@ const options = {
     legend: {
       display: true,
       position: 'top',
-      align : 'end',
+      align: 'end',
       labels: {
         usePointStyle: true,
         generateLabels: () => chartStore.generateDataQualityLegend(),
         font: {
-          size: 12,
+          size: 12
         },
         boxWidth: 20,
-        padding: 10,
+        padding: 10
       },
       title: {
         display: true,
         text: 'Data Quality',
         font: {
           size: 16,
-          weight: 'bold',
+          weight: 'bold'
         },
         padding: {
-          top: 10,
-        },
-      },
+          top: 10
+        }
+      }
     },
     customCanvasBackgroundColor: {
       color: 'white'
