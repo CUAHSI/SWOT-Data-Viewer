@@ -11,7 +11,8 @@
   </v-card>
   <v-card v-if="$route.meta.showMap" id="mouseposition" color="info">
     <v-card-text>
-      <v-icon :icon="mdiCrosshairsGps"></v-icon> {{ map_center_lat }}, {{ map_center_lng }}
+      <v-icon :icon="mdiCrosshairsGps"></v-icon> {{ center.lat?.toFixed(5) }},
+      {{ center.lng?.toFixed(5) }} <br />
     </v-card-text>
   </v-card>
 </template>
@@ -40,15 +41,11 @@ const chartStore = useChartsStore()
 
 const router = useRouter()
 
-const { mapObject } = storeToRefs(mapStore)
+const { mapObject, zoom, center } = storeToRefs(mapStore)
 const { activeFeature } = storeToRefs(featureStore)
 const minReachSelectionZoom = 7
-const mapInitialZoom = 3
 const accessToken =
   'AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX'
-let zoom = ref(mapInitialZoom)
-let map_center_lat = ref(0)
-let map_center_lng = ref(0)
 
 onUpdated(async () => {
   if (router?.currentRoute?.value.meta.showMap) {
@@ -61,12 +58,17 @@ onUpdated(async () => {
   }
 })
 
-onMounted(() => {
-  let leaflet = L.map('mapContainer').setView(
-    [map_center_lat.value, map_center_lng.value],
-    mapInitialZoom
-  )
-  zoom.value = leaflet.getZoom()
+onMounted(async () => {
+  await router.isReady()
+  const currentRoute = router.currentRoute.value
+  console.log('Map mounted', currentRoute)
+  mapStore.checkQueryParams(currentRoute)
+  let leaflet = L.map('mapContainer').setView(center.value, zoom.value)
+  // prevent panning outside of the single world bounds
+  leaflet.setMaxBounds([
+    [-90, -180],
+    [90, 180]
+  ])
   mapObject.value.leaflet = leaflet
   mapObject.value.hucbounds = []
   mapObject.value.popups = []
@@ -118,21 +120,15 @@ onMounted(() => {
 
   CartoDB.addTo(leaflet)
 
-  leaflet.on('zoomend', function (e) {
+  leaflet.on('moveend zoomend', function (e) {
+    let centerObj = e.target.getCenter()
+    center.value = {
+      lat: centerObj.lat,
+      lng: centerObj.lng
+    }
     zoom.value = e.target._zoom
+    // mapStore.updateRouteAfterMapChange()
   })
-
-  leaflet.addEventListener('mousemove', (e) => {
-    const [lat, lng] = getLatLong(e)
-    map_center_lat.value = lat
-    map_center_lng.value = lng
-  })
-
-  function getLatLong(e) {
-    let lat = Math.round(e.latlng.lat * 100000) / 100000
-    let lng = Math.round(e.latlng.lng * 100000) / 100000
-    return [lat, lng]
-  }
 
   // add lakes features layer to map
   let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
@@ -629,12 +625,14 @@ function validate_bbox_size() {
   width: 100%;
   height: 100%;
 }
+
 #zoomIndicator {
   position: fixed;
   bottom: 137px;
   left: 10px;
   z-index: 1000;
 }
+
 #mouseposition {
   position: absolute;
   bottom: 73px;
