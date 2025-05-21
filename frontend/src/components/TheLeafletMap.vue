@@ -110,6 +110,36 @@ onMounted(() => {
     zoom.value = e.target._zoom
   })
 
+  let Position = L.Control.extend({
+    _container: null,
+    options: {
+      position: 'bottomleft'
+    },
+
+    onAdd: function () {
+      const latlng = L.DomUtil.create('div', 'mouseposition')
+      this._latlng = latlng
+      return latlng
+    },
+
+    updateHTML: function (lat, lng) {
+      this._latlng.innerHTML = `Lat/Lng: ${lat} ${lng}`
+    }
+  })
+  const position = new Position()
+  leaflet.addControl(position)
+
+  leaflet.addEventListener('mousemove', (e) => {
+    const [lat, lng] = getLatLong(e)
+    position.updateHTML(lat, lng)
+  })
+
+  function getLatLong(e) {
+    let lat = Math.round(e.latlng.lat * 100000) / 100000
+    let lng = Math.round(e.latlng.lng * 100000) / 100000
+    return [lat, lng]
+  }
+
   // add lakes features layer to map
   let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
   const lakesFeatures = esriLeaflet
