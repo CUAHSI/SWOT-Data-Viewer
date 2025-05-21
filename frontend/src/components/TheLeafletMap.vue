@@ -53,7 +53,7 @@ onUpdated(async () => {
     if (router?.currentRoute?.value.meta.showMap) {
       mapObject.value.leaflet.invalidateSize()
       if (activeFeature.value) {
-        featureStore.selectFeature(activeFeature.value)
+        mapStore.selectFeature(activeFeature.value)
       }
       await router.isReady()
       mapStore.updateRouteAfterMapChange()
