@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 export const useMapStore = defineStore('map', () => {
@@ -16,6 +16,8 @@ export const useMapStore = defineStore('map', () => {
   const mapInitialCenter = { lat: 0, lng: 0 }
   const zoom = ref(mapInitialZoom)
   const center = ref(mapInitialCenter)
+  const baselayers = shallowRef({})
+  const activeBaseLayerName = ref('')
 
   const deselectFeature = (feature) => {
     try {
@@ -48,7 +50,8 @@ export const useMapStore = defineStore('map', () => {
   const updateRouteAfterMapChange = async () => {
     const query = {
       center: JSON.stringify(center.value),
-      zoom: zoom.value
+      zoom: zoom.value,
+      activeBaseLayerName: activeBaseLayerName.value
     }
     await router.push({
       query
@@ -97,12 +100,27 @@ export const useMapStore = defineStore('map', () => {
         console.warn('Invalid zoom value in query:', query.zoom)
       }
     }
+    if (query.activeBaseLayerName) {
+      const baselayerName = query.activeBaseLayerName
+      if (baselayers.value[baselayerName]) {
+        activeBaseLayerName.value = baselayerName
+      } else {
+        activeBaseLayerName.value = ''
+        activeBaseLayerName.value = baselayers.value[0]?.name || ''
+        console.warn('Invalid base layer name in query:', baselayerName)
+      }
+    } else {
+      activeBaseLayerName.value = baselayers.value[0]?.name || ''
+    }
     updateRouteAfterMapChange()
 
     watch(center, () => {
       updateRouteAfterMapChange()
     })
     watch(zoom, () => {
+      updateRouteAfterMapChange()
+    })
+    watch(activeBaseLayerName, () => {
       updateRouteAfterMapChange()
     })
   }
@@ -116,6 +134,8 @@ export const useMapStore = defineStore('map', () => {
     updateRouteAfterMapChange,
     featureOptions,
     zoom,
-    center
+    center,
+    baselayers,
+    activeBaseLayerName
   }
 })

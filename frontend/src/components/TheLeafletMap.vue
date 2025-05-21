@@ -41,7 +41,7 @@ const chartStore = useChartsStore()
 
 const router = useRouter()
 
-const { mapObject, zoom, center } = storeToRefs(mapStore)
+const { mapObject, zoom, center, baselayers, activeBaseLayerName } = storeToRefs(mapStore)
 const { activeFeature } = storeToRefs(featureStore)
 const minReachSelectionZoom = 7
 const accessToken =
@@ -59,28 +59,6 @@ onUpdated(async () => {
 })
 
 onMounted(async () => {
-  await router.isReady()
-  const currentRoute = router.currentRoute.value
-  console.log('Map mounted', currentRoute)
-  mapStore.checkQueryParams(currentRoute)
-  let leaflet = L.map('mapContainer').setView(center.value, zoom.value)
-  // prevent panning outside of the single world bounds
-  leaflet.setMaxBounds([
-    [-90, -180],
-    [90, 180]
-  ])
-  mapObject.value.leaflet = leaflet
-  mapObject.value.hucbounds = []
-  mapObject.value.popups = []
-  mapObject.value.buffer = 20
-  mapObject.value.huclayers = []
-  mapObject.value.reaches = {}
-  mapObject.value.reachesFeatures = ref({})
-
-  mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
-  //Remove the common zoom control and add it back later later
-  leaflet.zoomControl.remove()
-
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
     'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png',
@@ -112,23 +90,41 @@ onMounted(async () => {
     }
   )
 
-  const baselayers = {
+  baselayers.value = {
     CartoDB,
     CartoDB_PositronNoLabels,
     CartoDB_DarkMatterNoLabels
   }
 
-  CartoDB.addTo(leaflet)
+  // check the query params and set the map center and zoom
+  await router.isReady()
+  const currentRoute = router.currentRoute.value
+  mapStore.checkQueryParams(currentRoute)
+  let leaflet = L.map('mapContainer').setView(center.value, zoom.value)
+  // prevent panning outside of the single world bounds
+  leaflet.setMaxBounds([
+    [-90, -180],
+    [90, 180]
+  ])
+  mapObject.value.leaflet = leaflet
+  mapObject.value.hucbounds = []
+  mapObject.value.popups = []
+  mapObject.value.buffer = 20
+  mapObject.value.huclayers = []
+  mapObject.value.reaches = {}
+  mapObject.value.reachesFeatures = ref({})
 
-  leaflet.on('moveend zoomend', function (e) {
-    let centerObj = e.target.getCenter()
-    center.value = {
-      lat: centerObj.lat,
-      lng: centerObj.lng
-    }
-    zoom.value = e.target._zoom
-    // mapStore.updateRouteAfterMapChange()
-  })
+  mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
+  //Remove the common zoom control and add it back later later
+  leaflet.zoomControl.remove()
+
+  let activeBaseLayer = baselayers.value[activeBaseLayerName.value]
+  if (activeBaseLayer) {
+    activeBaseLayer.addTo(leaflet)
+  } else {
+    CartoDB.addTo(leaflet)
+    activeBaseLayerName.value = CartoDB.name
+  }
 
   // add lakes features layer to map
   let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
@@ -312,13 +308,30 @@ onMounted(async () => {
   //  */
 
   // Layer Control
-  L.control.layers(baselayers, mixed).addTo(leaflet)
+  L.control.layers(baselayers.value, mixed).addTo(leaflet)
 
   /*
    * LEAFLET EVENT HANDLERS
    */
   leaflet.on('click', function (e) {
     mapClick(e)
+  })
+
+  leaflet.on('moveend zoomend', function (e) {
+    let centerObj = e.target.getCenter()
+    center.value = {
+      lat: centerObj.lat,
+      lng: centerObj.lng
+    }
+    zoom.value = e.target._zoom
+    // mapStore.updateRouteAfterMapChange()
+  })
+
+  // handler for baselayer change
+  leaflet.on('baselayerchange', function (e) {
+    console.log('Base layer changed to: ' + e.name)
+    activeBaseLayerName.value = e.name
+    // mapStore.updateRouteAfterMapChange()
   })
 
   // validate the map
