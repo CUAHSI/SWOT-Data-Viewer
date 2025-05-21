@@ -49,13 +49,15 @@ const accessToken =
   'AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX'
 
 onUpdated(async () => {
-  if (router?.currentRoute?.value.meta.showMap) {
-    mapObject.value.leaflet.invalidateSize()
-    if (activeFeature.value) {
-      mapStore.selectFeature(activeFeature.value)
-      // zoom to the active feature
-      // mapObject.value.leaflet.fitBounds(activeFeature.value.getBounds())
+  try {
+    if (router?.currentRoute?.value.meta.showMap) {
+      mapObject.value.leaflet.invalidateSize()
+      if (activeFeature.value) {
+        mapStore.selectFeature(activeFeature.value)
+      }
     }
+  } catch (error) {
+    console.error('Error in onUpdated:', error)
   }
 })
 
@@ -240,6 +242,7 @@ onMounted(async () => {
   reachesWMS.addTo(leaflet)
 
   mapObject.value.reachesFeatures = reachesFeatures
+  featureStore.checkQueryParams(currentRoute)
 
   // /*
   //  * LEAFLET BUTTONS

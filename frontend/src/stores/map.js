@@ -56,9 +56,10 @@ export const useMapStore = defineStore('map', () => {
       activeBaseLayerName: activeBaseLayerName.value,
       activeOverlays: JSON.stringify(activeOverlays.value)
     }
-    await router.push({
-      query
-    })
+    // Merge with existing query, replacing only activeReachId
+    const currentQuery = { ...router.currentRoute.value.query }
+    const mergedQuery = { ...currentQuery, ...query }
+    await router.replace({ query: mergedQuery })
   }
 
   const checkQueryParams = (to) => {
@@ -158,7 +159,6 @@ export const useMapStore = defineStore('map', () => {
     selectFeature,
     clearAllFeatures,
     checkQueryParams,
-    updateRouteAfterMapChange,
     featureOptions,
     zoom,
     center,
