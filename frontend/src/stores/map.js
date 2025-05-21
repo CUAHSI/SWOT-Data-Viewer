@@ -18,6 +18,8 @@ export const useMapStore = defineStore('map', () => {
   const center = ref(mapInitialCenter)
   const baselayers = shallowRef({})
   const activeBaseLayerName = ref('')
+  const activeOverlays = ref(['Lakes', 'Reaches'])
+  const overlays = shallowRef({})
 
   const deselectFeature = (feature) => {
     try {
@@ -51,7 +53,8 @@ export const useMapStore = defineStore('map', () => {
     const query = {
       center: JSON.stringify(center.value),
       zoom: zoom.value,
-      activeBaseLayerName: activeBaseLayerName.value
+      activeBaseLayerName: activeBaseLayerName.value,
+      activeOverlays: JSON.stringify(activeOverlays.value)
     }
     await router.push({
       query
@@ -112,6 +115,27 @@ export const useMapStore = defineStore('map', () => {
     } else {
       activeBaseLayerName.value = baselayers.value[0]?.name || ''
     }
+    if (query.activeOverlays) {
+      let parsedOverlays
+      try {
+        parsedOverlays = JSON.parse(query.activeOverlays)
+        if (Array.isArray(parsedOverlays)) {
+          // filter the parsed overlays, ensuring they are present in the overlays object
+          const validOverlays = parsedOverlays.filter((overlay) => {
+            return overlays.value[overlay] !== undefined
+          })
+          if (validOverlays) {
+            activeOverlays.value = validOverlays
+          } else {
+            console.warn('No valid overlays in query:', parsedOverlays)
+          }
+        } else {
+          console.warn('Invalid overlays format in query:', parsedOverlays)
+        }
+      } catch (e) {
+        console.warn('Failed to parse overlays from query:', e)
+      }
+    }
     updateRouteAfterMapChange()
 
     watch(center, () => {
@@ -121,6 +145,9 @@ export const useMapStore = defineStore('map', () => {
       updateRouteAfterMapChange()
     })
     watch(activeBaseLayerName, () => {
+      updateRouteAfterMapChange()
+    })
+    watch(activeOverlays, () => {
       updateRouteAfterMapChange()
     })
   }
@@ -136,6 +163,8 @@ export const useMapStore = defineStore('map', () => {
     zoom,
     center,
     baselayers,
-    activeBaseLayerName
+    activeBaseLayerName,
+    activeOverlays,
+    overlays
   }
 })
