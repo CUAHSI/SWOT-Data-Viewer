@@ -4,8 +4,15 @@
     v-if="$route.meta.showMap && zoom < minReachSelectionZoom"
     id="zoomIndicator"
     color="info"
+    density="compact"
+    dense
   >
     <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
+  </v-card>
+  <v-card v-if="$route.meta.showMap" id="mouseposition" color="info">
+    <v-card-text>
+      <v-icon :icon="mdiCrosshairsGps"></v-icon> {{ map_center_lat }}, {{ map_center_lng }}
+    </v-card-text>
   </v-card>
 </template>
 
@@ -22,7 +29,7 @@ import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
-import { mdiMagnifyPlus } from '@mdi/js'
+import { mdiMagnifyPlus, mdiCrosshairsGps } from '@mdi/js'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
@@ -40,6 +47,8 @@ const mapInitialZoom = 3
 const accessToken =
   'AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX'
 let zoom = ref(mapInitialZoom)
+let map_center_lat = ref(0)
+let map_center_lng = ref(0)
 
 onUpdated(async () => {
   if (router?.currentRoute?.value.meta.showMap) {
@@ -53,7 +62,10 @@ onUpdated(async () => {
 })
 
 onMounted(() => {
-  let leaflet = L.map('mapContainer').setView([0, 0], mapInitialZoom)
+  let leaflet = L.map('mapContainer').setView(
+    [map_center_lat.value, map_center_lng.value],
+    mapInitialZoom
+  )
   zoom.value = leaflet.getZoom()
   mapObject.value.leaflet = leaflet
   mapObject.value.hucbounds = []
@@ -110,28 +122,10 @@ onMounted(() => {
     zoom.value = e.target._zoom
   })
 
-  let Position = L.Control.extend({
-    _container: null,
-    options: {
-      position: 'bottomleft'
-    },
-
-    onAdd: function () {
-      const latlng = L.DomUtil.create('div', 'mouseposition')
-      this._latlng = latlng
-      return latlng
-    },
-
-    updateHTML: function (lat, lng) {
-      this._latlng.innerHTML = `Lat/Lng: ${lat} ${lng}`
-    }
-  })
-  const position = new Position()
-  leaflet.addControl(position)
-
   leaflet.addEventListener('mousemove', (e) => {
     const [lat, lng] = getLatLong(e)
-    position.updateHTML(lat, lng)
+    map_center_lat.value = lat
+    map_center_lng.value = lng
   })
 
   function getLatLong(e) {
@@ -637,12 +631,15 @@ function validate_bbox_size() {
 }
 #zoomIndicator {
   position: fixed;
-  bottom: 10%;
+  bottom: 137px;
   left: 10px;
-  /* background-color: white; */
-  padding: 5px;
-  /* border-radius: 5px; */
-  /* border: 1px solid black; */
+  z-index: 1000;
+}
+#mouseposition {
+  position: absolute;
+  bottom: 73px;
+  left: 10px;
+  padding: 1px;
   z-index: 1000;
 }
 </style>
