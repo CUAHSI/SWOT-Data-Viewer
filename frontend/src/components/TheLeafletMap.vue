@@ -53,8 +53,10 @@ onUpdated(async () => {
     if (router?.currentRoute?.value.meta.showMap) {
       mapObject.value.leaflet.invalidateSize()
       if (activeFeature.value) {
-        mapStore.selectFeature(activeFeature.value)
+        featureStore.selectFeature(activeFeature.value)
       }
+      await router.isReady()
+      mapStore.updateRouteAfterMapChange()
     }
   } catch (error) {
     console.error('Error in onUpdated:', error)

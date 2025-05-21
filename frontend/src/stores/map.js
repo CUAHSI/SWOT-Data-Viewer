@@ -159,6 +159,7 @@ export const useMapStore = defineStore('map', () => {
     selectFeature,
     clearAllFeatures,
     checkQueryParams,
+    updateRouteAfterMapChange,
     featureOptions,
     zoom,
     center,
