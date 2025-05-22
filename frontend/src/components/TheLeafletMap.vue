@@ -53,7 +53,7 @@ onUpdated(async () => {
     if (router?.currentRoute?.value.meta.showMap) {
       mapObject.value.leaflet.invalidateSize()
       if (activeFeature.value) {
-        mapStore.selectFeature(activeFeature.value)
+        featureStore.selectFeature(activeFeature.value)
       }
       await router.isReady()
       mapStore.updateRouteAfterMapChange()
@@ -203,7 +203,6 @@ onMounted(async () => {
     // "Lakes": lakes,
     Lakes: lakesFeatures,
     // "SWORD Reaches": reaches,
-    Reaches: reachesFeatures,
     // "SWORD Nodes": sword_nodes,
     Nodes: nodesFeatures,
     Esri_Hydro_Reference_Overlay: hydro
@@ -240,8 +239,10 @@ onMounted(async () => {
     activeBaseLayerName.value = CartoDB.name
   }
 
+  // these layers are added and cannot be toggled
   lakesWMS.addTo(leaflet)
   reachesWMS.addTo(leaflet)
+  reachesFeatures.addTo(leaflet)
 
   mapObject.value.reachesFeatures = reachesFeatures
   featureStore.checkQueryParams(currentRoute)
