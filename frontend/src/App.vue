@@ -17,8 +17,6 @@
         href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
         rel="stylesheet"
       />
-      <SnackBar />
-      <TheBottomSheet />
       <TheFooter />
     </v-main>
   </v-app>
@@ -29,11 +27,9 @@ import { RouterView } from 'vue-router'
 import TheAppBar from './components/TheAppBar.vue'
 import TheMobileNavDrawer from '@/components/TheMobileNavDrawer.vue'
 import AlertPopup from './components/AlertPopup.vue'
-import SnackBar from './components/SnackBar.vue'
 import TheFooter from './components/TheFooter.vue'
 import { ref } from 'vue'
 import { useAlertStore } from './stores/alerts'
-import TheBottomSheet from '@/components/TheBottomSheet.vue'
 import TheLeafletMap from './components/TheLeafletMap.vue'
 
 const alertStore = useAlertStore()

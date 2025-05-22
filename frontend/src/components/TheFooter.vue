@@ -25,14 +25,3 @@
 // import ThemeButton from './ThemeButton.vue';
 import imgUrl from '@/assets/cuahsi-logo.png'
 </script>
-
-<style lang="scss" scoped>
-.logo {
-  height: 10vh;
-  cursor: pointer;
-
-  img {
-    height: 10vh;
-  }
-}
-</style>

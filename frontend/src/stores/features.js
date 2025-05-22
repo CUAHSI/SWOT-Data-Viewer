@@ -1,13 +1,15 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useChartsStore } from '@/stores/charts'
 import { EARLIEST_HYDROCRON_DATETIME } from '../constants'
 import { parseISO, getUnixTime } from 'date-fns'
+import { useRouter } from 'vue-router'
 
 export const useFeaturesStore = defineStore(
   'features',
   () => {
+    const router = useRouter()
     const selectedFeatures = ref([])
     const activeFeature = ref(null)
     const nodes = ref([])
@@ -90,10 +92,47 @@ export const useFeaturesStore = defineStore(
       let query = mapStore.mapObject.reachesFeatures.query().where('reach_id = ' + reachId)
       // it doesn't seem that this query.run is awaitable
       query.run(function (error, featureCollection) {
+        if (error) {
+          console.error('Error querying feature layer:', error)
+          return
+        }
         features = featureCollection.features
         let feature = features[0]
         clearSelectedFeatures()
         selectFeature(feature)
+      })
+    }
+
+    const updateRouteAfterFeatureChange = async () => {
+      const query = {
+        activeReachId: activeFeature.value?.properties?.reach_id
+      }
+      // Merge with existing query, replacing only activeReachId
+      const currentQuery = { ...router.currentRoute.value.query }
+      const mergedQuery = { ...currentQuery, ...query }
+      await router.replace({ query: mergedQuery })
+    }
+
+    const checkQueryParams = (to) => {
+      let query = to.query
+      if (!query) {
+        query = router.currentRoute.value.query
+      }
+      if (query.activeReachId) {
+        let parsedActiveReachId
+        try {
+          parsedActiveReachId = parseInt(query.activeReachId)
+          if (parsedActiveReachId) {
+            setActiveFeatureByReachId(parsedActiveReachId)
+          }
+        } catch (error) {
+          console.warn('Error parsing activeReachId:', error)
+        }
+      }
+      updateRouteAfterFeatureChange()
+
+      watch(activeFeature, () => {
+        updateRouteAfterFeatureChange()
       })
     }
 
@@ -112,7 +151,8 @@ export const useFeaturesStore = defineStore(
       resetTimeRange,
       minTime,
       maxTime,
-      querying
+      querying,
+      checkQueryParams
     }
   },
   {

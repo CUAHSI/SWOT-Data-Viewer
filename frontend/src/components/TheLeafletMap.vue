@@ -4,8 +4,16 @@
     v-if="$route.meta.showMap && zoom < minReachSelectionZoom"
     id="zoomIndicator"
     color="info"
+    density="compact"
+    dense
   >
     <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
+  </v-card>
+  <v-card v-if="$route.meta.showMap" id="mouseposition" color="info">
+    <v-card-text>
+      <v-icon :icon="mdiCrosshairsGps"></v-icon> {{ center.lat?.toFixed(5) }},
+      {{ center.lng?.toFixed(5) }} <br />
+    </v-card-text>
   </v-card>
 </template>
 
@@ -22,7 +30,7 @@ import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
-import { mdiMagnifyPlus } from '@mdi/js'
+import { mdiMagnifyPlus, mdiCrosshairsGps } from '@mdi/js'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
@@ -33,40 +41,29 @@ const chartStore = useChartsStore()
 
 const router = useRouter()
 
-const { mapObject } = storeToRefs(mapStore)
+const { mapObject, zoom, center, baselayers, activeBaseLayerName, overlays, activeOverlays } =
+  storeToRefs(mapStore)
 const { activeFeature } = storeToRefs(featureStore)
 const minReachSelectionZoom = 7
-const mapInitialZoom = 3
 const accessToken =
   'AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX'
-let zoom = ref(mapInitialZoom)
 
 onUpdated(async () => {
-  if (router?.currentRoute?.value.meta.showMap) {
-    mapObject.value.leaflet.invalidateSize()
-    if (activeFeature.value) {
-      mapStore.selectFeature(activeFeature.value)
-      // zoom to the active feature
-      // mapObject.value.leaflet.fitBounds(activeFeature.value.getBounds())
+  try {
+    if (router?.currentRoute?.value.meta.showMap) {
+      mapObject.value.leaflet.invalidateSize()
+      if (activeFeature.value) {
+        featureStore.selectFeature(activeFeature.value)
+      }
+      await router.isReady()
+      mapStore.updateRouteAfterMapChange()
     }
+  } catch (error) {
+    console.error('Error in onUpdated:', error)
   }
 })
 
-onMounted(() => {
-  let leaflet = L.map('mapContainer').setView([0, 0], mapInitialZoom)
-  zoom.value = leaflet.getZoom()
-  mapObject.value.leaflet = leaflet
-  mapObject.value.hucbounds = []
-  mapObject.value.popups = []
-  mapObject.value.buffer = 20
-  mapObject.value.huclayers = []
-  mapObject.value.reaches = {}
-  mapObject.value.reachesFeatures = ref({})
-
-  mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
-  //Remove the common zoom control and add it back later later
-  leaflet.zoomControl.remove()
-
+onMounted(async () => {
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
     'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png',
@@ -98,37 +95,233 @@ onMounted(() => {
     }
   )
 
-  const baselayers = {
+  baselayers.value = {
     CartoDB,
     CartoDB_PositronNoLabels,
     CartoDB_DarkMatterNoLabels
   }
 
-  CartoDB.addTo(leaflet)
-
-  leaflet.on('zoomend', function (e) {
-    zoom.value = e.target._zoom
-  })
-
   // add lakes features layer to map
   let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
-  const lakesFeatures = esriLeaflet
-    .featureLayer({
-      url: url,
-      simplifyFactor: 0.35,
-      precision: 5,
-      minZoom: 9,
-      maxZoom: 18,
-      style: function () {
-        return {
-          weight: 0, // remove border
-          fillOpacity: 0.7,
-          fill: true
-        }
+  const lakesFeatures = esriLeaflet.featureLayer({
+    url: url,
+    simplifyFactor: 0.35,
+    precision: 5,
+    minZoom: 9,
+    maxZoom: 18,
+    style: function () {
+      return {
+        weight: 0, // remove border
+        fillOpacity: 0.7,
+        fill: true
       }
-      // fields: ["FID", "ZIP", "PO_NAME"],
-    })
-    .addTo(leaflet)
+    }
+    // fields: ["FID", "ZIP", "PO_NAME"],
+  })
+
+  url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
+  const lakesWMS = L.tileLayer.wms(url, {
+    layers: 0,
+    transparent: 'true',
+    format: 'image/png',
+    minZoom: 0,
+    maxZoom: 9
+  })
+
+  url =
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Esri_Hydro_Reference_Overlay/MapServer'
+  // url = 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Esri_Hydro_Reference_Labels/MapServer'
+
+  let hydro = esriLeaflet.tiledMapLayer({
+    url: url,
+    layers: 0,
+    transparent: 'true',
+    format: 'image/png'
+  })
+
+  // add reaches layer to map
+  url =
+    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
+  const reachesWMS = L.tileLayer.wms(url, {
+    layers: 0,
+    transparent: 'true',
+    format: 'image/png',
+    minZoom: 0,
+    maxZoom: minReachSelectionZoom - 1
+  })
+
+  url =
+    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
+  const reachesFeatures = esriLeaflet.featureLayer({
+    url: url,
+    renderer: canvas({ tolerance: 5 }),
+    simplifyFactor: 0.35,
+    precision: 5,
+    minZoom: minReachSelectionZoom,
+    maxZoom: 18,
+    color: mapStore.featureOptions.defaultColor,
+    weight: mapStore.featureOptions.defaultWeight,
+    opacity: mapStore.featureOptions.opacity
+    // fields: ["FID", "ZIP", "PO_NAME"],
+  })
+
+  // add nodes layer to map
+  url =
+    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
+  L.tileLayer.wms(url, {
+    layers: 0,
+    transparent: 'true',
+    format: 'image/png',
+    minZoom: 12,
+    maxZoom: 13
+  })
+
+  url =
+    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
+  const nodesFeatures = esriLeaflet.featureLayer({
+    url: url,
+    simplifyFactor: 0.35,
+    precision: 5,
+    minZoom: 13,
+    maxZoom: 18
+  })
+
+  // add USGS gage layer to map
+  url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?'
+  let gages = L.tileLayer.wms(url, {
+    layers: 0,
+    transparent: 'true',
+    format: 'image/png',
+    minZoom: 9,
+    maxZoom: 18
+    // BGCOLOR: '#f4d03f',
+  })
+
+  // layer toggling
+  overlays.value = {
+    'USGS Gages': gages,
+    // "Lakes": lakes,
+    Lakes: lakesFeatures,
+    // "SWORD Reaches": reaches,
+    // "SWORD Nodes": sword_nodes,
+    Nodes: nodesFeatures,
+    Esri_Hydro_Reference_Overlay: hydro
+  }
+
+  // check the query params and set the map center and zoom
+  await router.isReady()
+  const currentRoute = router.currentRoute.value
+  mapStore.checkQueryParams(currentRoute)
+  let leaflet = L.map('mapContainer').setView(center.value, zoom.value)
+  // prevent panning outside of the single world bounds
+  leaflet.setMaxBounds([
+    [-90, -180],
+    [90, 180]
+  ])
+
+  mapObject.value.leaflet = leaflet
+  mapObject.value.hucbounds = []
+  mapObject.value.popups = []
+  mapObject.value.buffer = 20
+  mapObject.value.huclayers = []
+  mapObject.value.reaches = {}
+  mapObject.value.reachesFeatures = ref({})
+
+  mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
+  //Remove the common zoom control and add it back later later
+  leaflet.zoomControl.remove()
+
+  let activeBaseLayer = baselayers.value[activeBaseLayerName.value]
+  if (activeBaseLayer) {
+    activeBaseLayer.addTo(leaflet)
+  } else {
+    CartoDB.addTo(leaflet)
+    activeBaseLayerName.value = CartoDB.name
+  }
+
+  // these layers are added and cannot be toggled
+  lakesWMS.addTo(leaflet)
+  reachesWMS.addTo(leaflet)
+  reachesFeatures.addTo(leaflet)
+
+  mapObject.value.reachesFeatures = reachesFeatures
+  featureStore.checkQueryParams(currentRoute)
+
+  // /*
+  //  * LEAFLET BUTTONS
+  //  */
+
+  // Layer Control
+
+  // Add method to layer control class to get active overlays
+  L.Control.Layers.include({
+    getActiveOverlays: function () {
+      // create hash to hold all layers
+      var control, layers
+      layers = []
+      control = this
+
+      // loop thru all layers in control
+      control._layers.forEach(function (obj) {
+        var layerName
+
+        // check if layer is an overlay
+        if (obj.overlay) {
+          // get name of overlay
+          layerName = obj.name
+          // store whether it's present on the map or not
+          if (control._map.hasLayer(obj.layer)) {
+            // append the layer name
+            layers.push(layerName)
+          }
+        }
+      })
+      return layers
+    }
+  })
+
+  const control = L.control.layers(baselayers.value, overlays.value).addTo(leaflet)
+
+  // add the active overlays to the map
+  activeOverlays.value.forEach((layerName) => {
+    if (layerName in overlays.value) {
+      leaflet.addLayer(overlays.value[layerName])
+    }
+  })
+
+  /*
+   * LEAFLET EVENT HANDLERS
+   */
+  leaflet.on('click', function (e) {
+    mapClick(e)
+  })
+
+  reachesFeatures.on('click', async function (e) {
+    const feature = e.layer.feature
+    featureStore.clearSelectedFeatures()
+    if (!featureStore.checkFeatureSelected(feature)) {
+      // Only allow one feature to be selected at a time
+      featureStore.selectFeature(feature)
+    }
+  })
+
+  nodesFeatures.on('click', function (e) {
+    const popup = L.popup()
+    console.log('Selected node:', e.layer.feature.properties)
+    const content = `
+        <h3>${e.layer.feature.properties.river_name}</h3>
+        <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
+        <p>
+            <ul>
+                <li>SWORD Width: ${e.layer.feature.properties.width}</li>
+                <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
+                <li>SWORD Sinuosity: ${e.layer.feature.properties.sinuosity}</li>
+                <li>SWOT Dist_out: ${e.layer.feature.properties.dist_out}</li>
+            </ul>
+        </p>
+        `
+    popup.setLatLng(e.latlng).setContent(content).openOn(leaflet)
+  })
 
   lakesFeatures.on('click', function (e) {
     console.log(e.layer.feature.properties)
@@ -162,143 +355,25 @@ onMounted(() => {
     })
   })
 
-  url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
-  L.tileLayer
-    .wms(url, {
-      layers: 0,
-      transparent: 'true',
-      format: 'image/png',
-      minZoom: 0,
-      maxZoom: 9
-    })
-    .addTo(leaflet)
-
-  url =
-    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Esri_Hydro_Reference_Overlay/MapServer'
-  // url = 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Esri_Hydro_Reference_Labels/MapServer'
-
-  let hydro = esriLeaflet.tiledMapLayer({
-    url: url,
-    layers: 0,
-    transparent: 'true',
-    format: 'image/png'
-  })
-
-  // add reaches layer to map
-  url =
-    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
-  L.tileLayer
-    .wms(url, {
-      layers: 0,
-      transparent: 'true',
-      format: 'image/png',
-      minZoom: 0,
-      maxZoom: minReachSelectionZoom - 1
-    })
-    .addTo(leaflet)
-
-  url =
-    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
-  const reachesFeatures = esriLeaflet
-    .featureLayer({
-      url: url,
-      renderer: canvas({ tolerance: 5 }),
-      simplifyFactor: 0.35,
-      precision: 5,
-      minZoom: minReachSelectionZoom,
-      maxZoom: 18,
-      color: mapStore.featureOptions.defaultColor,
-      weight: mapStore.featureOptions.defaultWeight,
-      opacity: mapStore.featureOptions.opacity
-      // fields: ["FID", "ZIP", "PO_NAME"],
-    })
-    .addTo(leaflet)
-
-  mapObject.value.reachesFeatures = reachesFeatures
-
-  reachesFeatures.on('click', async function (e) {
-    const feature = e.layer.feature
-    featureStore.clearSelectedFeatures()
-    if (!featureStore.checkFeatureSelected(feature)) {
-      // Only allow one feature to be selected at a time
-      featureStore.selectFeature(feature)
+  leaflet.on('moveend zoomend', function (e) {
+    let centerObj = e.target.getCenter()
+    center.value = {
+      lat: centerObj.lat,
+      lng: centerObj.lng
     }
+    zoom.value = e.target._zoom
   })
 
-  // add nodes layer to map
-  url =
-    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
-  L.tileLayer.wms(url, {
-    layers: 0,
-    transparent: 'true',
-    format: 'image/png',
-    minZoom: 12,
-    maxZoom: 13
+  // handler for baselayer change
+  leaflet.on('baselayerchange', function (e) {
+    console.log('Base layer changed to: ' + e.name)
+    activeBaseLayerName.value = e.name
   })
 
-  url =
-    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
-  const nodesFeatures = esriLeaflet.featureLayer({
-    url: url,
-    simplifyFactor: 0.35,
-    precision: 5,
-    minZoom: 13,
-    maxZoom: 18
-  })
-
-  nodesFeatures.on('click', function (e) {
-    const popup = L.popup()
-    console.log('Selected node:', e.layer.feature.properties)
-    const content = `
-        <h3>${e.layer.feature.properties.river_name}</h3>
-        <h4>Node ID: ${e.layer.feature.properties.node_id}</h4>
-        <p>
-            <ul>
-                <li>SWORD Width: ${e.layer.feature.properties.width}</li>
-                <li>SWORD WSE: ${e.layer.feature.properties.wse}</li>
-                <li>SWORD Sinuosity: ${e.layer.feature.properties.sinuosity}</li>
-                <li>SWOT Dist_out: ${e.layer.feature.properties.dist_out}</li>
-            </ul>
-        </p>
-        `
-    popup.setLatLng(e.latlng).setContent(content).openOn(leaflet)
-  })
-
-  // add USGS gage layer to map
-  url = 'http://arcgis.cuahsi.org/arcgis/services/NHD/usgs_gages/MapServer/WmsServer?'
-  let gages = L.tileLayer.wms(url, {
-    layers: 0,
-    transparent: 'true',
-    format: 'image/png',
-    minZoom: 9,
-    maxZoom: 18
-    // BGCOLOR: '#f4d03f',
-  })
-
-  // layer toggling
-  let mixed = {
-    'USGS Gages': gages,
-    // "Lakes": lakes,
-    Lakes: lakesFeatures,
-    // "SWORD Reaches": reaches,
-    Reaches: reachesFeatures,
-    // "SWORD Nodes": sword_nodes,
-    Nodes: nodesFeatures,
-    Esri_Hydro_Reference_Overlay: hydro
-  }
-
-  // /*
-  //  * LEAFLET BUTTONS
-  //  */
-
-  // Layer Control
-  L.control.layers(baselayers, mixed).addTo(leaflet)
-
-  /*
-   * LEAFLET EVENT HANDLERS
-   */
-  leaflet.on('click', function (e) {
-    mapClick(e)
+  // handler for overlay change
+  leaflet.on('overlayadd overlayremove', function (e) {
+    console.log('Overlay change: ' + e.name)
+    activeOverlays.value = control.getActiveOverlays()
   })
 
   // validate the map
@@ -605,14 +680,19 @@ function validate_bbox_size() {
   width: 100%;
   height: 100%;
 }
+
 #zoomIndicator {
   position: fixed;
-  bottom: 10%;
+  bottom: 137px;
   left: 10px;
-  /* background-color: white; */
-  padding: 5px;
-  /* border-radius: 5px; */
-  /* border: 1px solid black; */
+  z-index: 1000;
+}
+
+#mouseposition {
+  position: absolute;
+  bottom: 73px;
+  left: 10px;
+  padding: 1px;
   z-index: 1000;
 }
 </style>
