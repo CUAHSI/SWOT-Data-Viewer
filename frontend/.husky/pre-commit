@@ -1,16 +1,19 @@
 # Get the list of staged files
 staged_files=$(git diff --name-only --staged --diff-filter=AM)
 
+# get the CWD
+CWD=$(pwd)
+
 ISSUES_FOUND=0
 # Check if there are changes in /frontend
-if echo "$staged_files" | grep -q "^frontend/"; then
+if echo "$staged_files" | grep -q "^frontend/.*\.\(js\|jsx\|vue\)$"; then
     cd frontend
-    if ! npm run lint-format; then
+    if ! npx lint-staged; then
         ISSUES_FOUND=1
-        echo "Frontend linting and formatting issues detected. Please address them before committing."
-        echo "To attempt auto-fix, run 'npm run lint-format-fix' in the frontend directory."
-        exit 1
+        echo "Frontend linting and formatting issues detected."
     fi
+    # cd back to the original directory
+    cd "$CWD"
 fi
 
 # Check if there are changes in /api
@@ -21,12 +24,16 @@ if echo "$staged_files" | grep -q "^api/"; then
     fi
     if ! make format; then
         ISSUES_FOUND=1
-        echo "API linting and formatting issues detected. Please address them before committing."
+        echo "API linting and formatting issues detected."
     fi
 fi
 
-if ISSUES_FOUND; then
+if [ "$ISSUES_FOUND" -eq 1 ]; then
     echo "If you want to skip this check, run 'git commit --no-verify'"
     echo "To skip for multiple commands, see https://typicode.github.io/husky/how-to.html#for-multiple-commands"
+    echo "Please fix the issues and try again."
     exit 1
 fi
+# git add the staged files to pick up the changes made
+git add $staged_files
+
