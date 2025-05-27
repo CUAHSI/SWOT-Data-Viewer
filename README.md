@@ -13,15 +13,26 @@ git checkout develop
 ### Full stack running locally
 ```console
 cp .env.template .env
-make build
-make up
+make build-all
+make up-all
 ```
 The API will be available at http://0.0.0.0:8000 
-The Frontend will be available at https://localhost (you will have to add an exception for the self-signed cert)
+The UI will be available at http://localhost:5173
 
-### Frontend for local development
+To bring the stack down:
 ```console
-cp .env.template .env  #if you haven't already. Replace `https://localhost` with `http://localhost:5173` (or whatever port is used by Vite)
+make down-all
+```
+To see logs:
+```console
+make logs-front
+#or
+make logs-back
+```
+
+### Frontend only, for local development
+```console
+cp .env.template .env
 cd frontend
 npm install
 npm run dev
@@ -31,7 +42,10 @@ More detailed info is available in the [frontend readme](frontend/README.md)
 
 ## Formatting
 ```console
+# backend
 make format
+# frontend:
+cd frontend && lint-format-fix
 ```
 Formatting and linting is run with a git pre-commit hook using Husky.
 It requires the Docker daemon to be running.

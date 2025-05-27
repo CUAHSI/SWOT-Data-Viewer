@@ -13,21 +13,7 @@ services:
       - 80:80
     depends_on:
       - api
-      - frontend
     restart: unless-stopped
-  
-  frontend:
-    image: frontend
-    env_file:
-      - .env
-    build:
-      dockerfile: Dockerfile
-      context: ./frontend/
-    ports:
-      - 8080:8080
-    restart: unless-stopped
-    depends_on:
-      - api
 
   api:
     image: api

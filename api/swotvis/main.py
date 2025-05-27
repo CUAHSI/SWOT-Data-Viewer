@@ -22,11 +22,14 @@ app = FastAPI(
     swagger_ui_parameters=swagger_params,
 )
 
-origins = [get_settings().allow_origins]
+origins_from_settings = get_settings().allow_origins
+
+if origins_from_settings is None:
+    origins_from_settings = ".*"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origin_regex=origins_from_settings,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

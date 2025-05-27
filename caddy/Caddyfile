@@ -15,9 +15,5 @@ localhost:443 {
   handle_path /redoc {
     reverse_proxy api:8000
   }
-
-  handle * {
-    reverse_proxy host.docker.internal:8080
-  }
   
 }
