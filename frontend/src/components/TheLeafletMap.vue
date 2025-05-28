@@ -298,6 +298,7 @@ onMounted(async () => {
 
   reachesFeatures.on('click', async function (e) {
     const feature = e.layer.feature
+    feature.feature_type = 'Reach'
     featureStore.clearSelectedFeatures()
     if (!featureStore.checkFeatureSelected(feature)) {
       // Only allow one feature to be selected at a time
@@ -323,36 +324,14 @@ onMounted(async () => {
     popup.setLatLng(e.latlng).setContent(content).openOn(leaflet)
   })
 
-  lakesFeatures.on('click', function (e) {
-    console.log(e.layer.feature.properties)
-    const popup = L.popup()
-    const content = `
-        <h3>${e.layer.feature.properties.names}</h3>
-        <h4>Lake ID: ${e.layer.feature.properties.lake_id}</h4>
-        <p>
-            <ul>
-                <li>SWORD Max Area: ${e.layer.feature.properties.max_area}</li>
-                <li>SWORD Basin: ${e.layer.feature.properties.basin_id}</li>
-            </ul>
-        </p>
-        <p>
-            <a href="https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0/${e.layer.feature.id}" target="_blank">View in ArcGIS</a>
-        </p>
-        <h5>
-            More lake data coming soon...
-        </h5>
-        `
-    popup.setLatLng(e.latlng).setContent(content).openOn(leaflet)
-
-    lakesFeatures.setFeatureStyle(e.layer.feature.id, {
-      color: '#9D78D2'
-    })
-
-    popup.on('remove', function () {
-      lakesFeatures.setFeatureStyle(e.layer.feature.id, {
-        color: '#3388ff'
-      })
-    })
+  lakesFeatures.on('click', async function (e) {
+    const feature = e.layer.feature
+    feature.feature_type = 'PriorLake'
+    featureStore.clearSelectedFeatures()
+    if (!featureStore.checkFeatureSelected(feature)) {
+      // Only allow one feature to be selected at a time
+      featureStore.selectFeature(feature)
+    }
   })
 
   leaflet.on('moveend zoomend', function (e) {

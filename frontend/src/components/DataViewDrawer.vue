@@ -19,7 +19,7 @@
       </v-btn>
       <StaticMetadata />
       <v-btn
-        v-if="!hasResults()"
+        v-if="!hasResults() && isReachFeature"
         @click="router.push(`/plots/${featureStore.activeFeature.properties.reach_id}`)"
         color="primary"
         class="ma-2"
@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot } from '@mdi/js'
 import StaticMetadata from './StaticMetadata.vue'
@@ -55,6 +55,10 @@ const router = useRouter()
 const hasResults = () => {
   return featureStore?.activeFeature?.results !== undefined
 }
+
+const isReachFeature = computed(() => {
+  return featureStore?.activeFeature?.feature_type === 'Reach'
+})
 
 featureStore.$subscribe((mutation, state) => {
   if (state.activeFeature !== null) {

@@ -93,20 +93,26 @@ const extendMetadata = () => {
   extendedMetadata.value = hydrologicStore.getSwordDescriptions(
     featureStore.activeFeature.properties,
     false,
-    'reach'
+    featureStore.activeFeature.feature_type
   )
   extended.value = true
 }
 
 const extendedMetadata = () => {
   if (!featureStore.activeFeature) return {}
-  // TODO:nodes assumes reach, won't work for nodes
-  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, false, 'reach')
+  return hydrologicStore.getSwordDescriptions(
+    featureStore.activeFeature.properties,
+    false,
+    featureStore.activeFeature.feature_type
+  )
 }
 
 const defaultSwordMetadata = () => {
   if (!featureStore.activeFeature) return {}
-  // TODO:nodes assumes reach, won't work for nodes
-  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, true, 'reach')
+  return hydrologicStore.getSwordDescriptions(
+    featureStore.activeFeature.properties,
+    true,
+    featureStore.activeFeature.feature_type
+  )
 }
 </script>

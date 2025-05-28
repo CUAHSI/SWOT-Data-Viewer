@@ -4,6 +4,7 @@ import { ref } from 'vue'
 export const useHydrologicStore = defineStore('hydrologic', () => {
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20200825a.pdf
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20231026_RevB_w-sigs.pdf
+  // https://podaac.github.io/hydrocron/user-guide/fields.html#fields-detail
   const swotVariables = ref([
     {
       abbreviation: 'time_str',
@@ -47,7 +48,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: true,
       always: false,
       selectable: true,
-      fileType: 'all',
+      fileType: 'reach,node',
       plottable: true
     },
     {
@@ -140,6 +141,28 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       always: true,
       selectable: false,
       fileType: 'node',
+      plottable: false
+    },
+    {
+      abbreviation: 'lake_name',
+      name: 'Lake Name',
+      unit: '',
+      definition: 'Name of the lake, if available.',
+      default: true,
+      always: false,
+      selectable: false,
+      fileType: 'priorlake',
+      plottable: false
+    },
+    {
+      abbreviation: 'PLD_version',
+      name: 'Prior Lake Database Version',
+      unit: '',
+      definition: 'Version of the Prior Lake Database used to generate the lake data.',
+      default: true,
+      always: false,
+      selectable: false,
+      fileType: 'priorlake',
       plottable: false
     }
   ])
@@ -509,6 +532,66 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       units: '',
       plottable: false,
       significant_figures: 0
+    },
+    {
+      abbreviation: 'lake_id',
+      definition:
+        'The unique identifier for each lake in the Prior Lake Database (PLD). This ID is used to link the reach or node to the corresponding lake information in the PLD.',
+      fileType: 'PriorLake',
+      default: true,
+      short_definition: 'Prior Lake Database (PLD) ID',
+      swotviz_alias: 'Prior Lake Database ID',
+      units: '',
+      plottable: false,
+      significant_figures: 0
+    },
+    {
+      abbreviation: 'basin_id',
+      definition:
+        'The unique identifier for the basin in which the lake is located, as defined in the Prior Lake Database (PLD). This ID is used to link the reach or node to the corresponding basin information in the PLD.',
+      fileType: 'PriorLake',
+      default: true,
+      short_definition: 'Prior Lake Database (PLD) Basin ID',
+      swotviz_alias: 'Prior Lake Database Basin ID',
+      units: '',
+      plottable: false,
+      significant_figures: 0
+    },
+    {
+      abbreviation: 'names',
+      definition:
+        'A list of names associated with the lake in the Prior Lake Database (PLD). This field can contain multiple names, such as local names, official names, or alternative names for the lake.',
+      fileType: 'PriorLake',
+      default: true,
+      short_definition: 'Prior Lake Database (PLD) Names',
+      swotviz_alias: 'Prior Lake Database Names',
+      units: '',
+      plottable: false,
+      significant_figures: 0
+    },
+    {
+      abbreviation: 'lake_type',
+      definition:
+        'The type of lake as classified in the Prior Lake Database (PLD). This field indicates whether the lake is a natural lake, reservoir, or other type of water body.',
+      fileType: 'PriorLake',
+      default: true,
+      short_definition: 'Prior Lake Database (PLD) Lake Type',
+      swotviz_alias: 'Prior Lake Database Lake Type',
+      units: '',
+      plottable: false,
+      significant_figures: 0
+    },
+    {
+      abbreviation: 'ref_area',
+      definition:
+        'The reference area of the lake in the Prior Lake Database (PLD). This field provides the area of the lake as defined in the PLD, which may be used for comparison with other measurements or models.',
+      fileType: 'PriorLake',
+      default: false,
+      short_definition: 'Prior Lake Database (PLD) Reference Area',
+      swotviz_alias: 'Prior Lake Database Reference Area',
+      units: 'square meters',
+      plottable: false,
+      significant_figures: 2
     }
   ])
 
@@ -540,6 +623,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
    * @returns {Array} - An array of descriptions for the sword features.
    */
   function getSwordDescriptions(feature, defaultOnly = false, fileType = 'reach') {
+    console.log('getSwordDescriptions', feature, defaultOnly, fileType)
     const descriptions = []
     for (const [abbreviation, val] of Object.entries(feature)) {
       const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)
