@@ -106,16 +106,16 @@ export const useFeaturesStore = defineStore(
       if (!feature || !feature.properties) {
         return null
       }
-      const featureType = feature.properties.feature_type?.toLowerCase()
+      const featureType = feature.properties.feature_type
       if (featureType) {
         return featureType
       }
       // check for reach_id property
       if (feature.properties.reach_id) {
-        return 'reach'
+        return 'Reach'
       }
       if (feature.properties.lake_id) {
-        return 'priorlake'
+        return 'PriorLake'
       }
       return null
     }

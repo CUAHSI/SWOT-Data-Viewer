@@ -29,7 +29,15 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   let params = {}
 
   // TODO: get the start and end time from the date range
-  let feature_type = swordFeature?.feature_type || 'Reach'
+  let feature_type = swordFeature?.feature_type
+  if (!feature_type) {
+    // if the feature type is not set, we try to determine it from the feature
+    const featuresStore = useFeaturesStore()
+    feature_type = featuresStore.determineFeatureType(swordFeature)
+  }
+  if (!feature_type) {
+    console.error('No feature type found for hydroCron query')
+  }
   swordFeature.feature_type = feature_type
   let feature_id = null
   switch (feature_type) {
