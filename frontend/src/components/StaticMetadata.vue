@@ -9,7 +9,7 @@
       </v-card-item>
       <v-card-text>
         <!-- Default Metadata -->
-        <div v-for="metadataObject in defaultSwordMetadata()" :key="metadataObject.id">
+        <div v-for="metadataObject in defaultSwordMetadata" :key="metadataObject.id">
           <v-divider />
           <div style="display: flex; align-items: center; justify-content: space-between">
             <div>
@@ -32,10 +32,7 @@
         </div>
         <!-- Extended Metadata -->
         <template v-if="extended">
-          <div
-            v-for="extendedMetadataObject in extendedMetadata()"
-            :key="extendedMetadataObject.id"
-          >
+          <div v-for="extendedMetadataObject in extendedMetadata" :key="extendedMetadataObject.id">
             <v-divider />
             <div style="display: flex; align-items: center; justify-content: space-between">
               <div>
@@ -61,7 +58,7 @@
       </v-card-text>
     </v-card>
   </v-sheet>
-  <v-btn v-if="!extended" @click="extendMetadata" color="primary"
+  <v-btn v-if="!extended" @click="extended = true" color="primary"
     ><v-icon :icon="mdiSword"></v-icon>Metadata</v-btn
   >
   <v-btn v-else @click="extended = false" color="primary"
@@ -70,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { mdiSword, mdiInformationOutline } from '@mdi/js'
@@ -85,34 +82,24 @@ const hydrologicStore = useHydrologicStore()
 let extended = ref(false)
 
 if (props.reachId) {
-  featureStore.setActiveFeatureByReachId(props.reachId)
+  featureStore.setActiveFeatureById(props.reachId)
 }
 
-const extendMetadata = () => {
-  if (!featureStore.activeFeature) return
-  extendedMetadata.value = hydrologicStore.getSwordDescriptions(
-    featureStore.activeFeature.properties,
+const extendedMetadata = computed(() => {
+  if (!featureStore.activeFeature) return {}
+  return hydrologicStore.getSwordDescriptions(
+    featureStore.activeFeature,
     false,
     featureStore.activeFeature.feature_type
   )
-  extended.value = true
-}
+})
 
-const extendedMetadata = () => {
+const defaultSwordMetadata = computed(() => {
   if (!featureStore.activeFeature) return {}
   return hydrologicStore.getSwordDescriptions(
-    featureStore.activeFeature.properties,
-    false,
-    featureStore.activeFeature.feature_type
-  )
-}
-
-const defaultSwordMetadata = () => {
-  if (!featureStore.activeFeature) return {}
-  return hydrologicStore.getSwordDescriptions(
-    featureStore.activeFeature.properties,
+    featureStore.activeFeature,
     true,
     featureStore.activeFeature.feature_type
   )
-}
+})
 </script>

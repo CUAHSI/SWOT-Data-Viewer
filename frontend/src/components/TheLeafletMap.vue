@@ -303,6 +303,7 @@ onMounted(async () => {
 
   lakesFeatures.value.on('click', async function (e) {
     const feature = e.layer.feature
+    console.log('Selected lake:', feature)
     feature.feature_type = 'PriorLake'
     featureStore.clearSelectedFeatures()
     if (!featureStore.checkFeatureSelected(feature)) {

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useFeaturesStore } from '@/stores/features'
 
 export const useHydrologicStore = defineStore('hydrologic', () => {
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20200825a.pdf
@@ -623,9 +624,17 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
    * @param {boolean} [defaultOnly=false] - Indicates whether to retrieve only default descriptions.
    * @returns {Array} - An array of descriptions for the sword features.
    */
-  function getSwordDescriptions(feature, defaultOnly = false, fileType = 'reach') {
+  function getSwordDescriptions(feature, defaultOnly = false, fileType = null) {
+    if (!fileType) {
+      const featuresStore = useFeaturesStore()
+      fileType = featuresStore.determineFeatureType(feature)
+      if (!fileType) {
+        console.warn('Could not determine file type for feature:', feature)
+        return []
+      }
+    }
     const descriptions = []
-    for (const [abbreviation, val] of Object.entries(feature)) {
+    for (const [abbreviation, val] of Object.entries(feature.properties)) {
       const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)
       if (found) {
         let displayValue
@@ -646,7 +655,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     }
     // TODO CAM-731 for testing purposes, dump all of the key/value pairs in the feature
     if (fileType.toLowerCase() === 'priorlake' && !defaultOnly) {
-      for (let [key, val] of Object.entries(feature)) {
+      for (let [key, val] of Object.entries(feature.properties)) {
         // first check if the key is already in the descriptions
         if (descriptions.some((desc) => desc.abbreviation === key)) {
           continue
@@ -667,7 +676,6 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         })
       }
     }
-    console.log('Descriptions:', descriptions)
     return descriptions
   }
 

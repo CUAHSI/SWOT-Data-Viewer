@@ -239,7 +239,7 @@ export const useMapStore = defineStore('map', () => {
 
     // add feature_type to every feature in reachesFeatures
     lakesFeatures.value.on('createfeature', function (e) {
-      e.feature.feature_type = 'Reach'
+      e.feature.feature_type = 'PriorLake'
     })
 
     return lakesFeatures.value

@@ -84,8 +84,7 @@ onMounted(() => {
   chartStore.checkQueryParams(currentRoute)
   if (props.reachId !== '') {
     querying.value.hydrocron = true
-    console.log('Setting active feature by reach id', props.reachId)
-    featuresStore.setActiveFeatureByReachId(props.reachId)
+    featuresStore.setActiveFeatureById(props.reachId)
   }
 })
 
