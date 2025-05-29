@@ -26,6 +26,7 @@ export const useMapStore = defineStore('map', () => {
   const activeOverlays = ref(['Lakes', 'Reaches'])
   const overlays = shallowRef({})
   const reachesFeatures = shallowRef(null)
+  const lakesFeatures = shallowRef(null)
 
   const deselectFeature = (feature) => {
     try {
@@ -40,7 +41,7 @@ export const useMapStore = defineStore('map', () => {
       if (featureType === 'reach') {
         reachesFeatures.value.setFeatureStyle(feature.id, config)
       } else if (featureType === 'priorlake') {
-        mapObject.value.lakesFeatures.setFeatureStyle(feature.id, config)
+        lakesFeatures.value.setFeatureStyle(feature.id, config)
       } else {
         console.warn('Unknown feature type:', featureType)
       }
@@ -62,7 +63,7 @@ export const useMapStore = defineStore('map', () => {
       if (featureType === 'reach') {
         reachesFeatures.value.setFeatureStyle(feature.id, config)
       } else if (featureType === 'priorlake') {
-        mapObject.value.lakesFeatures.setFeatureStyle(feature.id, config)
+        lakesFeatures.value.setFeatureStyle(feature.id, config)
       } else {
         console.warn('Unknown feature type:', featureType)
       }
@@ -76,7 +77,7 @@ export const useMapStore = defineStore('map', () => {
     reachesFeatures.value.eachFeature(function (feature) {
       feature.setStyle(config)
     })
-    mapObject.value.lakesFeatures.eachFeature(function (feature) {
+    lakesFeatures.value.eachFeature(function (feature) {
       feature.setStyle(config)
     })
   }
@@ -192,7 +193,7 @@ export const useMapStore = defineStore('map', () => {
     }
     const url =
       'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
-    const features = esriLeaflet.featureLayer({
+    reachesFeatures.value = esriLeaflet.featureLayer({
       url: url,
       renderer: canvas({ tolerance: 5 }),
       simplifyFactor: 0.35,
@@ -206,12 +207,42 @@ export const useMapStore = defineStore('map', () => {
     })
 
     // add feature_type to every feature in reachesFeatures
-    features.on('createfeature', function (e) {
+    reachesFeatures.value.on('createfeature', function (e) {
       e.feature.feature_type = 'Reach'
     })
 
-    reachesFeatures.value = features
-    return features
+    return reachesFeatures.value
+  }
+
+  const generateLakesFeatures = () => {
+    if (lakesFeatures.value) {
+      console.warn('Lakes features already generated, skipping.')
+      return lakesFeatures.value
+    }
+    const url =
+      'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
+    lakesFeatures.value = esriLeaflet.featureLayer({
+      url: url,
+      simplifyFactor: 0.35,
+      precision: 5,
+      minZoom: 9,
+      maxZoom: 18,
+      style: function () {
+        return {
+          weight: 0, // remove border
+          fillOpacity: 0.7,
+          fill: true
+        }
+      }
+      // fields: ["FID", "ZIP", "PO_NAME"],
+    })
+
+    // add feature_type to every feature in reachesFeatures
+    lakesFeatures.value.on('createfeature', function (e) {
+      e.feature.feature_type = 'Reach'
+    })
+
+    return lakesFeatures.value
   }
 
   return {
@@ -222,6 +253,7 @@ export const useMapStore = defineStore('map', () => {
     checkQueryParams,
     updateRouteAfterMapChange,
     generateReachesFeatures,
+    generateLakesFeatures,
     featureOptions,
     zoom,
     center,
@@ -230,6 +262,7 @@ export const useMapStore = defineStore('map', () => {
     activeOverlays,
     overlays,
     minReachSelectionZoom,
-    reachesFeatures
+    reachesFeatures,
+    lakesFeatures
   }
 })

@@ -25,7 +25,7 @@ import * as esriLeaflet from 'esri-leaflet'
 import * as esriLeafletGeocoder from 'esri-leaflet-geocoder'
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import 'leaflet-easybutton/src/easy-button'
-import { onMounted, onUpdated, ref } from 'vue'
+import { onMounted, onUpdated } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
@@ -50,7 +50,8 @@ const {
   overlays,
   activeOverlays,
   minReachSelectionZoom,
-  reachesFeatures
+  reachesFeatures,
+  lakesFeatures
 } = storeToRefs(mapStore)
 const { activeFeature } = storeToRefs(featureStore)
 const accessToken =
@@ -109,25 +110,9 @@ onMounted(async () => {
     CartoDB_DarkMatterNoLabels
   }
 
-  // add lakes features layer to map
-  let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
-  const lakesFeatures = esriLeaflet.featureLayer({
-    url: url,
-    simplifyFactor: 0.35,
-    precision: 5,
-    minZoom: 9,
-    maxZoom: 18,
-    style: function () {
-      return {
-        weight: 0, // remove border
-        fillOpacity: 0.7,
-        fill: true
-      }
-    }
-    // fields: ["FID", "ZIP", "PO_NAME"],
-  })
+  mapStore.generateLakesFeatures()
 
-  url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
+  let url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
   const lakesWMS = L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
@@ -196,7 +181,7 @@ onMounted(async () => {
   overlays.value = {
     'USGS Gages': gages,
     // "Lakes": lakes,
-    Lakes: lakesFeatures,
+    Lakes: lakesFeatures.value,
     // "SWORD Reaches": reaches,
     // "SWORD Nodes": sword_nodes,
     Nodes: nodesFeatures,
@@ -220,7 +205,6 @@ onMounted(async () => {
   mapObject.value.buffer = 20
   mapObject.value.huclayers = []
   mapObject.value.reaches = {}
-  mapObject.value.lakesFeatures = ref({})
   mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
   //Remove the common zoom control and add it back later later
   leaflet.zoomControl.remove()
@@ -237,8 +221,7 @@ onMounted(async () => {
   lakesWMS.addTo(leaflet)
   reachesWMS.addTo(leaflet)
   reachesFeatures.value.addTo(leaflet)
-
-  mapObject.value.lakesFeatures = lakesFeatures
+  lakesFeatures.value.addTo(leaflet)
   featureStore.checkQueryParams(currentRoute)
 
   // /*
@@ -318,7 +301,7 @@ onMounted(async () => {
     popup.setLatLng(e.latlng).setContent(content).openOn(leaflet)
   })
 
-  lakesFeatures.on('click', async function (e) {
+  lakesFeatures.value.on('click', async function (e) {
     const feature = e.layer.feature
     feature.feature_type = 'PriorLake'
     featureStore.clearSelectedFeatures()
