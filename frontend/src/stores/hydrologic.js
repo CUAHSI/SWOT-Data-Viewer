@@ -644,6 +644,30 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         descriptions.push({ ...found, displayKey })
       }
     }
+    // TODO CAM-731 for testing purposes, dump all of the key/value pairs in the feature
+    if (fileType.toLowerCase() === 'priorlake' && !defaultOnly) {
+      for (let [key, val] of Object.entries(feature)) {
+        // first check if the key is already in the descriptions
+        if (descriptions.some((desc) => desc.abbreviation === key)) {
+          continue
+        }
+        descriptions.push({
+          abbreviation: key,
+          name: key,
+          definition: `${key}`,
+          value: val,
+          fileType: 'PriorLake',
+          default: false,
+          short_definition: key,
+          swotviz_alias: key,
+          displayKey: `... ${key}`,
+          units: '',
+          plottable: false,
+          significant_figures: 0
+        })
+      }
+    }
+    console.log('Descriptions:', descriptions)
     return descriptions
   }
 
