@@ -79,7 +79,10 @@ export const useFeaturesStore = defineStore(
         feature = activeFeature.value
       }
       if (!feature) return ''
-      const featureType = feature.feature_type.toLowerCase()
+      let featureType = feature?.feature_type?.toLowerCase()
+      if (!featureType) {
+        featureType = determineFeatureType(feature)
+      }
       switch (featureType) {
         case 'reach': {
           const river_name = feature.properties.river_name
@@ -95,9 +98,26 @@ export const useFeaturesStore = defineStore(
           }
           return 'Unnamed Lake'
         default:
-          console.warn('Unknown feature type:', featureType)
           return 'Unknown Feature'
       }
+    }
+
+    const determineFeatureType = (feature) => {
+      if (!feature || !feature.properties) {
+        return null
+      }
+      const featureType = feature.properties.feature_type?.toLowerCase()
+      if (featureType) {
+        return featureType
+      }
+      // check for reach_id property
+      if (feature.properties.reach_id) {
+        return 'reach'
+      }
+      if (feature.properties.lake_id) {
+        return 'priorlake'
+      }
+      return null
     }
 
     const setActiveFeatureByReachId = (reachId) => {
@@ -166,7 +186,8 @@ export const useFeaturesStore = defineStore(
       minTime,
       maxTime,
       querying,
-      checkQueryParams
+      checkQueryParams,
+      determineFeatureType
     }
   },
   {

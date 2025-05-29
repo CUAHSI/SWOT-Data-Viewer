@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useFeaturesStore } from '@/stores/features'
 
 export const useMapStore = defineStore('map', () => {
+  const featuresStore = useFeaturesStore()
   const mapObject = ref(new Map())
   const router = useRouter()
   const featureOptions = ref({
@@ -27,12 +29,16 @@ export const useMapStore = defineStore('map', () => {
         color: featureOptions.value.defaultColor,
         weight: featureOptions.value.defaultWeight
       }
-      if (feature.feature_type.toLowerCase() === 'reach') {
+      let featureType = feature?.feature_type?.toLowerCase()
+      if (!featureType) {
+        featureType = featuresStore.determineFeatureType(feature)
+      }
+      if (featureType === 'reach') {
         mapObject.value.reachesFeatures.setFeatureStyle(feature.id, config)
-      } else if (feature.feature_type.toLowerCase() === 'priorlake') {
+      } else if (featureType === 'priorlake') {
         mapObject.value.lakesFeatures.setFeatureStyle(feature.id, config)
       } else {
-        console.warn('Unknown feature type:', feature.feature_type)
+        console.warn('Unknown feature type:', featureType)
       }
     } catch (error) {
       console.warn('Attempted to deselect feature:', error)
@@ -45,12 +51,16 @@ export const useMapStore = defineStore('map', () => {
         color: featureOptions.value.selectedColor,
         weight: featureOptions.value.selectedWeight
       }
-      if (feature.feature_type.toLowerCase() === 'reach') {
+      let featureType = feature?.feature_type?.toLowerCase()
+      if (!featureType) {
+        featureType = featuresStore.determineFeatureType(feature)
+      }
+      if (featureType === 'reach') {
         mapObject.value.reachesFeatures.setFeatureStyle(feature.id, config)
-      } else if (feature.feature_type.toLowerCase() === 'priorlake') {
+      } else if (featureType === 'priorlake') {
         mapObject.value.lakesFeatures.setFeatureStyle(feature.id, config)
       } else {
-        console.warn('Unknown feature type:', feature.feature_type)
+        console.warn('Unknown feature type:', featureType)
       }
     } catch (error) {
       console.warn('Attempted to select feature:', error)

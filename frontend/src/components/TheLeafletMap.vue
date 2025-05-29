@@ -165,10 +165,10 @@ onMounted(async () => {
     // fields: ["FID", "ZIP", "PO_NAME"],
   })
 
-  // // set the feature_type for every feature in the reaches layer
-  // reachesFeatures.on('createfeature', function (e) {
-  //   e.feature.feature_type = 'Reach'
-  // })
+  // add feature_type to every feature in reachesFeatures
+  reachesFeatures.on('createfeature', function (e) {
+    e.feature.feature_type = 'Reach'
+  })
 
   // add nodes layer to map
   url =
