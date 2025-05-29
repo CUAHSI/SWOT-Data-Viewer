@@ -79,11 +79,25 @@ export const useFeaturesStore = defineStore(
         feature = activeFeature.value
       }
       if (!feature) return ''
-      const river_name = feature.properties.river_name
-      if (river_name === 'NODATA') {
-        return 'UNNAMED RIVER'
+      const featureType = feature.feature_type.toLowerCase()
+      switch (featureType) {
+        case 'reach': {
+          const river_name = feature.properties.river_name
+          if (river_name === 'NODATA') {
+            return 'UNNAMED RIVER'
+          }
+          return river_name
+        }
+        case 'priorlake':
+          if (feature.properties.names) {
+            const namesArray = feature.properties.names.split(';').map((name) => name.trim())
+            return namesArray[namesArray.length - 1] || 'Unnamed Lake'
+          }
+          return 'Unnamed Lake'
+        default:
+          console.warn('Unknown feature type:', featureType)
+          return 'Unknown Feature'
       }
-      return river_name
     }
 
     const setActiveFeatureByReachId = (reachId) => {

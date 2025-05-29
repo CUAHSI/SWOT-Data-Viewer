@@ -226,7 +226,7 @@ onMounted(async () => {
   mapObject.value.huclayers = []
   mapObject.value.reaches = {}
   mapObject.value.reachesFeatures = ref({})
-
+  mapObject.value.lakesFeatures = ref({})
   mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
   //Remove the common zoom control and add it back later later
   leaflet.zoomControl.remove()
@@ -245,6 +245,7 @@ onMounted(async () => {
   reachesFeatures.addTo(leaflet)
 
   mapObject.value.reachesFeatures = reachesFeatures
+  mapObject.value.lakesFeatures = lakesFeatures
   featureStore.checkQueryParams(currentRoute)
 
   // /*

@@ -609,7 +609,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       }
       return (
         variable.abbreviation === abbreviation &&
-        (variable.fileType === fileType || variable.fileType === 'all') &&
+        (variable.fileType.toLocaleLowerCase() === fileType.toLocaleLowerCase() ||
+          variable.fileType === 'all') &&
         variable.default === defaultOnly
       )
     })
@@ -623,7 +624,6 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
    * @returns {Array} - An array of descriptions for the sword features.
    */
   function getSwordDescriptions(feature, defaultOnly = false, fileType = 'reach') {
-    console.log('getSwordDescriptions', feature, defaultOnly, fileType)
     const descriptions = []
     for (const [abbreviation, val] of Object.entries(feature)) {
       const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)

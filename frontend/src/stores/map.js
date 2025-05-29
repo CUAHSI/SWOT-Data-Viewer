@@ -23,10 +23,17 @@ export const useMapStore = defineStore('map', () => {
 
   const deselectFeature = (feature) => {
     try {
-      mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
+      const config = {
         color: featureOptions.value.defaultColor,
         weight: featureOptions.value.defaultWeight
-      })
+      }
+      if (feature.feature_type.toLowerCase() === 'reach') {
+        mapObject.value.reachesFeatures.setFeatureStyle(feature.id, config)
+      } else if (feature.feature_type.toLowerCase() === 'priorlake') {
+        mapObject.value.lakesFeatures.setFeatureStyle(feature.id, config)
+      } else {
+        console.warn('Unknown feature type:', feature.feature_type)
+      }
     } catch (error) {
       console.warn('Attempted to deselect feature:', error)
     }
@@ -34,18 +41,29 @@ export const useMapStore = defineStore('map', () => {
 
   const selectFeature = (feature) => {
     try {
-      mapObject.value.reachesFeatures.setFeatureStyle(feature.id, {
+      const config = {
         color: featureOptions.value.selectedColor,
         weight: featureOptions.value.selectedWeight
-      })
+      }
+      if (feature.feature_type.toLowerCase() === 'reach') {
+        mapObject.value.reachesFeatures.setFeatureStyle(feature.id, config)
+      } else if (feature.feature_type.toLowerCase() === 'priorlake') {
+        mapObject.value.lakesFeatures.setFeatureStyle(feature.id, config)
+      } else {
+        console.warn('Unknown feature type:', feature.feature_type)
+      }
     } catch (error) {
       console.warn('Attempted to select feature:', error)
     }
   }
 
   const clearAllFeatures = () => {
+    const config = { color: featureOptions.value.defaultColor }
     mapObject.value.reachesFeatures.eachFeature(function (feature) {
-      feature.setStyle({ color: featureOptions.value.defaultColor })
+      feature.setStyle(config)
+    })
+    mapObject.value.lakesFeatures.eachFeature(function (feature) {
+      feature.setStyle(config)
     })
   }
 
