@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFeaturesStore } from '@/stores/features'
+import { canvas } from 'leaflet'
+import * as esriLeaflet from 'esri-leaflet'
 
 export const useMapStore = defineStore('map', () => {
   const featuresStore = useFeaturesStore()
@@ -16,12 +18,14 @@ export const useMapStore = defineStore('map', () => {
   })
   const mapInitialZoom = 3
   const mapInitialCenter = { lat: 0, lng: 0 }
+  const minReachSelectionZoom = ref(7)
   const zoom = ref(mapInitialZoom)
   const center = ref(mapInitialCenter)
   const baselayers = shallowRef({})
   const activeBaseLayerName = ref('')
   const activeOverlays = ref(['Lakes', 'Reaches'])
   const overlays = shallowRef({})
+  const reachesFeatures = shallowRef(null)
 
   const deselectFeature = (feature) => {
     try {
@@ -34,7 +38,7 @@ export const useMapStore = defineStore('map', () => {
         featureType = featuresStore.determineFeatureType(feature)
       }
       if (featureType === 'reach') {
-        mapObject.value.reachesFeatures.setFeatureStyle(feature.id, config)
+        reachesFeatures.value.setFeatureStyle(feature.id, config)
       } else if (featureType === 'priorlake') {
         mapObject.value.lakesFeatures.setFeatureStyle(feature.id, config)
       } else {
@@ -56,7 +60,7 @@ export const useMapStore = defineStore('map', () => {
         featureType = featuresStore.determineFeatureType(feature)
       }
       if (featureType === 'reach') {
-        mapObject.value.reachesFeatures.setFeatureStyle(feature.id, config)
+        reachesFeatures.value.setFeatureStyle(feature.id, config)
       } else if (featureType === 'priorlake') {
         mapObject.value.lakesFeatures.setFeatureStyle(feature.id, config)
       } else {
@@ -69,7 +73,7 @@ export const useMapStore = defineStore('map', () => {
 
   const clearAllFeatures = () => {
     const config = { color: featureOptions.value.defaultColor }
-    mapObject.value.reachesFeatures.eachFeature(function (feature) {
+    reachesFeatures.value.eachFeature(function (feature) {
       feature.setStyle(config)
     })
     mapObject.value.lakesFeatures.eachFeature(function (feature) {
@@ -181,6 +185,35 @@ export const useMapStore = defineStore('map', () => {
     })
   }
 
+  const generateReachesFeatures = () => {
+    if (reachesFeatures.value) {
+      console.warn('Reaches features already generated, skipping.')
+      return reachesFeatures.value
+    }
+    const url =
+      'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
+    const features = esriLeaflet.featureLayer({
+      url: url,
+      renderer: canvas({ tolerance: 5 }),
+      simplifyFactor: 0.35,
+      precision: 5,
+      minZoom: minReachSelectionZoom.value,
+      maxZoom: 18,
+      color: featureOptions.value.defaultColor,
+      weight: featureOptions.value.defaultWeight,
+      opacity: featureOptions.value.opacity
+      // fields: ["FID", "ZIP", "PO_NAME"],
+    })
+
+    // add feature_type to every feature in reachesFeatures
+    features.on('createfeature', function (e) {
+      e.feature.feature_type = 'Reach'
+    })
+
+    reachesFeatures.value = features
+    return features
+  }
+
   return {
     mapObject,
     deselectFeature,
@@ -188,12 +221,15 @@ export const useMapStore = defineStore('map', () => {
     clearAllFeatures,
     checkQueryParams,
     updateRouteAfterMapChange,
+    generateReachesFeatures,
     featureOptions,
     zoom,
     center,
     baselayers,
     activeBaseLayerName,
     activeOverlays,
-    overlays
+    overlays,
+    minReachSelectionZoom,
+    reachesFeatures
   }
 })

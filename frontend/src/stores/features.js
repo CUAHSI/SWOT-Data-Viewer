@@ -121,9 +121,11 @@ export const useFeaturesStore = defineStore(
     }
 
     const setActiveFeatureByReachId = (reachId) => {
+      // generate the reachesFeatures layer if it doesn't exist
+      mapStore.generateReachesFeatures()
       // https://developers.arcgis.com/esri-leaflet/samples/querying-feature-layers-1/
       let features = []
-      let query = mapStore.mapObject.reachesFeatures.query().where('reach_id = ' + reachId)
+      let query = mapStore.reachesFeatures.query().where('reach_id = ' + reachId)
       // it doesn't seem that this query.run is awaitable
       query.run(function (error, featureCollection) {
         if (error) {
