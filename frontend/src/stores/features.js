@@ -79,24 +79,96 @@ export const useFeaturesStore = defineStore(
         feature = activeFeature.value
       }
       if (!feature) return ''
-      const river_name = feature.properties.river_name
-      if (river_name === 'NODATA') {
-        return 'UNNAMED RIVER'
+      let featureType = feature?.feature_type?.toLowerCase()
+      if (!featureType) {
+        featureType = determineFeatureType(feature)
       }
-      return river_name
+      switch (featureType) {
+        case 'reach': {
+          const river_name = feature.properties.river_name
+          if (river_name === 'NODATA') {
+            return 'UNNAMED RIVER'
+          }
+          return river_name
+        }
+        case 'priorlake':
+          if (feature.properties.names) {
+            const namesArray = feature.properties.names.split(';').map((name) => name.trim())
+            return namesArray[namesArray.length - 1] || 'Unnamed Lake'
+          }
+          return 'Unnamed Lake'
+        default:
+          return 'Unknown Feature'
+      }
     }
 
-    const setActiveFeatureByReachId = (reachId) => {
-      // https://developers.arcgis.com/esri-leaflet/samples/querying-feature-layers-1/
+    const determineFeatureType = (feature) => {
+      if (!feature || !feature.properties) {
+        return null
+      }
+      const featureType = feature.properties.feature_type
+      if (featureType) {
+        return featureType
+      }
+      // check for reach_id property
+      if (feature.properties.reach_id) {
+        return 'Reach'
+      }
+      if (feature.properties.lake_id) {
+        return 'PriorLake'
+      }
+      return null
+    }
+
+    const setActiveFeatureById = (featureId) => {
+      console.log('Setting active feature by ID:', featureId)
+      // check the length of the featureId
+      // priorLake will be 10 digits
+      // reach will be 11 digits
+      // node will be 12 digits
+      // CBBBBBRRRRNNNT node
+      // CBBBBBRRRRT reach
+      // http://gaia.geosci.unc.edu/SWORD/SWORD_ProductDescription_v16.pdf
+      const length = featureId.toString().length
       let features = []
-      let query = mapStore.mapObject.reachesFeatures.query().where('reach_id = ' + reachId)
+      let query = null
+      switch (length) {
+        case 10: // priorLake
+          // generate the lakesFeatures layer if it doesn't exist
+          mapStore.generateLakesFeatures()
+          // https://developers.arcgis.com/esri-leaflet/samples/querying-feature-layers-1/
+          query = mapStore.lakesFeatures.query().where('lake_id = ' + featureId)
+          break
+        case 11: // reach
+          mapStore.generateReachesFeatures()
+          query = mapStore.reachesFeatures.query().where('reach_id = ' + featureId)
+          break
+        case 12: // node
+          console.warn('Node features are not yet supported')
+          break
+        default:
+          console.warn('Unknown feature ID length:', length)
+          return
+      }
+      if (!query) {
+        console.warn('No query generated for feature ID:', featureId)
+        return
+      }
       // it doesn't seem that this query.run is awaitable
       query.run(function (error, featureCollection) {
         if (error) {
           console.error('Error querying feature layer:', error)
           return
         }
+        if (!featureCollection || !featureCollection.features) {
+          console.warn('No features found for ID:', featureId)
+          return
+        }
         features = featureCollection.features
+        if (features.length === 0) {
+          console.warn('No features found for ID:', featureId)
+          return
+        }
         let feature = features[0]
         clearSelectedFeatures()
         selectFeature(feature)
@@ -123,7 +195,7 @@ export const useFeaturesStore = defineStore(
         try {
           parsedActiveReachId = parseInt(query.activeReachId)
           if (parsedActiveReachId) {
-            setActiveFeatureByReachId(parsedActiveReachId)
+            setActiveFeatureById(parsedActiveReachId)
           }
         } catch (error) {
           console.warn('Error parsing activeReachId:', error)
@@ -146,13 +218,14 @@ export const useFeaturesStore = defineStore(
       mergeFeature,
       nodes,
       getFeatureName,
-      setActiveFeatureByReachId,
+      setActiveFeatureById,
       timeRange,
       resetTimeRange,
       minTime,
       maxTime,
       querying,
-      checkQueryParams
+      checkQueryParams,
+      determineFeatureType
     }
   },
   {
