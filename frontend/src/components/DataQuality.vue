@@ -19,7 +19,7 @@
                 @update:modelValue="qualityHasChanged()"
               >
                 <template #append>
-                  <v-icon :icon="item.icon" :color="item.pointBorderColor" size="x-small"></v-icon>
+                  <v-icon :icon="item.icon" :color="item.pointBorderColor" size="small"></v-icon>
                 </template>
               </v-checkbox>
             </v-list-item-action>
