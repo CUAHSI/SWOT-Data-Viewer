@@ -26,6 +26,7 @@ export const useChartsStore = defineStore(
     const dataQualityFlags = ref([0, 1, 2]) // by default don't show bad data
     const colorScale = shallowRef({})
     const router = useRouter()
+    const selectedTimeseriesPoints = ref([])
 
     const dataQualityOptions = [
       { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -359,12 +360,12 @@ export const useChartsStore = defineStore(
       refreshAllCharts()
     }
 
-    const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {
-      console.log('Filtering datasets by set of dates', datasets, selectedTimeseriesPoints)
+    const filterDatasetsBySetOfDates = (datasets, tolerance) => {
+      console.log('Filtering datasets by set of dates', datasets, selectedTimeseriesPoints.value)
       if (tolerance == null) {
         tolerance = NODE_DATETIME_VARIATION
       }
-      if (selectedTimeseriesPoints == null) {
+      if (selectedTimeseriesPoints.value == null) {
         console.error('No dateTimeGroups provided')
         return
       }
@@ -377,7 +378,7 @@ export const useChartsStore = defineStore(
       datasets.forEach((dataset) => {
         // determine whether the dataset matches with the dateTimeGroups
         if (
-          selectedTimeseriesPoints.some((timeSeriesPoint) => {
+          selectedTimeseriesPoints.value.some((timeSeriesPoint) => {
             const startCuttoff = subMinutes(timeSeriesPoint.datetime, tolerance)
             const endCuttoff = addMinutes(timeSeriesPoint.datetime, tolerance)
             if (dataset.minDateTime > endCuttoff || dataset.maxDateTime < startCuttoff) {
@@ -976,7 +977,8 @@ export const useChartsStore = defineStore(
       activeReachChart,
       updateNodeDataSetStyles,
       updateRouteAfterPlotChange,
-      checkQueryParams
+      checkQueryParams,
+      selectedTimeseriesPoints
     }
   },
   {
