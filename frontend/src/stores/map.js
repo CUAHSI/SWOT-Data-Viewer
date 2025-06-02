@@ -58,7 +58,7 @@ export const useMapStore = defineStore('map', () => {
       }
       let featureType = feature?.feature_type?.toLowerCase()
       if (!featureType) {
-        featureType = featuresStore.determineFeatureType(feature)
+        featureType = featuresStore.determineFeatureType(feature).toLowerCase()
       }
       if (featureType === 'reach') {
         reachesFeatures.value.setFeatureStyle(feature.id, config)
@@ -89,7 +89,7 @@ export const useMapStore = defineStore('map', () => {
       activeBaseLayerName: activeBaseLayerName.value,
       activeOverlays: JSON.stringify(activeOverlays.value)
     }
-    // Merge with existing query, replacing only activeReachId
+    // Merge with existing query, replacing only activeFeatureId
     const currentQuery = { ...router.currentRoute.value.query }
     const mergedQuery = { ...currentQuery, ...query }
     await router.replace({ query: mergedQuery })

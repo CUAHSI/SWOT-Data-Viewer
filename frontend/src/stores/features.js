@@ -176,26 +176,48 @@ export const useFeaturesStore = defineStore(
     }
 
     const updateRouteAfterFeatureChange = async () => {
-      const query = {
-        activeReachId: activeFeature.value?.properties?.reach_id
+      let feature_type = null
+      try {
+        feature_type = determineFeatureType(activeFeature.value).toLowerCase()
+      } catch (error) {
+        console.warn('Error determining feature type:', error)
+        return
       }
-      // Merge with existing query, replacing only activeReachId
+      if (!activeFeature.value || !feature_type) {
+        console.warn('No active feature or feature type set')
+        return
+      }
+      const activeFeatureId =
+        feature_type === 'reach'
+          ? activeFeature.value?.properties?.reach_id
+          : activeFeature.value?.properties?.lake_id
+      const query = {
+        activeFeatureId
+      }
+      // Merge with existing query, replacing only activeFeatureId
       const currentQuery = { ...router.currentRoute.value.query }
       const mergedQuery = { ...currentQuery, ...query }
       await router.replace({ query: mergedQuery })
     }
 
-    const checkQueryParams = (to) => {
+    const checkQueryParams = async (to) => {
       let query = to.query
       if (!query) {
         query = router.currentRoute.value.query
       }
-      if (query.activeReachId) {
-        let parsedActiveReachId
+      if (query.activeReachId || query.activeFeatureId) {
         try {
-          parsedActiveReachId = parseInt(query.activeReachId)
-          if (parsedActiveReachId) {
-            setActiveFeatureById(parsedActiveReachId)
+          let parsedActiveFeatureId = null
+          if (query.activeReachId) {
+            console.warn(
+              'Using activeReachId for backwards compatibility, please update your URL to use activeFeatureId'
+            )
+            parsedActiveFeatureId = parseInt(query.activeReachId)
+          } else if (query.activeFeatureId) {
+            parsedActiveFeatureId = parseInt(query.activeFeatureId)
+          }
+          if (parsedActiveFeatureId) {
+            await setActiveFeatureById(parsedActiveFeatureId)
           }
         } catch (error) {
           console.warn('Error parsing activeReachId:', error)
