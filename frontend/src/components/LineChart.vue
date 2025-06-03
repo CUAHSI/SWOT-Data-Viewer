@@ -87,7 +87,8 @@ const statsStore = useStatsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { chartData, activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
+const { chartData, activeReachChart, selectedTimeseriesPoints, showStatistics } =
+  storeToRefs(chartStore)
 const { timeRange } = storeToRefs(featuresStore)
 
 let xLabel = 'Date'
@@ -261,7 +262,7 @@ const handleTimeseriesPointClick = (e) => {
   addSelectedTimeseriesPoint(timeSeriesPoint)
 }
 
-const viewLongProfileByDates = () => {
+const viewLongProfileByDates = async () => {
   chartStore.setDatasetVisibility(chartStore.nodeChartData.datasets, true)
   chartStore.filterDatasetsBySetOfDates(null)
   let start = selectedTimeseriesPoints.value[0].datetime
@@ -275,6 +276,29 @@ const viewLongProfileByDates = () => {
   chartStore.refreshAllCharts()
   // if stats are turned on, the stats will be stale
   statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
+  // CAM-732 TODO: combine this with the same function from the timerange selector
+  console.log('Time range update complete')
+  // re-compute statistics if they have been enabled
+  if (showStatistics.value == true) {
+    // remove statistics from the chart
+    let datasets = chartStore.nodeChartData.datasets.filter(
+      (s) => s.seriesType != 'computed_series'
+    )
+
+    // recompute statistics
+    let statisticSeries = await statsStore.generateStatisticsSeries()
+
+    // push statisticSeries elements into the datasets array
+    datasets = datasets.concat(statisticSeries)
+
+    // save these data to the chartStore
+    chartStore.updateNodeChartData(datasets)
+
+    // update the chart
+    chartStore.refreshAllCharts()
+    statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
+    //
+  }
 }
 
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {

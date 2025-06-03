@@ -82,6 +82,7 @@ const timeRangeUpdateComplete = async () => {
     // update the chart
     chartStore.refreshAllCharts()
     statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
+    //
   }
 }
 
