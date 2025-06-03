@@ -29,12 +29,28 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   let params = {}
 
   // TODO: get the start and end time from the date range
-  let feature_type = swordFeature?.properties?.node_id == undefined ? 'Reach' : 'Node'
+  let feature_type = swordFeature?.feature_type
+  if (!feature_type) {
+    // if the feature type is not set, we try to determine it from the feature
+    const featuresStore = useFeaturesStore()
+    feature_type = featuresStore.determineFeatureType(swordFeature)
+  }
+  if (!feature_type) {
+    console.error('No feature type found for hydroCron query')
+  }
   swordFeature.feature_type = feature_type
-  let feature_id =
-    feature_type === 'Reach'
-      ? swordFeature?.properties?.reach_id
-      : swordFeature?.properties?.node_id
+  let feature_id = null
+  switch (feature_type) {
+    case 'Reach':
+      feature_id = swordFeature?.properties?.reach_id
+      break
+    case 'Node':
+      feature_id = swordFeature?.properties?.node_id
+      break
+    case 'PriorLake':
+      feature_id = swordFeature?.properties?.lake_id
+      break
+  }
   swordFeature.feature_id = feature_id
 
   let fields = hydrologicStore.selectedVariables.map((variable) => variable.abbreviation)
