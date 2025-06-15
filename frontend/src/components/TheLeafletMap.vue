@@ -20,12 +20,12 @@
 <script setup>
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-easybutton/src/easy-button.css'
-import L, { canvas } from 'leaflet'
+import L from 'leaflet'
 import * as esriLeaflet from 'esri-leaflet'
 import * as esriLeafletGeocoder from 'esri-leaflet-geocoder'
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import 'leaflet-easybutton/src/easy-button'
-import { onMounted, onUpdated, ref } from 'vue'
+import { onMounted, onUpdated } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
@@ -43,8 +43,7 @@ const router = useRouter()
 
 const { mapObject, zoom, center, baselayers, activeBaseLayerName, overlays, activeOverlays } =
   storeToRefs(mapStore)
-const { activeFeature } = storeToRefs(featureStore)
-const minReachSelectionZoom = 7
+const { activeFeature, minReachSelectionZoom, reachesFeatures } = storeToRefs(featureStore)
 const accessToken =
   'AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX'
 
@@ -147,23 +146,10 @@ onMounted(async () => {
     transparent: 'true',
     format: 'image/png',
     minZoom: 0,
-    maxZoom: minReachSelectionZoom - 1
+    maxZoom: minReachSelectionZoom.value - 1
   })
 
-  url =
-    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
-  const reachesFeatures = esriLeaflet.featureLayer({
-    url: url,
-    renderer: canvas({ tolerance: 5 }),
-    simplifyFactor: 0.35,
-    precision: 5,
-    minZoom: minReachSelectionZoom,
-    maxZoom: 18,
-    color: mapStore.featureOptions.defaultColor,
-    weight: mapStore.featureOptions.defaultWeight,
-    opacity: mapStore.featureOptions.opacity
-    // fields: ["FID", "ZIP", "PO_NAME"],
-  })
+  featureStore.createReachesFeatureLayer()
 
   // add nodes layer to map
   url =
@@ -225,7 +211,6 @@ onMounted(async () => {
   mapObject.value.buffer = 20
   mapObject.value.huclayers = []
   mapObject.value.reaches = {}
-  mapObject.value.reachesFeatures = ref({})
 
   mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
   //Remove the common zoom control and add it back later later
@@ -242,9 +227,8 @@ onMounted(async () => {
   // these layers are added and cannot be toggled
   lakesWMS.addTo(leaflet)
   reachesWMS.addTo(leaflet)
-  reachesFeatures.addTo(leaflet)
+  reachesFeatures.value.addTo(leaflet)
 
-  mapObject.value.reachesFeatures = reachesFeatures
   featureStore.checkQueryParams(currentRoute)
 
   // /*
@@ -296,7 +280,7 @@ onMounted(async () => {
     mapClick(e)
   })
 
-  reachesFeatures.on('click', async function (e) {
+  reachesFeatures.value.on('click', async function (e) {
     const feature = e.layer.feature
     featureStore.clearSelectedFeatures()
     if (!featureStore.checkFeatureSelected(feature)) {
