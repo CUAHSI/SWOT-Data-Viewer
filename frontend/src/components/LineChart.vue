@@ -275,6 +275,7 @@ const viewLongProfileByDates = () => {
   chartStore.refreshAllCharts()
   // if stats are turned on, the stats will be stale
   statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
+  statsStore.recomputeStatsAndUpdateCharts()
 }
 
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
