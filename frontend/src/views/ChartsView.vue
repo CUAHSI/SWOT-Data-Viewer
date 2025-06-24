@@ -72,7 +72,8 @@ watch(activeFeature, async (newActiveFeature) => {
   }
 })
 
-onMounted(() => {
+onMounted(async () => {
+  featuresStore.createReachesFeatureLayer()
   if (activeFeature.value) {
     // set the reach id in the url from the active feature
     if (props.reachId === '') {

@@ -38,8 +38,6 @@ const featuresStore = useFeaturesStore()
 const chartStore = useChartsStore()
 const statsStore = useStatsStore()
 
-const { showStatistics } = storeToRefs(chartStore)
-
 // There are two inputs. User can select a range of dates (string) using the date picker, or a range of decimal seconds using the slider.
 const { timeRange } = storeToRefs(featuresStore)
 const dateRange = ref(timeRange.value.map((t) => convertSecondsToDateString(t)))
@@ -64,25 +62,7 @@ const timeRangeUpdateComplete = async () => {
 
   console.log('Time range update complete')
   // re-compute statistics if they have been enabled
-  if (showStatistics.value == true) {
-    // remove statistics from the chart
-    let datasets = chartStore.nodeChartData.datasets.filter(
-      (s) => s.seriesType != 'computed_series'
-    )
-
-    // recompute statistics
-    let statisticSeries = await statsStore.generateStatisticsSeries()
-
-    // push statisticSeries elements into the datasets array
-    datasets = datasets.concat(statisticSeries)
-
-    // save these data to the chartStore
-    chartStore.updateNodeChartData(datasets)
-
-    // update the chart
-    chartStore.refreshAllCharts()
-    statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
-  }
+  statsStore.recomputeStatsAndUpdateCharts()
 }
 
 const setInitialState = () => {

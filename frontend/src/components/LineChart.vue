@@ -79,7 +79,6 @@ import { useStatsStore } from '../stores/stats'
 
 const { lgAndUp } = useDisplay()
 const panel = ref(['plotActions'])
-const selectedTimeseriesPoints = ref([])
 
 const hasSelectedTimeseriesPoints = computed(() => selectedTimeseriesPoints.value.length > 0)
 
@@ -88,7 +87,7 @@ const statsStore = useStatsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { chartData, activeReachChart } = storeToRefs(chartStore)
+const { chartData, activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
 const { timeRange } = storeToRefs(featuresStore)
 
 let xLabel = 'Date'
@@ -136,7 +135,7 @@ const options = {
       align: 'end',
       labels: {
         usePointStyle: true,
-        generateLabels: () => chartStore.generateDataQualityLegend(),
+        generateLabels: () => chartStore.generateDataQualityLegend('line'),
         font: {
           size: 12
         },
@@ -264,8 +263,7 @@ const handleTimeseriesPointClick = (e) => {
 
 const viewLongProfileByDates = () => {
   chartStore.setDatasetVisibility(chartStore.nodeChartData.datasets, true)
-  chartStore.filterDatasetsBySetOfDates(null, selectedTimeseriesPoints.value)
-  // chartStore.filterDatasetsBySetOfDates(null, selectedTimeseriesPoints.value)
+  chartStore.filterDatasetsBySetOfDates(null)
   let start = selectedTimeseriesPoints.value[0].datetime
   let end = selectedTimeseriesPoints.value[selectedTimeseriesPoints.value.length - 1].datetime
   start = convertDateStringToSeconds(start)
@@ -277,6 +275,7 @@ const viewLongProfileByDates = () => {
   chartStore.refreshAllCharts()
   // if stats are turned on, the stats will be stale
   statsStore.toggleSeriesStatistics(chartStore.showStatistics.value)
+  statsStore.recomputeStatsAndUpdateCharts()
 }
 
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {

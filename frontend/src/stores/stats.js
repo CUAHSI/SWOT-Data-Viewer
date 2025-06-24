@@ -5,7 +5,7 @@ import { APP_API_URL } from '@/constants'
 
 export const useStatsStore = defineStore('stats', () => {
   const chartStore = useChartsStore()
-  const { nodeChartData, activePlt } = storeToRefs(chartStore)
+  const { nodeChartData, activePlt, showStatistics } = storeToRefs(chartStore)
   const chartStatistics = ref(null)
   async function getStatistics() {
     // compute statistics based on the node series that are visible
@@ -129,8 +129,31 @@ export const useStatsStore = defineStore('stats', () => {
     chartStore.updateAllChartsData()
   }
 
+  const recomputeStatsAndUpdateCharts = async () => {
+    if (showStatistics.value == true) {
+      // remove statistics from the chart
+      let datasets = chartStore.nodeChartData.datasets.filter(
+        (s) => s.seriesType != 'computed_series'
+      )
+
+      // recompute statistics
+      let statisticSeries = await generateStatisticsSeries()
+
+      // push statisticSeries elements into the datasets array
+      datasets = datasets.concat(statisticSeries)
+
+      // save these data to the chartStore
+      chartStore.updateNodeChartData(datasets)
+
+      // update the chart
+      chartStore.refreshAllCharts()
+      toggleSeriesStatistics(chartStore.showStatistics.value)
+    }
+  }
+
   return {
     toggleSeriesStatistics,
-    generateStatisticsSeries
+    generateStatisticsSeries,
+    recomputeStatsAndUpdateCharts
   }
 })

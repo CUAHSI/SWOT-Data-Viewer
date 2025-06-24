@@ -11,8 +11,8 @@
   </v-card>
   <v-card v-if="$route.meta.showMap" id="mouseposition" color="info">
     <v-card-text>
-      <v-icon :icon="mdiCrosshairsGps"></v-icon> {{ center.lat?.toFixed(5) }},
-      {{ center.lng?.toFixed(5) }} <br />
+      <v-icon :icon="mdiCrosshairsGps"></v-icon> {{ latLong.lat?.toFixed(5) }},
+      {{ latLong.lng?.toFixed(5) }} <br />
     </v-card-text>
   </v-card>
 </template>
@@ -33,6 +33,7 @@ import { useChartsStore } from '@/stores/charts'
 import { mdiMagnifyPlus, mdiCrosshairsGps } from '@mdi/js'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
 const mapStore = useMapStore()
 const alertStore = useAlertStore()
@@ -56,6 +57,11 @@ const {
 const { activeFeature } = storeToRefs(featureStore)
 const accessToken =
   'AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX'
+
+const latLong = ref({
+  lat: 0,
+  lng: 0
+})
 
 onUpdated(async () => {
   try {
@@ -271,6 +277,15 @@ onMounted(async () => {
    */
   leaflet.on('click', function (e) {
     mapClick(e)
+  })
+
+  leaflet.addEventListener('mousemove', (e) => {
+    let lat = Math.round(e.latlng.lat * 100000) / 100000
+    let lng = Math.round(e.latlng.lng * 100000) / 100000
+    latLong.value = {
+      lat: lat,
+      lng: lng
+    }
   })
 
   reachesFeatures.value.on('click', async function (e) {

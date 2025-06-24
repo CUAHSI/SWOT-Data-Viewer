@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref, shallowRef, watch } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useChartsStore } from '@/stores/charts'
 import { EARLIEST_HYDROCRON_DATETIME } from '../constants'
 import { parseISO, getUnixTime } from 'date-fns'
 import { useRouter } from 'vue-router'
+import { canvas } from 'leaflet'
+import * as esriLeaflet from 'esri-leaflet'
 
 export const useFeaturesStore = defineStore(
   'features',
@@ -13,6 +15,8 @@ export const useFeaturesStore = defineStore(
     const selectedFeatures = ref([])
     const activeFeature = ref(null)
     const nodes = ref([])
+    const reachesFeatures = shallowRef(null)
+    const minReachSelectionZoom = ref(7)
 
     // set the mintime to date of first data relative to ECMAScript epoch in decimal seconds
     const minTime = getUnixTime(parseISO(EARLIEST_HYDROCRON_DATETIME))
@@ -230,6 +234,27 @@ export const useFeaturesStore = defineStore(
       })
     }
 
+    const createReachesFeatureLayer = () => {
+      if (reachesFeatures.value) {
+        return
+      }
+      const url =
+        'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
+      reachesFeatures.value = esriLeaflet.featureLayer({
+        url: url,
+        renderer: canvas({ tolerance: 5 }),
+        simplifyFactor: 0.35,
+        precision: 5,
+        minZoom: minReachSelectionZoom.value,
+        maxZoom: 18,
+        color: mapStore.featureOptions.defaultColor,
+        weight: mapStore.featureOptions.defaultWeight,
+        opacity: mapStore.featureOptions.opacity
+        // fields: ["FID", "ZIP", "PO_NAME"],
+      })
+      console.log('Reaches feature layer created:', reachesFeatures.value)
+    }
+
     return {
       selectedFeatures,
       selectFeature,
@@ -247,7 +272,8 @@ export const useFeaturesStore = defineStore(
       maxTime,
       querying,
       checkQueryParams,
-      determineFeatureType
+      determineFeatureType,
+      createReachesFeatureLayer
     }
   },
   {

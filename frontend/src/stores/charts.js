@@ -26,6 +26,7 @@ export const useChartsStore = defineStore(
     const dataQualityFlags = ref([0, 1, 2]) // by default don't show bad data
     const colorScale = shallowRef({})
     const router = useRouter()
+    const selectedTimeseriesPoints = ref([])
 
     const dataQualityOptions = [
       { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
@@ -46,13 +47,14 @@ export const useChartsStore = defineStore(
       { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
     ]
 
-    const generateDataQualityLegend = () => {
+    const generateDataQualityLegend = (chartType = 'line') => {
       return dataQualityOptions.map((option) => ({
         text: option.label,
         fillStyle: 'black',
         strokeStyle: option.pointBorderColor,
         pointStyle: option.pointStyle,
-        lineWidth: 2
+        lineWidth: chartType === 'line' ? 5 : 3,
+        pointBorderWidth: chartType === 'line' ? 5 : 3
       }))
     }
 
@@ -358,12 +360,12 @@ export const useChartsStore = defineStore(
       refreshAllCharts()
     }
 
-    const filterDatasetsBySetOfDates = (datasets, selectedTimeseriesPoints, tolerance) => {
-      console.log('Filtering datasets by set of dates', datasets, selectedTimeseriesPoints)
+    const filterDatasetsBySetOfDates = (datasets, tolerance) => {
+      console.log('Filtering datasets by set of dates', datasets, selectedTimeseriesPoints.value)
       if (tolerance == null) {
         tolerance = NODE_DATETIME_VARIATION
       }
-      if (selectedTimeseriesPoints == null) {
+      if (selectedTimeseriesPoints.value == null) {
         console.error('No dateTimeGroups provided')
         return
       }
@@ -376,7 +378,7 @@ export const useChartsStore = defineStore(
       datasets.forEach((dataset) => {
         // determine whether the dataset matches with the dateTimeGroups
         if (
-          selectedTimeseriesPoints.some((timeSeriesPoint) => {
+          selectedTimeseriesPoints.value.some((timeSeriesPoint) => {
             const startCuttoff = subMinutes(timeSeriesPoint.datetime, tolerance)
             const endCuttoff = addMinutes(timeSeriesPoint.datetime, tolerance)
             if (dataset.minDateTime > endCuttoff || dataset.maxDateTime < startCuttoff) {
@@ -500,7 +502,6 @@ export const useChartsStore = defineStore(
           data: measurements,
           seriesType: 'swot_reach_series',
           ...getDataSetStyle(),
-          pointRadius: 6,
           minDateTime,
           maxDateTime
         }
@@ -689,11 +690,11 @@ export const useChartsStore = defineStore(
         fill: true,
         pointBorderColor: (ctx) => getPointBorderColors(ctx.dataset),
         pointStyle: (ctx) => getPointStyles(ctx.dataset),
-        pointBorderWidth: 2,
+        pointBorderWidth: 5,
         borderColor: 'black', // The line fill color.
         backgroundColor: 'black', // The line color
         pointHoverRadius: 15,
-        pointHoverBorderWidth: 5,
+        pointHoverBorderWidth: 7,
         pointRadius: getPointRadius,
         borderWidth: getBorderWidth
       }
@@ -704,13 +705,13 @@ export const useChartsStore = defineStore(
       // if the data point is selected, increase the radius
       const index = context.dataIndex
       if (index == null) {
-        return 1
+        return 7
       }
       const dataPoint = context.dataset.data[index]
       if (dataPoint.selected) {
-        return 10
+        return 12
       }
-      return 8
+      return 7
     }
 
     function getBorderWidth(context) {
@@ -730,7 +731,7 @@ export const useChartsStore = defineStore(
       const colors = getDateGradientColors(dataSet)
       return {
         showLine: symbologyContains('Lines'),
-        pointRadius: 5,
+        pointRadius: 7,
         pointHoverRadius: 15,
         //fill: styles.dynamicColors,
         fill: false,
@@ -741,7 +742,7 @@ export const useChartsStore = defineStore(
         pointStyle: (ctx) => getPointStyles(ctx.dataset),
         // borderColor: styles.dynamicColors, // The line fill color.
         borderColor: colors,
-        pointBorderWidth: 1,
+        pointBorderWidth: 3,
         pointHoverBorderWidth: 5
       }
     }
@@ -783,7 +784,7 @@ export const useChartsStore = defineStore(
               .filter((ds) => ds.seriesType != 'computed_series')
               .forEach((dataset) => {
                 dataset.showLine = showLine
-                dataset.pointRadius = showMarkers ? 5 : 0
+                dataset.pointRadius = showMarkers ? getPointRadius : 0
               })
             storedChart.chart.update()
           }
@@ -976,7 +977,8 @@ export const useChartsStore = defineStore(
       activeReachChart,
       updateNodeDataSetStyles,
       updateRouteAfterPlotChange,
-      checkQueryParams
+      checkQueryParams,
+      selectedTimeseriesPoints
     }
   },
   {

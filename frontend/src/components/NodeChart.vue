@@ -86,7 +86,7 @@ const options = {
       align: 'end',
       labels: {
         usePointStyle: true,
-        generateLabels: () => chartStore.generateDataQualityLegend(),
+        generateLabels: () => chartStore.generateDataQualityLegend('node'),
         font: {
           size: 12
         },
