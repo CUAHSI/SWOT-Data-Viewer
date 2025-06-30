@@ -316,13 +316,8 @@ async function getNodesFromReach(reachFeature) {
     'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0/query'
   let params = {
     f: 'json',
-    // where: `reach_id = ${reachFeature.properties.reach_id}`,
-    // TODO: for now we just use the first query
-    where: `reach_id = ${reachFeature.queries[0].params.feature_id}`,
+    where: `reach_id=${reachFeature.properties.reach_id}`,
     outFields: '*'
-    // returnGeometry: true,
-    // spatialRel: 'esriSpatialRelIntersects',
-    // outSR: 4326
   }
   let paramString = Object.keys(params)
     .map((key) => key + '=' + params[key])

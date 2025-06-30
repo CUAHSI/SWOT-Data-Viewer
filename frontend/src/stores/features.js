@@ -111,8 +111,7 @@ export const useFeaturesStore = defineStore(
       if (featureType) {
         return featureType
       }
-      // check for reach_id property
-      if (feature?.properties?.reach_id) {
+      if (feature?.geometry.type === 'LineString' && feature?.properties?.reach_id) {
         return 'Reach'
       }
       if (feature?.properties?.lake_id) {
