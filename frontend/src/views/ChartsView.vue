@@ -43,6 +43,7 @@
 import { useChartsStore } from '../stores/charts'
 import { useStatsStore } from '../stores/stats'
 import { useFeaturesStore } from '../stores/features'
+import { useMapStore } from '../stores/map'
 import { RouterLink, useRouter } from 'vue-router'
 import { computed, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -60,6 +61,7 @@ const router = useRouter()
 const chartStore = useChartsStore()
 const featuresStore = useFeaturesStore()
 const statsStore = useStatsStore()
+const mapStore = useMapStore()
 const { querying, activeFeature, selectedFeatures } = storeToRefs(featuresStore)
 const { showStatistics } = storeToRefs(chartStore)
 
@@ -73,7 +75,7 @@ watch(activeFeature, async (newActiveFeature) => {
 })
 
 onMounted(async () => {
-  featuresStore.createReachesFeatureLayer()
+  mapStore.generateReachesFeatures()
   if (activeFeature.value) {
     // set the reach id in the url from the active feature
     if (props.reachId === '') {
@@ -98,6 +100,8 @@ const runQuery = async () => {
   querying.value.nodes = true
   await getNodeDataForReach(activeFeature.value)
   querying.value.nodes = false
+  // for some reason, nodes contains reaches
+  console.log("nodes", featuresStore.nodes)
   chartStore.buildDistanceChart(featuresStore.nodes)
   // show stats if they are enabled
   statsStore.toggleSeriesStatistics(showStatistics.value)
