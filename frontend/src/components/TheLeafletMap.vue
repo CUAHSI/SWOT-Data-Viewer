@@ -42,9 +42,19 @@ const chartStore = useChartsStore()
 
 const router = useRouter()
 
-const { mapObject, zoom, center, baselayers, activeBaseLayerName, overlays, activeOverlays } =
-  storeToRefs(mapStore)
-const { activeFeature, minReachSelectionZoom, reachesFeatures } = storeToRefs(featureStore)
+const {
+  mapObject,
+  zoom,
+  center,
+  baselayers,
+  activeBaseLayerName,
+  overlays,
+  activeOverlays,
+  minReachSelectionZoom,
+  reachesFeatures,
+  lakesFeatures
+} = storeToRefs(mapStore)
+const { activeFeature } = storeToRefs(featureStore)
 const accessToken =
   'AAPK7e5916c7ccc04c6aa3a1d0f0d85f8c3brwA96qnn6jQdX3MT1dt_4x1VNVoN8ogd38G2LGBLLYaXk7cZ3YzE_lcY-evhoeGX'
 
@@ -106,25 +116,9 @@ onMounted(async () => {
     CartoDB_DarkMatterNoLabels
   }
 
-  // add lakes features layer to map
-  let url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
-  const lakesFeatures = esriLeaflet.featureLayer({
-    url: url,
-    simplifyFactor: 0.35,
-    precision: 5,
-    minZoom: 9,
-    maxZoom: 18,
-    style: function () {
-      return {
-        weight: 0, // remove border
-        fillOpacity: 0.7,
-        fill: true
-      }
-    }
-    // fields: ["FID", "ZIP", "PO_NAME"],
-  })
+  mapStore.generateLakesFeatures()
 
-  url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
+  let url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
   const lakesWMS = L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
@@ -155,7 +149,7 @@ onMounted(async () => {
     maxZoom: minReachSelectionZoom.value - 1
   })
 
-  featureStore.createReachesFeatureLayer()
+  mapStore.generateReachesFeatures()
 
   // add nodes layer to map
   url =
@@ -193,7 +187,7 @@ onMounted(async () => {
   overlays.value = {
     'USGS Gages': gages,
     // "Lakes": lakes,
-    Lakes: lakesFeatures,
+    Lakes: lakesFeatures.value,
     // "SWORD Reaches": reaches,
     // "SWORD Nodes": sword_nodes,
     Nodes: nodesFeatures,
@@ -217,7 +211,6 @@ onMounted(async () => {
   mapObject.value.buffer = 20
   mapObject.value.huclayers = []
   mapObject.value.reaches = {}
-
   mapObject.value.bbox = [99999999, 99999999, -99999999, -99999999]
   //Remove the common zoom control and add it back later later
   leaflet.zoomControl.remove()
@@ -234,7 +227,7 @@ onMounted(async () => {
   lakesWMS.addTo(leaflet)
   reachesWMS.addTo(leaflet)
   reachesFeatures.value.addTo(leaflet)
-
+  lakesFeatures.value.addTo(leaflet)
   featureStore.checkQueryParams(currentRoute)
 
   // /*
@@ -297,6 +290,7 @@ onMounted(async () => {
 
   reachesFeatures.value.on('click', async function (e) {
     const feature = e.layer.feature
+    feature.feature_type = 'Reach'
     featureStore.clearSelectedFeatures()
     if (!featureStore.checkFeatureSelected(feature)) {
       // Only allow one feature to be selected at a time
@@ -322,36 +316,15 @@ onMounted(async () => {
     popup.setLatLng(e.latlng).setContent(content).openOn(leaflet)
   })
 
-  lakesFeatures.on('click', function (e) {
-    console.log(e.layer.feature.properties)
-    const popup = L.popup()
-    const content = `
-        <h3>${e.layer.feature.properties.names}</h3>
-        <h4>Lake ID: ${e.layer.feature.properties.lake_id}</h4>
-        <p>
-            <ul>
-                <li>SWORD Max Area: ${e.layer.feature.properties.max_area}</li>
-                <li>SWORD Basin: ${e.layer.feature.properties.basin_id}</li>
-            </ul>
-        </p>
-        <p>
-            <a href="https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0/${e.layer.feature.id}" target="_blank">View in ArcGIS</a>
-        </p>
-        <h5>
-            More lake data coming soon...
-        </h5>
-        `
-    popup.setLatLng(e.latlng).setContent(content).openOn(leaflet)
-
-    lakesFeatures.setFeatureStyle(e.layer.feature.id, {
-      color: '#9D78D2'
-    })
-
-    popup.on('remove', function () {
-      lakesFeatures.setFeatureStyle(e.layer.feature.id, {
-        color: '#3388ff'
-      })
-    })
+  lakesFeatures.value.on('click', async function (e) {
+    const feature = e.layer.feature
+    console.log('Selected lake:', feature)
+    feature.feature_type = 'PriorLake'
+    featureStore.clearSelectedFeatures()
+    if (!featureStore.checkFeatureSelected(feature)) {
+      // Only allow one feature to be selected at a time
+      featureStore.selectFeature(feature)
+    }
   })
 
   leaflet.on('moveend zoomend', function (e) {
