@@ -172,7 +172,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
   const queryVariables = (fileType = 'reach', always = undefined) => {
     return swotVariables.value.filter((variable) => {
       return (
-        (variable.fileType === fileType.toLowerCase() || variable.fileType === 'all') &&
+        (variable.fileType.toLowerCase().includes(fileType.toLowerCase()) ||
+          variable.fileType === 'all') &&
         (always === undefined || variable.always === always)
       )
     })
@@ -610,7 +611,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       }
       return (
         variable.abbreviation === abbreviation &&
-        (variable.fileType.toLocaleLowerCase() === fileType.toLocaleLowerCase() ||
+        (variable.fileType.toLowerCase().includes(fileType.toLowerCase()) ||
           variable.fileType === 'all') &&
         variable.default === defaultOnly
       )

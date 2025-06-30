@@ -100,8 +100,6 @@ const runQuery = async () => {
   querying.value.nodes = true
   await getNodeDataForReach(activeFeature.value)
   querying.value.nodes = false
-  // for some reason, nodes contains reaches
-  console.log("nodes", featuresStore.nodes)
   chartStore.buildDistanceChart(featuresStore.nodes)
   // show stats if they are enabled
   statsStore.toggleSeriesStatistics(showStatistics.value)
