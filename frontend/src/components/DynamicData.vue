@@ -1,10 +1,10 @@
 <template>
-  <v-btn v-if="!hasData" @click="query" color="primary" :loading="querying.hydrocron"
+  <v-btn v-if="!hasChartData" @click="query" color="primary" :loading="querying.hydrocron"
     >Query HydroCron</v-btn
   >
-  <v-sheet v-if="hasData" class="mx-auto" elevation="8">
+  <v-sheet v-if="hasChartData" class="mx-auto" elevation="8">
     <v-card v-if="featureStore.activeFeature" height="100%">
-      <v-expansion-panels v-if="hasData">
+      <v-expansion-panels v-if="hasChartData">
         <v-expansion-panel>
           <v-expansion-panel-title>
             <v-icon :icon="mdiTimelineClockOutline"></v-icon>
@@ -35,13 +35,23 @@
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
-      <TimeSeriesCharts v-if="hasData" />
+      <TimeSeriesCharts v-if="hasChartData" />
+    </v-card>
+  </v-sheet>
+  <v-sheet v-if="!hasChartData && lakeData" class="mx-auto" elevation="8">
+    <v-card>
+      <v-card-item class="text-center">
+        <v-card-title>Lake Data</v-card-title>
+      </v-card-item>
+      <v-card-text>
+        <pre>{{ lakeData }}</pre>
+      </v-card-text>
     </v-card>
   </v-sheet>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
 import { mdiSatelliteVariant, mdiTimelineClockOutline } from '@mdi/js'
@@ -53,17 +63,20 @@ import { ChartJS } from '@/_helpers/charts/charts' // eslint-disable-line
 
 const featureStore = useFeaturesStore()
 const chartStore = useChartsStore()
+const lakeData = ref(null)
 
 let querying = ref({ hydrocron: false, nodes: false })
-let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
+let hasChartData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
 
-onMounted(() => {
-  // query()
-})
 const query = async () => {
   querying.value.hydrocron = true
-  await queryHydroCron(featureStore.activeFeature)
-  chartStore.buildChart(featureStore.selectedFeatures)
+  const response = await queryHydroCron(featureStore.activeFeature)
+  // only build the chart if the feature is a reach for now
+  if (featureStore?.activeFeature?.feature_type?.toLowerCase() === 'reach') {
+    chartStore.buildChart(featureStore.selectedFeatures)
+  } else {
+    lakeData.value = response
+  }
   querying.value.hydrocron = false
 }
 </script>
