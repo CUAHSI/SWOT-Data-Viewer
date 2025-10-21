@@ -88,10 +88,16 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const end_time = new Date(Date.now() + MS_TO_KEEP_CACHE).toISOString().split('.')[0] + 'Z'
 
   // determine which collection name to use based on feature type ('Reach' or 'PriorLake')
+  // https://podaac.github.io/hydrocron/timeseries.html#collection-name-string-required-no
   let collection_name = 'SWOT_L2_HR_RiverSP_D'
   if (feature_type === 'PriorLake') {
     collection_name = 'SWOT_L2_HR_LakeSP_D'
   }
+
+  // let collection_name = 'SWOT_L2_HR_RiverSP_2.0'
+  // if (feature_type === 'PriorLake') {
+  //   collection_name = 'SWOT_L2_HR_LakeSP_2.0'
+  // }
 
   params = {
     feature: feature_type,
@@ -106,6 +112,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     collection_name
   }
   let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
+  console.log('hydrocron', response)
   if (response == null) {
     return
   }
