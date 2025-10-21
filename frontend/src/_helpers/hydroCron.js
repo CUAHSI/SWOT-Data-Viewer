@@ -94,11 +94,6 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     collection_name = 'SWOT_L2_HR_LakeSP_D'
   }
 
-  // let collection_name = 'SWOT_L2_HR_RiverSP_2.0'
-  // if (feature_type === 'PriorLake') {
-  //   collection_name = 'SWOT_L2_HR_LakeSP_2.0'
-  // }
-
   params = {
     feature: feature_type,
     feature_id,
@@ -112,7 +107,6 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     collection_name
   }
   let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
-  console.log('hydrocron', response)
   if (response == null) {
     return
   }
