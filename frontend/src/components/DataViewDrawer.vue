@@ -19,31 +19,22 @@
       </v-btn>
       <StaticMetadata />
       <v-btn
-        v-if="!hasResults() && isReachFeature"
-        @click="router.push(`/plots/${featureStore.activeFeature.properties.reach_id}`)"
+        v-if="!hasResults()"
+        @click="router.push(`/plots/${featureStore.activeFeature.properties.feature_id}`)"
         color="primary"
         class="ma-2"
         :loading="featureStore.querying.hydrocron"
       >
         <v-icon :icon="mdiChartScatterPlot"></v-icon>Plot
       </v-btn>
-      <v-btn
-        v-if="!hasResults() && !isReachFeature"
-        @click="router.push(`/plots/${featureStore.activeFeature.properties.lake_id}`)"
-        color="primary"
-        class="ma-2"
-        :loading="featureStore.querying.hydrocron"
-      >
-        <v-icon :icon="mdiDataMatrix"></v-icon>Plot
-      </v-btn>
     </v-container>
   </v-navigation-drawer>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
-import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot, mdiDataMatrix } from '@mdi/js'
+import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot } from '@mdi/js'
 import StaticMetadata from './StaticMetadata.vue'
 import { useRouter } from 'vue-router'
 
@@ -64,10 +55,6 @@ const router = useRouter()
 const hasResults = () => {
   return featureStore?.activeFeature?.results !== undefined
 }
-
-const isReachFeature = computed(() => {
-  return featureStore?.activeFeature?.feature_type === 'Reach'
-})
 
 featureStore.$subscribe((mutation, state) => {
   if (state.activeFeature !== null) {
