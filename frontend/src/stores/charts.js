@@ -275,6 +275,19 @@ export const useChartsStore = defineStore(
       }
     }
 
+    const determineQualityLabel = (dataPoint) => {
+      // Support reach_q, node_q, or quality_f as the quality label
+      let qualityLabel = null
+      if ('quality_f' in dataPoint) {
+        qualityLabel = 'quality_f'
+      } else if ('reach_q' in dataPoint) {
+        qualityLabel = 'reach_q'
+      } else if ('node_q' in dataPoint) {
+        qualityLabel = 'node_q'
+      }
+      return qualityLabel
+    }
+
     const dataQualityFilterSingleDataset = (dataset) => {
       // Filter the dataset to only include points that have a data quality flag
 
@@ -283,7 +296,10 @@ export const useChartsStore = defineStore(
       }
 
       dataset.data = dataset.data.filter((dataPoint) => {
-        const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+        let qualityLabel = determineQualityLabel(dataPoint)
+        if (!qualityLabel) {
+          return true // If no quality label, keep the point
+        }
         if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
           return false
         }
@@ -322,8 +338,7 @@ export const useChartsStore = defineStore(
       chartData.value = JSON.parse(JSON.stringify(unfilteredChartData.value))
       // because we copied the data,
       // need to apply the data quality filter before filtering the time range
-      // TODO figure out how to filter CAM-877
-      // dataQualityFilterAllDatasets()
+      dataQualityFilterAllDatasets()
 
       const reachDataSets = chartData.value.datasets
       if (reachDataSets) {
@@ -672,13 +687,16 @@ export const useChartsStore = defineStore(
     }
 
     const getPointStyle = (dataPoint) => {
-      const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+      let qualityLabel = determineQualityLabel(dataPoint)
+      if (!qualityLabel) {
+        return true // If no quality label, keep the point
+      }
       if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
         return false
       }
 
       // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
-      const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
+      const dataQuality = dataPoint[qualityLabel]
       let pointStyle = 'circle'
       // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
       const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
@@ -689,13 +707,13 @@ export const useChartsStore = defineStore(
     }
 
     const getPointBorderColor = (dataPoint) => {
-      const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+      let qualityLabel = determineQualityLabel(dataPoint)
       if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
         return false
       }
 
       // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
-      const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
+      const dataQuality = dataPoint[qualityLabel]
       let pointBorderColor = 'white'
       // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
       const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
