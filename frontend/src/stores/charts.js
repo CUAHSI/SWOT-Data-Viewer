@@ -129,6 +129,26 @@ export const useChartsStore = defineStore(
       }
     ])
 
+    // a collection of charts that can be created in the lake view
+    const lakeCharts = ref([
+      {
+        abbreviation: 'wse/time',
+        xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+        yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+        title: 'Water Surface Elevation',
+        name: 'WSE vs Time',
+        help: swotVariables.value.find((v) => v.abbreviation == 'wse').definition
+      },
+      {
+        abbreviation: 'area/time',
+        xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+        yvar: swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+        title: 'Water Surface Area',
+        help: swotVariables.value.find((v) => v.abbreviation == 'area_total').definition,
+        name: 'WSA vs Time'
+      }
+    ])
+
     const updateNodeChartData = (data) => {
       // This function is used to update the nodeChartData object
       // data = the new data series to set in the object.
@@ -255,6 +275,19 @@ export const useChartsStore = defineStore(
       }
     }
 
+    const determineQualityLabel = (dataPoint) => {
+      // Support reach_q, node_q, or quality_f as the quality label
+      let qualityLabel = null
+      if ('quality_f' in dataPoint) {
+        qualityLabel = 'quality_f'
+      } else if ('reach_q' in dataPoint) {
+        qualityLabel = 'reach_q'
+      } else if ('node_q' in dataPoint) {
+        qualityLabel = 'node_q'
+      }
+      return qualityLabel
+    }
+
     const dataQualityFilterSingleDataset = (dataset) => {
       // Filter the dataset to only include points that have a data quality flag
 
@@ -263,7 +296,10 @@ export const useChartsStore = defineStore(
       }
 
       dataset.data = dataset.data.filter((dataPoint) => {
-        const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+        let qualityLabel = determineQualityLabel(dataPoint)
+        if (!qualityLabel) {
+          return true // If no quality label, keep the point
+        }
         if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
           return false
         }
@@ -651,13 +687,16 @@ export const useChartsStore = defineStore(
     }
 
     const getPointStyle = (dataPoint) => {
-      const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+      let qualityLabel = determineQualityLabel(dataPoint)
+      if (!qualityLabel) {
+        return true // If no quality label, keep the point
+      }
       if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
         return false
       }
 
       // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
-      const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
+      const dataQuality = dataPoint[qualityLabel]
       let pointStyle = 'circle'
       // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
       const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
@@ -668,13 +707,13 @@ export const useChartsStore = defineStore(
     }
 
     const getPointBorderColor = (dataPoint) => {
-      const qualityLabel = dataPoint.reach_q ? 'reach_q' : 'node_q'
+      let qualityLabel = determineQualityLabel(dataPoint)
       if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
         return false
       }
 
       // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
-      const dataQuality = dataPoint.reach_q ? dataPoint.reach_q : dataPoint.node_q
+      const dataQuality = dataPoint[qualityLabel]
       let pointBorderColor = 'white'
       // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
       const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
@@ -967,6 +1006,7 @@ export const useChartsStore = defineStore(
       chartTab,
       nodeCharts,
       reachCharts,
+      lakeCharts,
       showStatistics,
       symbology,
       updateSymbology,
