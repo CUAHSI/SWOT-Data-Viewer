@@ -140,7 +140,7 @@ onMounted(async () => {
 
   // add reaches layer to map
   url =
-    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
+    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator_v17b/MapServer/WMSServer?'
   const reachesWMS = L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
@@ -153,7 +153,7 @@ onMounted(async () => {
 
   // add nodes layer to map
   url =
-    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
+    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator_v17b/MapServer/WMSServer?'
   L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
