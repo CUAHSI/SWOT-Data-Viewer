@@ -1,27 +1,32 @@
 <template>
   <template v-if="activeFeature">
-    <v-container v-if="hasData" fluid fill-height>
-      <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
-        <v-tab value="timeseries">
-          <v-icon :icon="mdiTimelineClock"></v-icon>
-          Reach Averaged
-        </v-tab>
-        <v-tab value="distance">
-          <v-icon :icon="mdiMapMarkerDistance"></v-icon>
-          Node Profile
-        </v-tab>
-      </v-tabs>
-      <TimeSeriesCharts v-if="chartStore.chartTab === 'timeseries'" />
-      <DistanceCharts v-if="chartStore.chartTab === 'distance'" />
-    </v-container>
+    <template v-if="hasData">
+      <v-container v-if="!activeIsLake" fluid fill-height>
+        <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
+          <v-tab value="timeseries">
+            <v-icon :icon="mdiTimelineClock"></v-icon>
+            Reach Averaged
+          </v-tab>
+          <v-tab value="distance">
+            <v-icon :icon="mdiMapMarkerDistance"></v-icon>
+            Node Profile
+          </v-tab>
+        </v-tabs>
+        <TimeSeriesCharts v-if="chartStore.chartTab === 'timeseries'" />
+        <DistanceCharts v-if="chartStore.chartTab === 'distance'" />
+      </v-container>
+      <v-container v-else fluid fill-height>
+        <TimeSeriesCharts />
+      </v-container>
 
-    <v-container v-if="fetchingData">
-      <h2 class="text-center ma-2">
-        <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
-        Loading data...
-      </h2>
-      <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
-    </v-container>
+      <v-container v-if="fetchingData">
+        <h2 class="text-center ma-2">
+          <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
+          Loading data...
+        </h2>
+        <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
+      </v-container>
+    </template>
   </template>
   <template v-else>
     <v-container>
@@ -93,8 +98,8 @@ const runQuery = async () => {
   chartStore.buildChart(selectedFeatures.value)
   querying.value.hydrocron = false
 
-  // if the feature is a reach, get node data as well
-  if (activeFeature.value.feature_type.toLowerCase() !== 'reach') {
+  // only get node data if the feature is a reach
+  if (activeIsLake.value) {
     return
   }
   querying.value.nodes = true
@@ -109,4 +114,5 @@ let hasData = computed(() => chartStore.chartData && chartStore.chartData.datase
 let fetchingData = computed(
   () => !hasData.value && (querying.value.hydrocron || querying.value.nodes)
 )
+let activeIsLake = computed(() => activeFeature.value?.feature_type.toLowerCase() === 'priorlake')
 </script>
