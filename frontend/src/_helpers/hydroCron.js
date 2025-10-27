@@ -98,7 +98,6 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     compact: 'true'
   }
   let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
-  console.log('hydrocron', response)
   if (response == null) {
     return
   }
