@@ -129,6 +129,26 @@ export const useChartsStore = defineStore(
       }
     ])
 
+    // a collection of charts that can be created in the lake view
+    const lakeCharts = ref([
+      {
+        abbreviation: 'wse/time',
+        xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+        yvar: swotVariables.value.find((v) => v.abbreviation == 'wse'),
+        title: 'Water Surface Elevation',
+        name: 'WSE vs Time',
+        help: swotVariables.value.find((v) => v.abbreviation == 'wse').definition
+      },
+      {
+        abbreviation: 'area/time',
+        xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+        yvar: swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+        title: 'Water Surface Area',
+        help: swotVariables.value.find((v) => v.abbreviation == 'area_total').definition,
+        name: 'WSA vs Time'
+      }
+    ])
+
     const updateNodeChartData = (data) => {
       // This function is used to update the nodeChartData object
       // data = the new data series to set in the object.
@@ -302,7 +322,8 @@ export const useChartsStore = defineStore(
       chartData.value = JSON.parse(JSON.stringify(unfilteredChartData.value))
       // because we copied the data,
       // need to apply the data quality filter before filtering the time range
-      dataQualityFilterAllDatasets()
+      // TODO figure out how to filter CAM-877
+      // dataQualityFilterAllDatasets()
 
       const reachDataSets = chartData.value.datasets
       if (reachDataSets) {
@@ -967,6 +988,7 @@ export const useChartsStore = defineStore(
       chartTab,
       nodeCharts,
       reachCharts,
+      lakeCharts,
       showStatistics,
       symbology,
       updateSymbology,
