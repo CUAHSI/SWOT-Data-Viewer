@@ -10,7 +10,7 @@ load_dotenv()
 class Settings(BaseSettings):
     vite_app_api_url: str
     allow_origins: str
-
+    vite_hydrocron_url: str
     cloud_run: bool = False
 
 
