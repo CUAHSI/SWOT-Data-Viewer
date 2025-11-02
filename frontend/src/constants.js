@@ -4,12 +4,12 @@ let APP_FULL_URL_IN = import.meta.env.VITE_APP_FULL_URL || 'VITE_APP_FULL_URL_PL
 export const APP_FULL_URL = APP_FULL_URL_IN.endsWith('/') ? APP_FULL_URL_IN : `${APP_FULL_URL_IN}/`
 
 export const APP_API_URL = import.meta.env.VITE_APP_API_URL || 'VITE_APP_API_URL_PLACEHOLDER'
-export const HYDROCRON_URL = import.meta.env.VITE_HYDROCRON_URL || 'VITE_HYDROCRON_URL_PLACEHOLDER'
 export const VITE_HYDROSHARE_NOTEBOOKS_COLLECTION =
   import.meta.env.VITE_HYDROSHARE_NOTEBOOKS_COLLECTION ||
   'VITE_HYDROSHARE_NOTEBOOKS_COLLECTION_PLACEHOLDER'
 export const ENDPOINTS = {
-  openapi: `${APP_API_URL}/openapi.json`
+  openapi: `${APP_API_URL}/openapi.json`,
+  hydrocron: `${APP_API_URL}/hydrocron/timeseries`
 }
 
 export const NODE_DATETIME_VARIATION = 1 // minutes
