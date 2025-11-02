@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.data import router as data_router
+from app.routers.hydrocron import router as hydrocron_router
 from config import get_settings
 
 # Remote debugging connection
@@ -39,4 +40,10 @@ app.include_router(
     data_router,
     prefix="/data",
     tags=["data"],
+)
+
+app.include_router(
+    hydrocron_router,
+    prefix="/hydrocron",
+    tags=["hydrocron"],
 )
