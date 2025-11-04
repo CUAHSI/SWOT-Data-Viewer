@@ -584,6 +584,28 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       significant_figures: 0
     },
     {
+      abbreviation: 'ice_clim_flag',
+      definition: 'A flag indicating whether the lake is affected by ice climate conditions.',
+      short_definition: 'Prior Lake Database Ice Climate Flag',
+      fileType: 'PriorLake',
+      default: false,
+      swotviz_alias: 'Prior Lake Database Ice Climate Flag',
+      units: '',
+      plottable: false,
+      significant_figures: 3
+    },
+    {
+      abbreviation: 'ice_clim_flag2',
+      definition: 'A flag indicating whether the lake is affected by ice climate conditions.',
+      fileType: 'PriorLake',
+      default: false,
+      short_definition: 'Prior Lake Database Ice Climate Flag 2',
+      swotviz_alias: 'Prior Lake Database Ice Climate Flag 2',
+      units: '',
+      plottable: false,
+      significant_figures: 3
+    },
+    {
       abbreviation: 'ref_area',
       definition:
         'The reference area of the lake in the Prior Lake Database (PLD). This field provides the area of the lake as defined in the PLD, which may be used for comparison with other measurements or models.',
