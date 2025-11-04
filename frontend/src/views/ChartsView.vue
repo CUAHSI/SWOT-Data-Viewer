@@ -18,13 +18,23 @@
       <v-container v-else fluid fill-height>
         <TimeSeriesCharts />
       </v-container>
-
+    </template>
+    <template v-else>
       <v-container v-if="fetchingData">
         <h2 class="text-center ma-2">
           <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
           Loading data...
         </h2>
         <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
+      </v-container>
+      <v-container v-else>
+        <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
+          <span>
+            No data available for the selected feature. Please try querying HydroCron again or
+            selecting a different feature from the
+            <router-link :to="{ path: `/` }">Map</router-link>.
+          </span>
+        </v-sheet>
       </v-container>
     </template>
   </template>
