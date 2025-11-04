@@ -355,7 +355,7 @@ onMounted(async () => {
     label: 'River names',
     url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer',
     layers: [0],
-    searchFields: ['river_name ']
+    searchFields: ['river_name, reach_id']
   })
 
   const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
