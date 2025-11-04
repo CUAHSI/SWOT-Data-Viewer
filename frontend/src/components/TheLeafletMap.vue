@@ -118,7 +118,7 @@ onMounted(async () => {
 
   mapStore.generateLakesFeatures()
 
-  let url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
+  let url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/SWOT_PLD_v201/MapServer/WmsServer?'
   const lakesWMS = L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
