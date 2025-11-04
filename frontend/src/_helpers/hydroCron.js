@@ -1,4 +1,4 @@
-import { HYDROCRON_URL } from '@/constants'
+import { ENDPOINTS } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
@@ -105,7 +105,11 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     // https://podaac.github.io/hydrocron/timeseries.html#collection-name-string-required-no
     collection_name
   }
-  let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
+
+  // Use our API proxy URL instead of the direct HydroCron URL
+  // This is due to CORS issues with the HydroCron server
+  // https://github.com/podaac/hydrocron/issues/306
+  let response = await fetchHydroCronData(ENDPOINTS.hydrocron, params, swordFeature)
   if (response == null) {
     return
   }
