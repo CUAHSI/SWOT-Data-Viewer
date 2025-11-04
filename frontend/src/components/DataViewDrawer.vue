@@ -28,14 +28,13 @@
         <v-icon :icon="mdiChartScatterPlot"></v-icon>Plot
       </v-btn>
       <v-btn
-        disabled
         v-if="!hasResults() && !isReachFeature"
-        @click="router.push(`/feature/${featureStore.activeFeature.properties.lake_id}`)"
+        @click="router.push(`/plots/${featureStore.activeFeature.properties.lake_id}`)"
         color="primary"
         class="ma-2"
         :loading="featureStore.querying.hydrocron"
       >
-        <v-icon :icon="mdiDataMatrix"></v-icon>Lake Data Plots coming soon!
+        <v-icon :icon="mdiDataMatrix"></v-icon>Plot
       </v-btn>
     </v-container>
   </v-navigation-drawer>

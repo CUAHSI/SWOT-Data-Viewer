@@ -1,5 +1,5 @@
 <template>
-  <template v-if="activeFeatureIsReach">
+  <template v-if="activeFeature">
     <v-container v-if="hasData" fluid fill-height>
       <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
         <v-tab value="timeseries">
@@ -26,13 +26,9 @@
   <template v-else>
     <v-container>
       <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
-        <span v-if="!hasData && !fetchingData">
+        <span>
           You don't have any data to view yet. Use the
           <router-link :to="{ path: `/` }">Map</router-link> to make selections.
-        </span>
-        <span v-else>
-          Plots are only available for reaches. Use the
-          <router-link :to="{ path: `/` }">Map</router-link> to select a reach.
         </span>
       </v-sheet>
     </v-container>
@@ -55,7 +51,7 @@ import { queryHydroCron, getNodeDataForReach } from '../_helpers/hydroCron'
 // TODO: register chartjs globally
 import { ChartJS } from '@/_helpers/charts/charts' // eslint-disable-line
 
-const props = defineProps({ reachId: String })
+const props = defineProps({ featureId: String })
 const router = useRouter()
 
 const chartStore = useChartsStore()
@@ -77,17 +73,17 @@ watch(activeFeature, async (newActiveFeature) => {
 onMounted(async () => {
   mapStore.generateReachesFeatures()
   if (activeFeature.value) {
-    // set the reach id in the url from the active feature
-    if (props.reachId === '') {
-      router.replace({ params: { reachId: activeFeature.value.properties.reach_id } })
+    // set the feature id in the url from the active feature
+    if (props.featureId === '') {
+      router.replace({ params: { featureId: activeFeature.value.properties.feature_id } })
     }
     runQuery()
   }
   const currentRoute = router.currentRoute.value
   chartStore.checkQueryParams(currentRoute)
-  if (props.reachId !== '') {
+  if (props.featureId !== '') {
     querying.value.hydrocron = true
-    featuresStore.setActiveFeatureById(props.reachId)
+    featuresStore.setActiveFeatureById(props.featureId)
   }
 })
 
@@ -97,6 +93,10 @@ const runQuery = async () => {
   chartStore.buildChart(selectedFeatures.value)
   querying.value.hydrocron = false
 
+  // if the feature is a reach, get node data as well
+  if (activeFeature.value.feature_type.toLowerCase() !== 'reach') {
+    return
+  }
   querying.value.nodes = true
   await getNodeDataForReach(activeFeature.value)
   querying.value.nodes = false
@@ -109,7 +109,4 @@ let hasData = computed(() => chartStore.chartData && chartStore.chartData.datase
 let fetchingData = computed(
   () => !hasData.value && (querying.value.hydrocron || querying.value.nodes)
 )
-let activeFeatureIsReach = computed(() => {
-  return activeFeature.value && activeFeature.value.feature_type.toLowerCase() === 'reach'
-})
 </script>
