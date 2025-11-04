@@ -146,9 +146,15 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
       })
       if (response.status < 500) {
         if (response.status == 400) {
+          let text = 'No data found for: '
+          if (params.feature && params.feature_id) {
+            text += `${params.feature} ${params.feature_id}`
+          } else {
+            text += JSON.stringify(params)
+          }
           alertStore.displayAlert({
             title: 'No data found',
-            text: `No data found for ${JSON.stringify(params)}`,
+            text,
             type: 'warning',
             closable: true,
             duration: 6
@@ -156,9 +162,15 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
           return null
         }
       } else {
+        let text = 'Error while fetching SWOT data: '
+        if (response.statusText) {
+          text += response.statusText
+        } else {
+          text += 'Unknown error'
+        }
         alertStore.displayAlert({
           title: 'Error fetching SWOT data',
-          text: `Error while fetching SWOT data: ${response.statusText}`,
+          text,
           type: 'error',
           closable: true,
           duration: 3
