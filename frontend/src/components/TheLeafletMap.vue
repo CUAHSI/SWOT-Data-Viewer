@@ -351,11 +351,18 @@ onMounted(async () => {
   // validate the map
   validate_bbox_size()
 
-  const swotriverMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+  const swotRiverNameMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
     label: 'River names',
     url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer',
     layers: [0],
-    searchFields: ['river_name, reach_id']
+    searchFields: ['river_name']
+  })
+
+  const swotReachServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+    label: 'Reach ID',
+    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer',
+    layers: [0],
+    searchFields: ['reach_id', 'rch_id_up', 'rch_id_dn']
   })
 
   const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
@@ -389,12 +396,16 @@ onMounted(async () => {
   esriLeafletGeocoder
     .geosearch({
       position: 'topleft',
-      placeholder: 'Search for a location',
+      placeholder: 'Search for a location or feature',
+      title: 'Enter an address, river name, reach ID, or HUC8',
       useMapBounds: false,
       expanded: true,
-      title: ' search',
-
-      providers: [swotriverMapServiceProvider, hucMapServiceProvider, addressSearchProvider]
+      providers: [
+        swotRiverNameMapServiceProvider,
+        swotReachServiceProvider,
+        hucMapServiceProvider,
+        addressSearchProvider
+      ]
     })
     .addTo(leaflet)
 
