@@ -91,21 +91,34 @@
             </v-list>
           </v-menu>
         </v-btn>
-        <v-btn v-else :href="nbviewer_url(resource.notebooks[0])" target="_blank">
+        <v-btn
+          v-else
+          :href="nbviewer_url(resource.notebooks[0])"
+          target="_blank"
+          @click="trackEvent('Notebook previewed', resource)"
+        >
           <v-tooltip activator="parent" location="bottom">
             View a rendered copy at nbviewer.org
           </v-tooltip>
           <v-icon left>{{ mdiNotebook }}</v-icon>
           Preview
         </v-btn>
-        <v-btn :href="hydroShareBagUrl(resource)" download>
+        <v-btn
+          :href="hydroShareBagUrl(resource)"
+          download
+          @click="trackEvent('Notebook downloaded', resource)"
+        >
           <v-icon left>{{ mdiDownloadBox }}</v-icon>
           Download
           <v-tooltip activator="parent" location="bottom">
             Download the full HydroShare resource including metadata
           </v-tooltip>
         </v-btn>
-        <v-btn :href="cuahsi_jh_url(resource)" target="_blank">
+        <v-btn
+          :href="cuahsi_jh_url(resource)"
+          target="_blank"
+          @click="trackEvent('Notebook launched', resource)"
+        >
           <v-icon left>{{ mdiRocketLaunch }}</v-icon>
           Launch in CUAHSI
           <v-tooltip activator="parent" location="bottom">
@@ -237,6 +250,17 @@ const getResourceMetadata = async (resourceId) => {
       citation: '',
       notebooks: []
     }
+  }
+}
+const trackEvent = (eventName, resource) => {
+  try {
+    window.heap.track(eventName, {
+      resourceId: resource.id,
+      resourceTitle: resource.title,
+      resourceCreators: resource.creators.map((creator) => creator.name).join(', ')
+    })
+  } catch (e) {
+    console.warn('Heap is not available.')
   }
 }
 </script>
