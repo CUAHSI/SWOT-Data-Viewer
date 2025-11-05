@@ -386,7 +386,7 @@ onMounted(async () => {
   })
   /**/
 
-  esriLeafletGeocoder
+  const geosearchControl = esriLeafletGeocoder
     .geosearch({
       position: 'topleft',
       placeholder: 'Search for a location',
@@ -397,6 +397,19 @@ onMounted(async () => {
       providers: [swotriverMapServiceProvider, hucMapServiceProvider, addressSearchProvider]
     })
     .addTo(leaflet)
+
+  geosearchControl.on('results', (data) => {
+    try {
+      const searchQuery = data.text
+      const searchResults = data.results.map((result) => result.properties.LongLabel || result.text)
+      window.heap.track('Map Search Event', {
+        searchQuery: searchQuery,
+        searchResults: searchResults
+      })
+    } catch (e) {
+      console.warn('Heap is not available or an error occurred while tracking the search event.', e)
+    }
+  })
 
   // add zoom control again they are ordered in the order they are added
   L.control
