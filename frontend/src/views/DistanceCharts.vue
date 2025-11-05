@@ -53,7 +53,9 @@
 <script setup>
 import NodeChart from '@/components/NodeChart.vue'
 import { useChartsStore } from '../stores/charts'
+// import { useStatsStore } from '../stores/stats'
 import { onMounted } from 'vue'
+// import { watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import PlotOptions from '@/components/PlotOptions.vue'
 import PlotActions from '@/components/PlotActions.vue'
@@ -63,10 +65,17 @@ import { storeToRefs } from 'pinia'
 
 const { lgAndUp } = useDisplay()
 const chartStore = useChartsStore()
+// const statsStore = useStatsStore()
 
 const { activePlt, activeNodeChart, nodeChartData } = storeToRefs(chartStore)
+// const { showStatistics } = storeToRefs(chartStore)
 
-onMounted(() => {})
+onMounted(() => {
+  //   watch(activePlt, () => {
+  //   // refresh stats when the active plot changes
+  //   statsStore.toggleSeriesStatistics(showStatistics.value)
+  // })
+})
 
 const resetData = () => {
   activeNodeChart.value.chart.data.datasets = nodeChartData.value.datasets
