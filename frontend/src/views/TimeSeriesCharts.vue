@@ -4,7 +4,12 @@
       <v-col sm="2">
         <v-card class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
-          <v-tabs v-model="activePlt" direction="vertical" color="primary">
+          <v-tabs
+            v-model="activePlt"
+            direction="vertical"
+            color="primary"
+            @update:model-value="trackVariableSelection"
+          >
             <v-tab v-for="plt in chartStore.reachCharts" :value="plt" :key="plt.abbreviation">
               <template v-if="lgAndUp">
                 {{ plt.name }}
@@ -57,6 +62,17 @@ let hasData = computed(() => chartStore.chartData && chartStore.chartData.datase
 const { activePlt, activeReachChart } = storeToRefs(chartStore)
 
 onMounted(() => {})
+
+const trackVariableSelection = (selectedVariable) => {
+  try {
+    window.heap.track('Variable Selected', {
+      variableName: selectedVariable.name,
+      variableAbbreviation: selectedVariable.abbreviation
+    })
+  } catch (e) {
+    console.warn('Heap is not available or an error occurred while tracking the event.', e)
+  }
+}
 </script>
 
 <style scoped>
