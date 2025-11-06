@@ -74,13 +74,13 @@ const handlePlotClick = () => {
   try {
     window.heap.track('Plotted Event', {
       featureId: featureStore.activeFeature.properties.reach_id,
-      featureType: featureStore.activeFeature.feature_type,
-    });
-    router.push(`/plots/${featureStore.activeFeature.properties.reach_id}`);
+      featureType: featureStore.activeFeature.feature_type
+    })
+    router.push(`/plots/${featureStore.activeFeature.properties.reach_id}`)
   } catch (e) {
-    console.warn('Heap is not available or an error occurred while tracking the Plotted Event.', e);
+    console.warn('Heap is not available or an error occurred while tracking the Plotted Event.', e)
   }
-};
+}
 
 featureStore.$subscribe((mutation, state) => {
   if (state.activeFeature !== null) {

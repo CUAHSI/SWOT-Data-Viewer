@@ -58,9 +58,9 @@
       </v-card-text>
     </v-card>
   </v-sheet>
-  <v-btn v-if="!extended" @click="extended = true" color="primary"
-    ><v-icon :icon="mdiSword"></v-icon>Metadata</v-btn
-  >
+  <v-btn v-if="!extended" @click="handleMetadataClick(true)" color="primary">
+    <v-icon :icon="mdiSword"></v-icon>Metadata
+  </v-btn>
   <v-btn v-else @click="extended = false" color="primary"
     ><v-icon :icon="mdiSword"></v-icon>Hide Extended Metadata</v-btn
   >
@@ -79,7 +79,21 @@ const props = defineProps({
 const featureStore = useFeaturesStore()
 const hydrologicStore = useHydrologicStore()
 
-let extended = ref(false)
+const extended = ref(false)
+
+const handleMetadataClick = (isExtended) => {
+  try {
+    window.heap.track('Metadata Extended Event', {
+      action: isExtended ? 'View Metadata' : 'Hide Metadata'
+    })
+    extended.value = isExtended
+  } catch (e) {
+    console.warn(
+      'Heap is not available or an error occurred while tracking the Metadata Extended Event.',
+      e
+    )
+  }
+}
 
 if (props.reachId) {
   featureStore.setActiveFeatureById(props.reachId)
