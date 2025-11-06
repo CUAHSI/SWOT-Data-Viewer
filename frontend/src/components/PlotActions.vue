@@ -106,11 +106,25 @@ const getChartName = () => {
   return `${identifier}.png`
 }
 
+const trackDownloadEvent = (eventName, metadata = {}) => {
+  try {
+    window.heap.track(eventName, metadata)
+  } catch (e) {
+    console.warn(`Heap is not available or an error occurred while tracking the ${eventName} event.`, e)
+  }
+}
+
 const downloadChart = async () => {
   downloading.value.chart = true
   const filename = getChartName()
   // change the chart background color to white
   // props.chosenPlot.chart.canvas.style.backgroundColor = 'white'
+  
+
+    trackDownloadEvent('Download Chart', {
+    filename: filename,
+    chartType: isNodeChart.value ? 'Node Chart' : 'Feature Chart',
+  })
 
   const image = props.chosenPlot.chart.toBase64Image('image/png', 1)
   const link = document.createElement('a')
@@ -122,6 +136,11 @@ const downloadChart = async () => {
 
 const downCsv = async () => {
   downloading.value.csv = true
+
+  trackDownloadEvent('Download CSV', {
+    chartType: isNodeChart.value ? 'Node Chart' : 'Feature Chart',
+  })
+
   // determine whether to download the node or feature csv
   if (isNodeChart.value) {
     await downloadMultiNodesCsv()
@@ -133,6 +152,11 @@ const downCsv = async () => {
 
 const downJson = async () => {
   downloading.value.json = true
+
+  trackDownloadEvent('Download JSON', {
+    chartType: isNodeChart.value ? 'Node Chart' : 'Feature Chart',
+  })
+
   // determine whether to download the node or feature
   if (isNodeChart.value) {
     await downloadMultiNodesJson()
