@@ -62,7 +62,9 @@ Notebooks from [this collection](https://www.hydroshare.org/resource/ac6cc75dcb0
 
 ## MyBinder 
 
-The functionality to launch into MyBinder relies on a separate repo:
+The functionality to launch into MyBinder is currently disabled. It was implemented to use a separate repo:
 [https://github.com/hydroshare/hydroshare_github_sync](https://github.com/hydroshare/hydroshare_github_sync)
+
+That repo has a [GitHub action](https://github.com/hydroshare/hydroshare_github_sync/blob/main/.github/workflows/sync-from-hydroshare.yml) used to sync resources into the repository.
 
 This is because the direct hydroshare launch into MyBinder is broken at this time...
