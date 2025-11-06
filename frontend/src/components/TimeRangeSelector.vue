@@ -47,14 +47,16 @@ const updatetimeRange = () => {
   timeRange.value = dateRange.value.map((dateString) => {
     return convertDateStringToSeconds(dateString)
   })
-  
   try {
     window.heap.track('Time Changed Event', {
       startTime: dateRange.value[0],
-      endTime: dateRange.value[1],
+      endTime: dateRange.value[1]
     })
   } catch (e) {
-    console.warn('Heap is not available or an error occurred while tracking the Time Changed Event.', e)
+    console.warn(
+      'Heap is not available or an error occurred while tracking the Time Changed Event.',
+      e
+    )
   }
 
   filterDatasetsToTimeRange()
