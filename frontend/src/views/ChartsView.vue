@@ -1,6 +1,6 @@
 <template>
   <template v-if="activeFeatureIsReach">
-    <v-container v-if="hasData" fluid fill-height>
+    <v-container fluid fill-height>
       <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
         <v-tab value="timeseries">
           <v-icon :icon="mdiTimelineClock"></v-icon>
@@ -11,16 +11,41 @@
           Node Profile
         </v-tab>
       </v-tabs>
-      <TimeSeriesCharts v-if="chartStore.chartTab === 'timeseries'" />
-      <DistanceCharts v-if="chartStore.chartTab === 'distance'" />
-    </v-container>
-
-    <v-container v-if="fetchingData">
-      <h2 class="text-center ma-2">
-        <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
-        Loading data...
-      </h2>
-      <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
+      <template v-if="chartStore.chartTab === 'timeseries'">
+        <v-container v-if="querying.hydrocron">
+          <h2 class="text-center ma-2">
+            <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
+            Loading Reach data...
+          </h2>
+          <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
+        </v-container>
+        <TimeSeriesCharts v-else-if="hasReachData" />
+        <v-container v-else>
+          <h2 class="text-center ma-2">
+            No reach level data available for this reach. Use the
+            <router-link :to="{ path: `/` }">Map</router-link> to select a different reach.
+          </h2>
+        </v-container>
+      </template>
+      <template v-if="chartStore.chartTab === 'distance'">
+        <DistanceCharts v-if="hasNodeData" />
+        <v-container v-if="querying.nodes">
+          <h2 class="text-center ma-2">
+            <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
+            Loading Node data...
+          </h2>
+          <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
+        </v-container>
+        <v-container v-else>
+          <h2 class="text-center ma-2">
+            No node data available for this reach. Use the
+            <router-link :to="{ path: `/` }">Map</router-link> to make selections, or
+            <a href="#" @click.prevent="chartStore.chartTab = 'timeseries'"
+              >view the reach-averaged plots</a
+            >.
+          </h2>
+        </v-container>
+      </template>
     </v-container>
   </template>
   <template v-else>
@@ -94,20 +119,30 @@ onMounted(async () => {
 const runQuery = async () => {
   querying.value.hydrocron = true
   await queryHydroCron(activeFeature.value)
-  chartStore.buildChart(selectedFeatures.value)
   querying.value.hydrocron = false
+  chartStore.buildChart(selectedFeatures.value)
+  if (!hasReachData.value) {
+    return
+  }
 
   querying.value.nodes = true
   await getNodeDataForReach(activeFeature.value)
+
+  // check to see if any node data were actually found
+  if (hasNodeData.value) {
+    chartStore.buildDistanceChart(featuresStore.nodes)
+    // show stats if they are enabled
+    statsStore.toggleSeriesStatistics(showStatistics.value)
+    chartStore.hasNodeData = true
+  } else {
+    chartStore.hasNodeData = false
+  }
   querying.value.nodes = false
-  chartStore.buildDistanceChart(featuresStore.nodes)
-  // show stats if they are enabled
-  statsStore.toggleSeriesStatistics(showStatistics.value)
 }
 
-let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-let fetchingData = computed(
-  () => !hasData.value && (querying.value.hydrocron || querying.value.nodes)
+let hasReachData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
+let hasNodeData = computed(
+  () => chartStore.nodeChartData && chartStore.nodeChartData.datasets?.length > 0
 )
 let activeFeatureIsReach = computed(() => {
   return activeFeature.value && activeFeature.value.feature_type.toLowerCase() === 'reach'

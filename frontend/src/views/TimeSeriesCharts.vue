@@ -36,6 +36,10 @@
       </v-col>
     </v-row>
   </v-container>
+  <v-container v-else>
+    <h2 class="text-center ma-2">No data available for this reach.</h2>
+    <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
+  </v-container>
 </template>
 
 <script setup>

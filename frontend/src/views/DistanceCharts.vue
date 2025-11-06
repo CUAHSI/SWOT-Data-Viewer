@@ -42,10 +42,7 @@
     </v-row>
   </v-container>
   <v-container v-else>
-    <h2 class="text-center ma-2">
-      <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
-      Loading node level data...
-    </h2>
+    <h2 class="text-center ma-2">No node level data available for this reach.</h2>
     <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
   </v-container>
 </template>
