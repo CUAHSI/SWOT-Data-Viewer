@@ -1,7 +1,14 @@
 <template>
   <template v-if="activeFeatureIsReach">
     <v-container v-if="hasData" fluid fill-height>
-      <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
+      <v-tabs
+        v-model="chartStore.chartTab"
+        align-tabs="center"
+        fixed-tabs
+        color="primary"
+        grow
+        @update:model-value="trackTabSelection"
+      >
         <v-tab value="timeseries">
           <v-icon :icon="mdiTimelineClock"></v-icon>
           Reach Averaged
@@ -56,6 +63,18 @@ import { queryHydroCron, getNodeDataForReach } from '../_helpers/hydroCron'
 import { ChartJS } from '@/_helpers/charts/charts' // eslint-disable-line
 
 const props = defineProps({ reachId: String })
+
+const trackTabSelection = (newTab) => {
+  try {
+    if (newTab === 'timeseries') {
+      window.heap.track('Reach Average Selected')
+    } else if (newTab === 'distance') {
+      window.heap.track('Node Profile Selected')
+    }
+  } catch (e) {
+    console.warn('Heap is not available or an error occurred while tracking the event.', e)
+  }
+}
 const router = useRouter()
 
 const chartStore = useChartsStore()
