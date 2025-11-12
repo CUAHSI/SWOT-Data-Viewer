@@ -76,9 +76,10 @@ const handlePlotClick = () => {
       featureId: featureStore.activeFeature.properties.reach_id,
       featureType: featureStore.activeFeature.feature_type
     })
-    router.push(`/plots/${featureStore.activeFeature.properties.reach_id}`)
   } catch (e) {
     console.warn('Heap is not available or an error occurred while tracking the Plotted Event.', e)
+  }finally{
+    router.push(`/plots/${featureStore.activeFeature.properties.reach_id}`)
   }
 }
 

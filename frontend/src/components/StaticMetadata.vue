@@ -86,12 +86,13 @@ const handleMetadataClick = (isExtended) => {
     window.heap.track('Metadata Extended Event', {
       action: isExtended ? 'View Metadata' : 'Hide Metadata'
     })
-    extended.value = isExtended
   } catch (e) {
     console.warn(
       'Heap is not available or an error occurred while tracking the Metadata Extended Event.',
       e
     )
+  } finally {
+    extended.value = isExtended
   }
 }
 
