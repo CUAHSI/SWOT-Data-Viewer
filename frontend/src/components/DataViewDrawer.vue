@@ -78,7 +78,7 @@ const handlePlotClick = () => {
     })
   } catch (e) {
     console.warn('Heap is not available or an error occurred while tracking the Plotted Event.', e)
-  }finally{
+  } finally {
     router.push(`/plots/${featureStore.activeFeature.properties.reach_id}`)
   }
 }
