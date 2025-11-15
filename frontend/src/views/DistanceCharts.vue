@@ -4,7 +4,12 @@
       <v-col sm="2">
         <v-sheet class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
-          <v-tabs v-model="activePlt" direction="vertical" color="primary">
+          <v-tabs
+            v-model="activePlt"
+            direction="vertical"
+            color="primary"
+            @update:model-value="trackVariableSelection"
+          >
             <v-tab v-for="plt in chartStore.nodeCharts" :value="plt" :key="plt.abbreviation">
               <template v-if="lgAndUp">
                 {{ plt.name }}
@@ -71,6 +76,17 @@ onMounted(() => {})
 const resetData = () => {
   activeNodeChart.value.chart.data.datasets = nodeChartData.value.datasets
   activeNodeChart.value.chart.update()
+}
+
+const trackVariableSelection = (selectedVariable) => {
+  try {
+    window.heap.track('Variable Selected', {
+      variableName: selectedVariable.name,
+      variableAbbreviation: selectedVariable.abbreviation
+    })
+  } catch (e) {
+    console.warn('Heap is not available or an error occurred while tracking the event.', e)
+  }
 }
 </script>
 

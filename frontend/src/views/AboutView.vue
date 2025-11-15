@@ -28,6 +28,11 @@ const tocItems = ref([]) // toc (table of contents) items
 
 // fetch and process the markdown content
 onMounted(async () => {
+  try {
+    window.heap.track('About Page Opened')
+  } catch (e) {
+    console.warn('Heap is not available or an error occurred while loading the page.', e)
+  }
   const response = await fetch(about_page_url)
   const markdownText = await response.text()
 

@@ -51,5 +51,15 @@ function qualityHasChanged() {
 
   // stats are not shown after update of data quality
   statsStore.toggleSeriesStatistics(showStatistics.value)
+  try {
+    window.heap.track('Data Quality Updated', {
+      selectedFlags: dataQualityFlags.value // Track the currently selected data quality flags
+    })
+  } catch (e) {
+    console.warn(
+      'Heap is not available or an error occurred while tracking the Data Quality Updated event.',
+      e
+    )
+  }
 }
 </script>
