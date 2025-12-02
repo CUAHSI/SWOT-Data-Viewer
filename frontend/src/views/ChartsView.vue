@@ -3,18 +3,18 @@
     <v-container fluid fill-height>
       <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
         <v-tab value="timeseries">
-          <v-icon :icon="mdiTimelineClock"></v-icon>
+          <v-icon :icon="mdiTimelineClock" />
           Reach Averaged
         </v-tab>
         <v-tab value="distance">
-          <v-icon :icon="mdiMapMarkerDistance"></v-icon>
+          <v-icon :icon="mdiMapMarkerDistance" />
           Node Profile
         </v-tab>
       </v-tabs>
       <template v-if="chartStore.chartTab === 'timeseries'">
         <v-container v-if="querying.hydrocron">
           <h2 class="text-center ma-2">
-            <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
+            <v-progress-circular :size="50" color="primary" indeterminate />
             Loading Reach data...
           </h2>
           <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
@@ -23,7 +23,7 @@
         <v-container v-else>
           <h2 class="text-center ma-2">
             No reach level data available for this reach. Use the
-            <router-link :to="{ path: `/` }">Map</router-link> to select a different reach.
+            <router-link :to="{ path: `/` }"> Map </router-link> to select a different reach.
           </h2>
         </v-container>
       </template>
@@ -31,7 +31,7 @@
         <DistanceCharts v-if="hasNodeData" />
         <v-container v-if="querying.nodes">
           <h2 class="text-center ma-2">
-            <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
+            <v-progress-circular :size="50" color="primary" indeterminate />
             Loading Node data...
           </h2>
           <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
@@ -39,7 +39,7 @@
         <v-container v-else>
           <h2 class="text-center ma-2">
             No node data available for this reach. Use the
-            <router-link :to="{ path: `/` }">Map</router-link> to make selections, or
+            <router-link :to="{ path: `/` }"> Map </router-link> to make selections, or
             <a href="#" @click.prevent="chartStore.chartTab = 'timeseries'"
               >view the reach-averaged plots</a
             >.

@@ -5,7 +5,7 @@
         <v-sheet class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
           <v-tabs v-model="activePlt" direction="vertical" color="primary">
-            <v-tab v-for="plt in chartStore.nodeCharts" :value="plt" :key="plt.abbreviation">
+            <v-tab v-for="plt in chartStore.nodeCharts" :key="plt.abbreviation" :value="plt">
               <template v-if="lgAndUp">
                 {{ plt.name }}
               </template>
@@ -19,14 +19,14 @@
           </v-tabs>
         </v-sheet>
         <TimeRangeSelector />
-        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <v-divider v-if="lgAndUp" class="my-2" />
         <PlotOptions />
-        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <v-divider v-if="lgAndUp" class="my-2" />
         <DataQuality />
-        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
-        <PlotActions :chosenPlot="activeNodeChart" @reset-data="resetData" />
+        <v-divider v-if="lgAndUp" class="my-2" />
+        <PlotActions :chosen-plot="activeNodeChart" @reset-data="resetData" />
       </v-col>
-      <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
+      <v-divider v-if="lgAndUp" class="my-2" vertical />
       <v-col sm="10">
         <v-window v-model="activePlt">
           <v-window-item v-for="plt in chartStore.nodeCharts" :key="plt.abbreviation" :value="plt">
@@ -34,7 +34,7 @@
               v-if="plt"
               class="chart"
               :data="chartStore.nodeChartData"
-              :chosenPlot="plt"
+              :chosen-plot="plt"
             />
           </v-window-item>
         </v-window>

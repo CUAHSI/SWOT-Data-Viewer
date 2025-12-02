@@ -5,7 +5,7 @@
         <v-card class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
           <v-tabs v-model="activePlt" direction="vertical" color="primary">
-            <v-tab v-for="plt in chartStore.reachCharts" :value="plt" :key="plt.abbreviation">
+            <v-tab v-for="plt in chartStore.reachCharts" :key="plt.abbreviation" :value="plt">
               <template v-if="lgAndUp">
                 {{ plt.name }}
               </template>
@@ -19,18 +19,18 @@
           </v-tabs>
         </v-card>
         <TimeRangeSelector />
-        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <v-divider v-if="lgAndUp" class="my-2" />
         <PlotOptions />
-        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
+        <v-divider v-if="lgAndUp" class="my-2" />
         <DataQuality />
-        <v-divider class="my-2" v-if="lgAndUp"></v-divider>
-        <PlotActions :chosenPlot="activeReachChart" />
+        <v-divider v-if="lgAndUp" class="my-2" />
+        <PlotActions :chosen-plot="activeReachChart" />
       </v-col>
-      <v-divider class="my-2" vertical v-if="lgAndUp"></v-divider>
+      <v-divider v-if="lgAndUp" class="my-2" vertical />
       <v-col sm="10">
         <v-window v-model="activePlt">
           <v-window-item v-for="plt in chartStore.reachCharts" :key="plt.abbreviation" :value="plt">
-            <LineChart v-if="plt" class="chart" :data="chartStore.chartData" :chosenPlot="plt" />
+            <LineChart v-if="plt" class="chart" :data="chartStore.chartData" :chosen-plot="plt" />
           </v-window-item>
         </v-window>
       </v-col>

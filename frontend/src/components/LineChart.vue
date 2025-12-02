@@ -13,16 +13,15 @@
             v-bind="props"
             color="input"
             size="small"
-            @click="resetZoom()"
             style="position: absolute; top: 120px; right: 45px; z-index: 10"
             :icon="mdiMagnifyMinusOutline"
-          >
-          </v-btn>
+            @click="resetZoom()"
+          />
         </template>
         RESET ZOOM
       </v-tooltip>
       <!-- Chart -->
-      <Line :data="chartData" :options="options" ref="activeReachChart" />
+      <Line ref="activeReachChart" :data="chartData" :options="options" />
     </v-sheet>
     <v-card v-if="hasSelectedTimeseriesPoints">
       <v-card-title>Selected Timestamps</v-card-title>
@@ -32,18 +31,18 @@
             v-for="timeSeriesPoint in selectedTimeseriesPoints"
             :key="timeSeriesPoint.datetime"
           >
-            <template v-slot:append>
+            <template #append>
               <v-icon
                 :icon="mdiCloseBox"
                 color="error"
                 @click="removeSelectedTimeseriesPoint(timeSeriesPoint, true)"
-              ></v-icon>
+              />
             </template>
             <v-list-item-title>{{ timeSeriesPoint.time_str }}</v-list-item-title>
-            <v-list-item-subtitle
-              >Average {{ props.chosenPlot?.abbreviation }}:
-              {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}</v-list-item-subtitle
-            >
+            <v-list-item-subtitle>
+              Average {{ props.chosenPlot?.abbreviation }}:
+              {{ timeSeriesPoint[props.chosenPlot.abbreviation] }}
+            </v-list-item-subtitle>
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -55,7 +54,7 @@
         color="input"
         @click="viewLongProfileByDates"
       >
-        <v-icon :icon="mdiChartBellCurveCumulative"></v-icon>
+        <v-icon :icon="mdiChartBellCurveCumulative" />
         View Long Profile
       </v-btn>
     </v-card>

@@ -6,7 +6,7 @@
     :text="props.text"
     :closeable="props.closeable"
     @click:close="closeEvent"
-  ></v-alert>
+  />
 </template>
 
 <script setup>
