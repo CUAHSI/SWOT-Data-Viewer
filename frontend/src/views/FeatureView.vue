@@ -12,7 +12,7 @@
     max-width="1200"
     rounded
   >
-    <StaticMetadata :featureId="$route.params.featureId" />
+    <StaticMetadata :feature-id="$route.params.featureId" />
     <DynamicData />
   </v-container>
 </template>

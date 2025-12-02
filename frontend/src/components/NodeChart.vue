@@ -13,16 +13,15 @@
             v-bind="props"
             color="input"
             size="small"
-            @click="resetZoom()"
             style="position: absolute; top: 80px; right: 45px; z-index: 10"
             :icon="mdiMagnifyMinusOutline"
-          >
-          </v-btn>
+            @click="resetZoom()"
+          />
         </template>
         RESET ZOOM
       </v-tooltip>
       <!-- Chart -->
-      <Line :data="nodeChartData" :options="options" ref="activeNodeChart" :plugins="[Filler]" />
+      <Line ref="activeNodeChart" :data="nodeChartData" :options="options" :plugins="[Filler]" />
     </v-sheet>
   </v-container>
 </template>

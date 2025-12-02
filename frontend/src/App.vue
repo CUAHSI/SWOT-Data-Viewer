@@ -1,12 +1,12 @@
 <template>
   <v-app>
     <v-main>
-      <TheAppBar @toggle-mobile-nav="toggleMobileNav" :paths="paths" />
-      <AlertPopup v-bind="alertStore.displayed"></AlertPopup>
+      <TheAppBar :paths="paths" @toggle-mobile-nav="toggleMobileNav" />
+      <AlertPopup v-bind="alertStore.displayed" />
       <TheMobileNavDrawer
-        @toggle-mobile-nav="toggleMobileNav"
         :show="showMobileNavigation"
         :paths="paths"
+        @toggle-mobile-nav="toggleMobileNav"
       />
       <RouterView />
       <!-- The leaflet map kept alive outside of the RouterView -->

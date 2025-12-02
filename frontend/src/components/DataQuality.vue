@@ -1,5 +1,5 @@
 <template>
-  <v-expansion-panels with="100%" v-model="panel" multiple flat>
+  <v-expansion-panels v-model="panel" with="100%" multiple flat>
     <v-expansion-panel value="0">
       <v-expansion-panel-title>Data Quality</v-expansion-panel-title>
       <v-expansion-panel-text>
@@ -16,10 +16,10 @@
                 v-model="dataQualityFlags"
                 :label="item.label"
                 :value="item.value"
-                @update:modelValue="qualityHasChanged()"
+                @update:model-value="qualityHasChanged()"
               >
                 <template #append>
-                  <v-icon :icon="item.icon" :color="item.pointBorderColor" size="small"></v-icon>
+                  <v-icon :icon="item.icon" :color="item.pointBorderColor" size="small" />
                 </template>
               </v-checkbox>
             </v-list-item-action>

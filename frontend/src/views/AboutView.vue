@@ -12,7 +12,7 @@
       </nav>
 
       <!-- About Content Section -->
-      <div v-html="aboutHtml" class="about-content"></div>
+      <div class="about-content" v-html="aboutHtml" />
     </div>
   </v-container>
 </template>
