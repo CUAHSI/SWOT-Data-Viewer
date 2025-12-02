@@ -1,4 +1,4 @@
-FROM node:20.9.0 as node_build
+FROM node:20.19.6 AS node_build
 WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
