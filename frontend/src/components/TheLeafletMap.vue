@@ -1,5 +1,5 @@
 <template>
-  <div v-show="$route.meta.showMap" id="mapContainer"></div>
+  <div v-show="$route.meta.showMap" id="mapContainer" />
   <v-card
     v-if="$route.meta.showMap && zoom < minReachSelectionZoom"
     id="zoomIndicator"
@@ -7,11 +7,11 @@
     density="compact"
     dense
   >
-    <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
+    <v-card-text> <v-icon :icon="mdiMagnifyPlus" /> Zoom in to select reaches </v-card-text>
   </v-card>
   <v-card v-if="$route.meta.showMap" id="mouseposition" color="info">
     <v-card-text>
-      <v-icon :icon="mdiCrosshairsGps"></v-icon> {{ latLong.lat?.toFixed(5) }},
+      <v-icon :icon="mdiCrosshairsGps" /> {{ latLong.lat?.toFixed(5) }},
       {{ latLong.lng?.toFixed(5) }} <br />
     </v-card-text>
   </v-card>

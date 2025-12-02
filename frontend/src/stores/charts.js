@@ -648,7 +648,7 @@ export const useChartsStore = defineStore(
         const hex = scale.hex()
         return hex
       } catch (error) {
-        console.error('Invalid date', date)
+        console.error('Invalid date', date, error)
         return 'black'
       }
     }

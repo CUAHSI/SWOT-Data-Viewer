@@ -1,31 +1,30 @@
 <template>
   <v-navigation-drawer
     v-if="featureStore.activeFeature"
+    v-model="show"
     location="right"
     width="auto"
-    v-model="show"
     order="1"
   >
     <v-container v-if="featureStore.activeFeature">
       <v-btn
         v-if="featureStore.activeFeature"
-        @click="show = !show"
         location="left"
         order="0"
         postition="absolute"
         :style="{ bottom: '30%', transform: translate(), position: 'absolute' }"
         :icon="show ? mdiChevronRight : mdiChevronLeft"
-      >
-      </v-btn>
+        @click="show = !show"
+      />
       <StaticMetadata />
       <v-btn
         v-if="!hasResults()"
-        @click="router.push(`/plots/${featureStore.activeFeature.properties.feature_id}`)"
         color="primary"
         class="ma-2"
         :loading="featureStore.querying.hydrocron"
+        @click="router.push(`/plots/${featureStore.activeFeature.properties.feature_id}`)"
       >
-        <v-icon :icon="mdiChartScatterPlot"></v-icon>Plot
+        <v-icon :icon="mdiChartScatterPlot" />Plot
       </v-btn>
     </v-container>
   </v-navigation-drawer>

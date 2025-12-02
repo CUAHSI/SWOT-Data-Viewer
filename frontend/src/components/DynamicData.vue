@@ -1,13 +1,13 @@
 <template>
-  <v-btn v-if="!hasChartData" @click="query" color="primary" :loading="querying.hydrocron"
-    >Query HydroCron</v-btn
-  >
+  <v-btn v-if="!hasChartData" color="primary" :loading="querying.hydrocron" @click="query">
+    Query HydroCron
+  </v-btn>
   <v-sheet v-if="hasChartData" class="mx-auto" elevation="8">
     <v-card v-if="featureStore.activeFeature" height="100%">
       <v-expansion-panels v-if="hasChartData">
         <v-expansion-panel>
           <v-expansion-panel-title>
-            <v-icon :icon="mdiTimelineClockOutline"></v-icon>
+            <v-icon :icon="mdiTimelineClockOutline" />
             <span class="ml-2">HydroCron Query</span>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -19,7 +19,7 @@
         </v-expansion-panel>
         <v-expansion-panel>
           <v-expansion-panel-title>
-            <v-icon :icon="mdiSatelliteVariant"></v-icon>
+            <v-icon :icon="mdiSatelliteVariant" />
             <span class="ml-2">SWOT Data ({{ featureStore.activeFeature.hits }} points)</span>
           </v-expansion-panel-title>
           <v-expansion-panel-text>

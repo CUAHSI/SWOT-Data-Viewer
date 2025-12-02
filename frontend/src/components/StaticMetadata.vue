@@ -23,8 +23,7 @@
                   :icon="mdiInformationOutline"
                   color="primary"
                   style="cursor: pointer; margin-left: 10px"
-                >
-                </v-icon>
+                />
               </template>
               <div>{{ metadataObject.definition }}</div>
             </v-tooltip>
@@ -47,8 +46,7 @@
                     :icon="mdiInformationOutline"
                     color="primary"
                     style="cursor: pointer; margin-left: 10px"
-                  >
-                  </v-icon>
+                  />
                 </template>
                 <span>{{ extendedMetadataObject.definition }}</span>
               </v-tooltip>
@@ -58,12 +56,12 @@
       </v-card-text>
     </v-card>
   </v-sheet>
-  <v-btn v-if="!extended" @click="extended = true" color="primary"
-    ><v-icon :icon="mdiSword"></v-icon>Metadata</v-btn
-  >
-  <v-btn v-else @click="extended = false" color="primary"
-    ><v-icon :icon="mdiSword"></v-icon>Hide Extended Metadata</v-btn
-  >
+  <v-btn v-if="!extended" color="primary" @click="extended = true">
+    <v-icon :icon="mdiSword" />Metadata
+  </v-btn>
+  <v-btn v-else color="primary" @click="extended = false">
+    <v-icon :icon="mdiSword" />Hide Extended Metadata
+  </v-btn>
 </template>
 
 <script setup>
