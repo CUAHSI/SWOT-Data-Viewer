@@ -5,15 +5,14 @@
       <v-expansion-panel-text>
         <StatisticsToggle v-if="chartStore.chartTab === 'distance'" />
         <v-select
-          label="Symbology"
           v-model="symbology"
+          label="Symbology"
           :items="['Lines', 'Markers']"
           multiple
           chips
-          @update:modelValue="chartStore.updateSymbology"
           :rules="[rules.filter]"
-        >
-        </v-select>
+          @update:model-value="chartStore.updateSymbology"
+        />
       </v-expansion-panel-text>
     </v-expansion-panel>
   </v-expansion-panels>

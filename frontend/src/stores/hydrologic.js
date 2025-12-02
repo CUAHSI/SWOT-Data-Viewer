@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useFeaturesStore } from '@/stores/features'
 
 export const useHydrologicStore = defineStore('hydrologic', () => {
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20200825a.pdf
   // https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20231026_RevB_w-sigs.pdf
+  // https://podaac.github.io/hydrocron/user-guide/fields.html#fields-detail
   const swotVariables = ref([
     {
       abbreviation: 'time_str',
@@ -47,7 +49,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       default: true,
       always: false,
       selectable: true,
-      fileType: 'all',
+      fileType: 'reach,node',
       plottable: true
     },
     {
@@ -121,6 +123,18 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       plottable: false
     },
     {
+      abbreviation: 'quality_f',
+      name: 'Lake Quality Flag',
+      unit: '',
+      definition:
+        'Summary quality indicator for the lake measurement. Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively. Measurements that are marked as suspect may have large errors. Measurements that are marked as degraded very likely do have large errors. Measurements that are marked as bad may be nonsensicial and should be ignored.',
+      default: false,
+      always: true,
+      selectable: false,
+      fileType: 'priorlake',
+      plottable: false
+    },
+    {
       abbreviation: 'node_dist',
       name: 'Node Dispersion',
       unit: 'm',
@@ -141,6 +155,28 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       selectable: false,
       fileType: 'node',
       plottable: false
+    },
+    {
+      abbreviation: 'lake_name',
+      name: 'Lake Name',
+      unit: '',
+      definition: 'Name of the lake, if available.',
+      default: true,
+      always: false,
+      selectable: false,
+      fileType: 'priorlake',
+      plottable: false
+    },
+    {
+      abbreviation: 'PLD_version',
+      name: 'Prior Lake Database Version',
+      unit: '',
+      definition: 'Version of the Prior Lake Database used to generate the lake data.',
+      default: true,
+      always: false,
+      selectable: false,
+      fileType: 'priorlake',
+      plottable: false
     }
   ])
 
@@ -148,7 +184,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
   const queryVariables = (fileType = 'reach', always = undefined) => {
     return swotVariables.value.filter((variable) => {
       return (
-        (variable.fileType === fileType.toLowerCase() || variable.fileType === 'all') &&
+        (variable.fileType.toLowerCase().includes(fileType.toLowerCase()) ||
+          variable.fileType === 'all') &&
         (always === undefined || variable.always === always)
       )
     })
@@ -509,6 +546,101 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       units: '',
       plottable: false,
       significant_figures: 0
+    },
+    {
+      abbreviation: 'lake_id',
+      definition:
+        'The unique identifier for each lake in the Prior Lake Database (PLD). This ID is used to link the reach or node to the corresponding lake information in the PLD.',
+      fileType: 'PriorLake',
+      default: true,
+      short_definition: 'Prior Lake Database (PLD) ID',
+      swotviz_alias: 'Prior Lake Database ID',
+      units: '',
+      plottable: false,
+      significant_figures: 0
+    },
+    {
+      abbreviation: 'basin_id',
+      definition:
+        'The unique identifier for the basin in which the lake is located, as defined in the Prior Lake Database (PLD). This ID is used to link the reach or node to the corresponding basin information in the PLD.',
+      fileType: 'PriorLake',
+      default: true,
+      short_definition: 'Prior Lake Database (PLD) Basin ID',
+      swotviz_alias: 'Prior Lake Database Basin ID',
+      units: '',
+      plottable: false,
+      significant_figures: 0
+    },
+    {
+      abbreviation: 'names',
+      definition:
+        'A list of names associated with the lake in the Prior Lake Database (PLD). This field can contain multiple names, such as local names, official names, or alternative names for the lake.',
+      fileType: 'PriorLake',
+      default: true,
+      short_definition: 'Prior Lake Database (PLD) Names',
+      swotviz_alias: 'Prior Lake Database Names',
+      units: '',
+      plottable: false,
+      significant_figures: 0
+    },
+    {
+      abbreviation: 'lake_type',
+      definition:
+        'The type of lake as classified in the Prior Lake Database (PLD). This field indicates whether the lake is a natural lake, reservoir, or other type of water body.',
+      fileType: 'PriorLake',
+      default: true,
+      short_definition: 'Prior Lake Database (PLD) Lake Type',
+      swotviz_alias: 'Prior Lake Database Lake Type',
+      units: '',
+      plottable: false,
+      significant_figures: 0
+    },
+    {
+      abbreviation: 'ice_clim_flag',
+      definition: 'A flag indicating whether the lake is affected by ice climate conditions.',
+      short_definition: 'Prior Lake Database Ice Climate Flag',
+      fileType: 'PriorLake',
+      default: false,
+      swotviz_alias: 'Prior Lake Database Ice Climate Flag',
+      units: '',
+      plottable: false,
+      significant_figures: 3
+    },
+    {
+      abbreviation: 'ice_clim_flag2',
+      definition: 'A flag indicating whether the lake is affected by ice climate conditions.',
+      fileType: 'PriorLake',
+      default: false,
+      short_definition: 'Prior Lake Database Ice Climate Flag 2',
+      swotviz_alias: 'Prior Lake Database Ice Climate Flag 2',
+      units: '',
+      plottable: false,
+      significant_figures: 3
+    },
+    {
+      abbreviation: 'reach_id_list',
+      definition:
+        'A list of reach IDs associated with the lake in the Prior Lake Database (PLD). This field can contain multiple reach IDs that are linked to the lake.',
+      fileType: 'PriorLake',
+      default: false,
+      short_definition: 'Prior Lake Database (PLD) Reach ID List',
+      swotviz_alias: 'Prior Lake Database Reach ID List',
+      units: '',
+      plottable: false,
+      significant_figures: 0,
+      hidden: true
+    },
+    {
+      abbreviation: 'ref_area',
+      definition:
+        'The reference area of the lake in the Prior Lake Database (PLD). This field provides the area of the lake as defined in the PLD, which may be used for comparison with other measurements or models.',
+      fileType: 'PriorLake',
+      default: false,
+      short_definition: 'Prior Lake Database (PLD) Reference Area',
+      swotviz_alias: 'Prior Lake Database Reference Area',
+      units: 'square meters',
+      plottable: false,
+      significant_figures: 2
     }
   ])
 
@@ -526,7 +658,8 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       }
       return (
         variable.abbreviation === abbreviation &&
-        (variable.fileType === fileType || variable.fileType === 'all') &&
+        (variable.fileType.toLowerCase().includes(fileType.toLowerCase()) ||
+          variable.fileType === 'all') &&
         variable.default === defaultOnly
       )
     })
@@ -539,10 +672,23 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
    * @param {boolean} [defaultOnly=false] - Indicates whether to retrieve only default descriptions.
    * @returns {Array} - An array of descriptions for the sword features.
    */
-  function getSwordDescriptions(feature, defaultOnly = false, fileType = 'reach') {
+  function getSwordDescriptions(feature, defaultOnly = false, fileType = null) {
+    if (!fileType) {
+      const featuresStore = useFeaturesStore()
+      fileType = featuresStore.determineFeatureType(feature)
+      if (!fileType) {
+        console.warn('Could not determine file type for feature:', feature)
+        return []
+      }
+    }
+
     const descriptions = []
-    for (const [abbreviation, val] of Object.entries(feature)) {
+    for (const [abbreviation, val] of Object.entries(feature.properties)) {
       const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)
+      // Skip if variable is found and has hidden = true
+      if (found && found.hidden) {
+        continue
+      }
       if (found) {
         let displayValue
         const displayKey = found.swotviz_alias || found.short_definition // Use alias if available
@@ -558,6 +704,36 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         }
         found.value = displayValue
         descriptions.push({ ...found, displayKey })
+      }
+    }
+    // for now, we dump all of the key/value pairs in the feature
+    if (fileType.toLowerCase() === 'priorlake' && !defaultOnly) {
+      for (let [key, val] of Object.entries(feature.properties)) {
+        // first check if the key is already in the descriptions
+        if (descriptions.some((desc) => desc.abbreviation === key)) {
+          continue
+        }
+        // Also check if this would be a hidden variable if it existed in swordVariables
+        const potentialHiddenVar = swordVariables.value.find(
+          (v) => v.abbreviation === key && v.hidden
+        )
+        if (potentialHiddenVar) {
+          continue
+        }
+        descriptions.push({
+          abbreviation: key,
+          name: key,
+          definition: `${key}`,
+          value: val,
+          fileType: 'PriorLake',
+          default: false,
+          short_definition: key,
+          swotviz_alias: key,
+          displayKey: key,
+          units: '',
+          plottable: false,
+          significant_figures: 0
+        })
       }
     }
     return descriptions

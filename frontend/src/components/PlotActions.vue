@@ -1,26 +1,26 @@
 <template>
-  <v-expansion-panels with="100%" v-model="panel" multiple>
+  <v-expansion-panels v-model="panel" with="100%" multiple>
     <v-expansion-panel value="plotActions">
       <v-expansion-panel-title>Actions</v-expansion-panel-title>
       <v-expansion-panel-text>
-        <v-btn :loading="downloading.chart" @click="downloadChart()" class="ma-1" color="input">
-          <v-icon :icon="mdiDownloadBox"></v-icon>
+        <v-btn :loading="downloading.chart" class="ma-1" color="input" @click="downloadChart()">
+          <v-icon :icon="mdiDownloadBox" />
           Download Chart
         </v-btn>
-        <v-btn :loading="downloading.csv" @click="downCsv()" class="ma-1" color="input">
-          <v-icon :icon="mdiFileDelimited"></v-icon>
+        <v-btn :loading="downloading.csv" class="ma-1" color="input" @click="downCsv()">
+          <v-icon :icon="mdiFileDelimited" />
           Download CSV
         </v-btn>
-        <v-btn :loading="downloading.json" @click="downJson()" class="ma-1" color="input">
-          <v-icon :icon="mdiCodeJson"></v-icon>
+        <v-btn :loading="downloading.json" class="ma-1" color="input" @click="downJson()">
+          <v-icon :icon="mdiCodeJson" />
           Download JSON
         </v-btn>
-        <v-btn @click="resetZoom()" color="input" class="ma-1">
-          <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
+        <v-btn color="input" class="ma-1" @click="resetZoom()">
+          <v-icon :icon="mdiMagnifyMinusOutline" />
           Reset Zoom
         </v-btn>
-        <v-btn v-if="isNodeChart" @click="resetData()" color="input" class="ma-1">
-          <v-icon :icon="mdiEraser"></v-icon>
+        <v-btn v-if="isNodeChart" color="input" class="ma-1" @click="resetData()">
+          <v-icon :icon="mdiEraser" />
           Reset Data
         </v-btn>
       </v-expansion-panel-text>

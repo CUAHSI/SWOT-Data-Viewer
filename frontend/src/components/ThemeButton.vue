@@ -1,5 +1,5 @@
 <template>
-  <v-btn @click="toggleTheme" class="text-info">toggle theme</v-btn>
+  <v-btn class="text-info" @click="toggleTheme"> toggle theme </v-btn>
 </template>
 
 <script setup>

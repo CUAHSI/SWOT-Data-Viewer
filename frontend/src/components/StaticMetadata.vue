@@ -9,7 +9,7 @@
       </v-card-item>
       <v-card-text>
         <!-- Default Metadata -->
-        <div v-for="metadataObject in defaultSwordMetadata()" :key="metadataObject.id">
+        <div v-for="metadataObject in defaultSwordMetadata" :key="metadataObject.id">
           <v-divider />
           <div style="display: flex; align-items: center; justify-content: space-between">
             <div>
@@ -23,8 +23,7 @@
                   :icon="mdiInformationOutline"
                   color="primary"
                   style="cursor: pointer; margin-left: 10px"
-                >
-                </v-icon>
+                />
               </template>
               <div>{{ metadataObject.definition }}</div>
             </v-tooltip>
@@ -32,10 +31,7 @@
         </div>
         <!-- Extended Metadata -->
         <template v-if="extended">
-          <div
-            v-for="extendedMetadataObject in extendedMetadata()"
-            :key="extendedMetadataObject.id"
-          >
+          <div v-for="extendedMetadataObject in extendedMetadata" :key="extendedMetadataObject.id">
             <v-divider />
             <div style="display: flex; align-items: center; justify-content: space-between">
               <div>
@@ -50,8 +46,7 @@
                     :icon="mdiInformationOutline"
                     color="primary"
                     style="cursor: pointer; margin-left: 10px"
-                  >
-                  </v-icon>
+                  />
                 </template>
                 <span>{{ extendedMetadataObject.definition }}</span>
               </v-tooltip>
@@ -61,16 +56,16 @@
       </v-card-text>
     </v-card>
   </v-sheet>
-  <v-btn v-if="!extended" @click="extendMetadata" color="primary"
-    ><v-icon :icon="mdiSword"></v-icon>Metadata</v-btn
-  >
-  <v-btn v-else @click="extended = false" color="primary"
-    ><v-icon :icon="mdiSword"></v-icon>Hide Extended Metadata</v-btn
-  >
+  <v-btn v-if="!extended" color="primary" @click="extended = true">
+    <v-icon :icon="mdiSword" />Metadata
+  </v-btn>
+  <v-btn v-else color="primary" @click="extended = false">
+    <v-icon :icon="mdiSword" />Hide Extended Metadata
+  </v-btn>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { mdiSword, mdiInformationOutline } from '@mdi/js'
@@ -85,28 +80,24 @@ const hydrologicStore = useHydrologicStore()
 let extended = ref(false)
 
 if (props.reachId) {
-  featureStore.setActiveFeatureByReachId(props.reachId)
+  featureStore.setActiveFeatureById(props.reachId)
 }
 
-const extendMetadata = () => {
-  if (!featureStore.activeFeature) return
-  extendedMetadata.value = hydrologicStore.getSwordDescriptions(
-    featureStore.activeFeature.properties,
+const extendedMetadata = computed(() => {
+  if (!featureStore.activeFeature) return {}
+  return hydrologicStore.getSwordDescriptions(
+    featureStore.activeFeature,
     false,
-    'reach'
+    featureStore.activeFeature.feature_type
   )
-  extended.value = true
-}
+})
 
-const extendedMetadata = () => {
+const defaultSwordMetadata = computed(() => {
   if (!featureStore.activeFeature) return {}
-  // TODO:nodes assumes reach, won't work for nodes
-  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, false, 'reach')
-}
-
-const defaultSwordMetadata = () => {
-  if (!featureStore.activeFeature) return {}
-  // TODO:nodes assumes reach, won't work for nodes
-  return hydrologicStore.getSwordDescriptions(featureStore.activeFeature.properties, true, 'reach')
-}
+  return hydrologicStore.getSwordDescriptions(
+    featureStore.activeFeature,
+    true,
+    featureStore.activeFeature.feature_type
+  )
+})
 </script>

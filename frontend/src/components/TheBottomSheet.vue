@@ -11,7 +11,7 @@
       <v-card-text>
         <v-container>
           <v-tabs v-model="varTab" align-tabs="center">
-            <v-tab v-for="plt in chartStore.reachCharts" :value="plt" :key="plt.abbreviation">
+            <v-tab v-for="plt in chartStore.reachCharts" :key="plt.abbreviation" :value="plt">
               {{ plt.name }}
             </v-tab>
           </v-tabs>
@@ -21,7 +21,7 @@
               :key="plt.abbreviation"
               :value="plt"
             >
-              <LineChart v-if="plt" id="chart" :chosenPlot="plt" :data="chartStore.chartData" />
+              <LineChart v-if="plt" id="chart" :chosen-plot="plt" :data="chartStore.chartData" />
             </v-window-item>
           </v-window>
         </v-container>

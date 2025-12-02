@@ -36,16 +36,18 @@ const router = createRouter({
       component: ApiView
     },
     {
-      path: '/plots/:reachId?',
+      path: '/plots/:featureId?',
       name: 'plots',
       component: () => import('../views/ChartsView.vue'),
       props: true
     },
     {
-      path: '/reach/:reachId',
-      name: 'reach',
-      component: () => import('../views/ReachView.vue')
+      path: '/feature/:featureId?',
+      name: 'feature',
+      props: true,
+      component: () => import('../views/FeatureView.vue')
     },
+
     {
       path: '/dashboard',
       name: 'dashboard',
