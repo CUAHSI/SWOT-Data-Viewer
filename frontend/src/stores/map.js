@@ -219,8 +219,7 @@ export const useMapStore = defineStore('map', () => {
       console.warn('Lakes features already generated, skipping.')
       return lakesFeatures.value
     }
-    const url =
-      'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_swot_lakes/FeatureServer/0'
+    const url = 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/SWOT_PLD_v201/FeatureServer/0'
     lakesFeatures.value = esriLeaflet.featureLayer({
       url: url,
       simplifyFactor: 0.35,

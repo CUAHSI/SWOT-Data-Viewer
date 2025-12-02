@@ -1,38 +1,49 @@
 <template>
-  <template v-if="activeFeatureIsReach">
-    <v-container v-if="hasData" fluid fill-height>
-      <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
-        <v-tab value="timeseries">
-          <v-icon :icon="mdiTimelineClock" />
-          Reach Averaged
-        </v-tab>
-        <v-tab value="distance">
-          <v-icon :icon="mdiMapMarkerDistance" />
-          Node Profile
-        </v-tab>
-      </v-tabs>
-      <TimeSeriesCharts v-if="chartStore.chartTab === 'timeseries'" />
-      <DistanceCharts v-if="chartStore.chartTab === 'distance'" />
-    </v-container>
-
-    <v-container v-if="fetchingData">
-      <h2 class="text-center ma-2">
-        <v-progress-circular :size="50" color="primary" indeterminate />
-        Loading data...
-      </h2>
-      <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
-    </v-container>
+  <template v-if="activeFeature">
+    <template v-if="hasData">
+      <v-container v-if="!activeIsLake" fluid fill-height>
+        <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
+          <v-tab value="timeseries">
+            <v-icon :icon="mdiTimelineClock"></v-icon>
+            Reach Averaged
+          </v-tab>
+          <v-tab value="distance">
+            <v-icon :icon="mdiMapMarkerDistance"></v-icon>
+            Node Profile
+          </v-tab>
+        </v-tabs>
+        <TimeSeriesCharts v-if="chartStore.chartTab === 'timeseries'" />
+        <DistanceCharts v-if="chartStore.chartTab === 'distance'" />
+      </v-container>
+      <v-container v-else fluid fill-height>
+        <TimeSeriesCharts />
+      </v-container>
+    </template>
+    <template v-else>
+      <v-container v-if="fetchingData">
+        <h2 class="text-center ma-2">
+          <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
+          Loading data...
+        </h2>
+        <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
+      </v-container>
+      <v-container v-else>
+        <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
+          <span>
+            No data available for the selected feature. Please try querying HydroCron again or
+            selecting a different feature from the
+            <router-link :to="{ path: `/` }">Map</router-link>.
+          </span>
+        </v-sheet>
+      </v-container>
+    </template>
   </template>
   <template v-else>
     <v-container>
       <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
-        <span v-if="!hasData && !fetchingData">
+        <span>
           You don't have any data to view yet. Use the
           <router-link :to="{ path: `/` }">Map</router-link> to make selections.
-        </span>
-        <span v-else>
-          Plots are only available for reaches. Use the
-          <router-link :to="{ path: `/` }">Map</router-link> to select a reach.
         </span>
       </v-sheet>
     </v-container>
@@ -55,7 +66,7 @@ import { queryHydroCron, getNodeDataForReach } from '../_helpers/hydroCron'
 // TODO: register chartjs globally
 import { ChartJS } from '@/_helpers/charts/charts' // eslint-disable-line
 
-const props = defineProps({ reachId: String })
+const props = defineProps({ featureId: String })
 const router = useRouter()
 
 const chartStore = useChartsStore()
@@ -77,17 +88,17 @@ watch(activeFeature, async (newActiveFeature) => {
 onMounted(async () => {
   mapStore.generateReachesFeatures()
   if (activeFeature.value) {
-    // set the reach id in the url from the active feature
-    if (props.reachId === '') {
-      router.replace({ params: { reachId: activeFeature.value.properties.reach_id } })
+    // set the feature id in the url from the active feature
+    if (props.featureId === '') {
+      router.replace({ params: { featureId: activeFeature.value.properties.feature_id } })
     }
     runQuery()
   }
   const currentRoute = router.currentRoute.value
   chartStore.checkQueryParams(currentRoute)
-  if (props.reachId !== '') {
+  if (props.featureId !== '') {
     querying.value.hydrocron = true
-    featuresStore.setActiveFeatureById(props.reachId)
+    featuresStore.setActiveFeatureById(props.featureId)
   }
 })
 
@@ -97,6 +108,10 @@ const runQuery = async () => {
   chartStore.buildChart(selectedFeatures.value)
   querying.value.hydrocron = false
 
+  // only get node data if the feature is a reach
+  if (activeIsLake.value) {
+    return
+  }
   querying.value.nodes = true
   await getNodeDataForReach(activeFeature.value)
   querying.value.nodes = false
@@ -109,7 +124,5 @@ let hasData = computed(() => chartStore.chartData && chartStore.chartData.datase
 let fetchingData = computed(
   () => !hasData.value && (querying.value.hydrocron || querying.value.nodes)
 )
-let activeFeatureIsReach = computed(() => {
-  return activeFeature.value && activeFeature.value.feature_type.toLowerCase() === 'reach'
-})
+let activeIsLake = computed(() => activeFeature.value?.feature_type.toLowerCase() === 'priorlake')
 </script>
