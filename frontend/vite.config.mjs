@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [vue(), vuetify(), vueDevTools()],
     root: './',
+    assetsInclude: ['**/*.md'],
     // for GH pages deployment, set VITE_APP_BASE=/com_res/ in .env
     base: env.VITE_APP_BASE || '/',
     envDir: '../',
