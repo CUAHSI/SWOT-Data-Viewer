@@ -3,11 +3,11 @@
     <v-container v-if="hasData" fluid fill-height>
       <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
         <v-tab value="timeseries">
-          <v-icon :icon="mdiTimelineClock"></v-icon>
+          <v-icon :icon="mdiTimelineClock" />
           Reach Averaged
         </v-tab>
         <v-tab value="distance">
-          <v-icon :icon="mdiMapMarkerDistance"></v-icon>
+          <v-icon :icon="mdiMapMarkerDistance" />
           Node Profile
         </v-tab>
       </v-tabs>
@@ -17,7 +17,7 @@
 
     <v-container v-if="fetchingData">
       <h2 class="text-center ma-2">
-        <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
+        <v-progress-circular :size="50" color="primary" indeterminate />
         Loading data...
       </h2>
       <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />

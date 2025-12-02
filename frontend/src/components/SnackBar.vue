@@ -2,7 +2,7 @@
   <div class="text-center ma-2">
     <v-snackbar :v-bind="props.show" :timeout="props.timeout">
       {{ props.message }}
-      <template v-slot:actions>
+      <template #actions>
         <v-btn variant="text" @click="showing = false"> Close </v-btn>
       </template>
     </v-snackbar>

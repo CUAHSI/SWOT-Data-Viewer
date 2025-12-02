@@ -21,7 +21,7 @@
               :loading="true"
               :height="200"
               :width="100"
-            ></v-skeleton-loader>
+            />
           </div>
         </v-card-item>
       </v-card>
@@ -38,8 +38,8 @@
       <v-card-item>
         <v-card-title>{{ resource.title }}</v-card-title>
         <v-card-subtitle>
-          <v-chip v-for="creator in resource.creators" :key="creator" class="mr-2" label
-            >{{ creator.name }}
+          <v-chip v-for="creator in resource.creators" :key="creator" class="mr-2" label>
+            {{ creator.name }}
           </v-chip>
         </v-card-subtitle>
       </v-card-item>
@@ -73,7 +73,9 @@
           <v-tooltip activator="parent" location="bottom">
             View rendered copies at nbviewer.org
           </v-tooltip>
-          <v-icon left>{{ mdiNotebook }}</v-icon>
+          <v-icon left>
+            {{ mdiNotebook }}
+          </v-icon>
           Preview
           <v-menu activator="parent">
             <v-list dense class="pa-0" style="width: 300px" max-height="400px" overflow-y="auto">
@@ -95,18 +97,24 @@
           <v-tooltip activator="parent" location="bottom">
             View a rendered copy at nbviewer.org
           </v-tooltip>
-          <v-icon left>{{ mdiNotebook }}</v-icon>
+          <v-icon left>
+            {{ mdiNotebook }}
+          </v-icon>
           Preview
         </v-btn>
         <v-btn :href="hydroShareBagUrl(resource)" download>
-          <v-icon left>{{ mdiDownloadBox }}</v-icon>
+          <v-icon left>
+            {{ mdiDownloadBox }}
+          </v-icon>
           Download
           <v-tooltip activator="parent" location="bottom">
             Download the full HydroShare resource including metadata
           </v-tooltip>
         </v-btn>
         <v-btn :href="cuahsi_jh_url(resource)" target="_blank">
-          <v-icon left>{{ mdiRocketLaunch }}</v-icon>
+          <v-icon left>
+            {{ mdiRocketLaunch }}
+          </v-icon>
           Launch in CUAHSI
           <v-tooltip activator="parent" location="bottom">
             Launch using CUAHSI JupyterHub

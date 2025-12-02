@@ -1,9 +1,9 @@
 <template>
   <v-app-bar
     v-if="!$route.meta.hideNavigation"
-    color="navbar"
-    ref="appBar"
     id="app-bar"
+    ref="appBar"
+    color="navbar"
     elevate-on-scroll
     fixed
     app
@@ -11,18 +11,18 @@
   >
     <div class="d-flex align-end full-height pa-2 align-center w-100">
       <router-link :to="{ path: `/` }" class="logo">
-        <v-img :src="imgUrl" cover width="10rem" class="ma-2"></v-img>
+        <v-img :src="imgUrl" cover width="10rem" class="ma-2" />
       </router-link>
 
-      <v-spacer></v-spacer>
+      <v-spacer />
 
-      <v-card class="nav-items mr-2 d-flex mr-4" :elevation="2" v-if="!smAndDown">
+      <v-card v-if="!smAndDown" class="nav-items mr-2 d-flex mr-4" :elevation="2">
         <nav>
           <v-btn
             v-for="path of paths"
-            :key="path.attrs.to || path.attrs.href"
             v-bind="path.attrs"
             :id="`navbar-nav-${path.label.replaceAll(/[\/\s]/g, ``)}`"
+            :key="path.attrs.to || path.attrs.href"
             :elevation="0"
             active-class="primary"
             :class="$route.path.includes(path.attrs.to) ? 'v-btn--active' : ''"
@@ -31,22 +31,22 @@
           </v-btn>
         </nav>
       </v-card>
-      <v-spacer></v-spacer>
+      <v-spacer />
       <v-tooltip text="Share This Page" location="bottom">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <v-btn icon v-bind="props" @click="toggleDialog">
-            <v-icon :icon="mdiLink"></v-icon>
+            <v-icon :icon="mdiLink" />
           </v-btn>
         </template>
       </v-tooltip>
       <v-tooltip text="Report an Issue" location="bottom">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <v-btn icon v-bind="props" @click="toggleGithubDialog">
-            <v-icon :icon="mdiGithub"></v-icon>
+            <v-icon :icon="mdiGithub" />
           </v-btn>
         </template>
       </v-tooltip>
-      <v-app-bar-nav-icon @click="$emit('toggleMobileNav')" v-if="smAndDown" />
+      <v-app-bar-nav-icon v-if="smAndDown" @click="$emit('toggleMobileNav')" />
     </div>
   </v-app-bar>
   <v-dialog v-model="showCopyUrlDialog" max-width="500">
@@ -55,18 +55,18 @@
       <v-card-text>
         <p class="text-body-1">Copy the link below to share this page with others.</p>
         <v-text-field
-          variant="outlined"
-          v-on:focus="$event.target.select()"
           ref="clone"
+          variant="outlined"
           readonly
           :value="pageUrl"
+          @focus="$event.target.select()"
         />
-        <v-btn v-if="!hasCopied" @click="copyUrl">Copy</v-btn>
-        <v-btn color="green" v-else @click="copyUrl">Copied to clipboard!</v-btn>
+        <v-btn v-if="!hasCopied" @click="copyUrl"> Copy </v-btn>
+        <v-btn v-else color="green" @click="copyUrl"> Copied to clipboard! </v-btn>
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text="Close" @click="toggleDialog"></v-btn>
+        <v-spacer />
+        <v-btn text="Close" @click="toggleDialog" />
       </v-card-actions>
     </v-card>
   </v-dialog>

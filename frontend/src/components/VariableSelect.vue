@@ -4,11 +4,11 @@
     <v-container fluid>
       <v-checkbox
         v-for="variable in hydrologicStore.selectableVariables"
+        :key="variable.abbreviation"
         v-model="hydrologicStore.selectedVariables"
         :label="variable.name"
         :value="variable"
-        :key="variable.abbreviation"
-      ></v-checkbox>
+      />
     </v-container>
   </v-card>
 </template>
