@@ -375,6 +375,19 @@ export const useChartsStore = defineStore(
         return dataPoint.time_str
       })
 
+      // check to see if there are data in the time range
+      let hasDataInRange = chartData.value.datasets.some((dataset) => dataset.data.length > 0)
+      if (!hasDataInRange) {
+        const alertStore = useAlertStore()
+        alertStore.displayAlert({
+          title: 'No Data in Time Range',
+          text: 'There are no data points within the selected time range. Please adjust the time range to view data.',
+          type: 'warning',
+          closable: true,
+          duration: 3
+        })
+      }
+
       const nodeDataSets = nodeChartData.value.datasets
       if (nodeDataSets) {
         nodeDataSets.forEach((dataset) => {
