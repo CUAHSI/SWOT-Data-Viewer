@@ -16,7 +16,7 @@ cp .env.template .env
 make build-all
 make up-all
 ```
-The API will be available at http://0.0.0.0:8000 
+The API will be available at http://0.0.0.0:8000
 The UI will be available at http://localhost:5173
 
 To bring the stack down:

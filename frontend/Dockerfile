@@ -1,4 +1,4 @@
-FROM node:20.9.0 as node_build
+FROM node:20.19.6 AS node_build
 WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
@@ -8,7 +8,7 @@ ADD ./ ./
 RUN npm run build
 
 # Production layer
-FROM caddy:2.7.6-alpine as prod
+FROM caddy:2.10.2-alpine AS prod
 
 COPY docker-entrypoint.sh /usr/local/bin/
 

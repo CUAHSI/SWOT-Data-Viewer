@@ -123,6 +123,18 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       plottable: false
     },
     {
+      abbreviation: 'quality_f',
+      name: 'Lake Quality Flag',
+      unit: '',
+      definition:
+        'Summary quality indicator for the lake measurement. Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively. Measurements that are marked as suspect may have large errors. Measurements that are marked as degraded very likely do have large errors. Measurements that are marked as bad may be nonsensicial and should be ignored.',
+      default: false,
+      always: true,
+      selectable: false,
+      fileType: 'priorlake',
+      plottable: false
+    },
+    {
       abbreviation: 'node_dist',
       name: 'Node Dispersion',
       unit: 'm',
