@@ -20,7 +20,7 @@
       </v-container>
     </template>
     <template v-else>
-      <v-container v-if="fetchingData">
+      <v-container v-if="!hasData" fluid fill-height>
         <h2 class="text-center ma-2">
           <v-progress-circular :size="50" color="primary" indeterminate />
           Loading data...
@@ -134,5 +134,6 @@ let hasReachData = computed(() => chartStore.chartData && chartStore.chartData.d
 let hasNodeData = computed(
   () => chartStore.nodeChartData && chartStore.nodeChartData.datasets?.length > 0
 )
+let hasData = computed(() => hasReachData.value || hasNodeData.value)
 let activeIsLake = computed(() => activeFeature.value?.feature_type.toLowerCase() === 'priorlake')
 </script>
