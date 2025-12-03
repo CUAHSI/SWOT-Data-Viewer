@@ -20,6 +20,7 @@ export const useChartsStore = defineStore(
     const activeNodeChart = ref(null)
     const activeReachChart = ref(null)
     const hasNodeData = ref(false)
+    const hasReachData = ref(false)
     const chartTab = ref('timeseries')
     const showStatistics = ref(false)
     const symbology = ref(['Lines', 'Markers'])
@@ -1006,6 +1007,7 @@ export const useChartsStore = defineStore(
       buildChart,
       buildDistanceChart,
       hasNodeData,
+      hasReachData,
       dynamicColors,
       dataQualityFilterAllDatasets,
       updateAllChartsData,

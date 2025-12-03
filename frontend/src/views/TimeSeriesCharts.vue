@@ -60,8 +60,9 @@ const featuresStore = useFeaturesStore()
 
 const { activePlt, activeReachChart, reachCharts, lakeCharts } = storeToRefs(chartStore)
 const { activeFeature } = storeToRefs(featuresStore)
+const { hasReachData } = storeToRefs(chartStore)
 
-let hasData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
+let hasData = computed(() => hasReachData.value)
 
 let timeSeriesCharts = computed(() => {
   // decide which charts to show based on feature type

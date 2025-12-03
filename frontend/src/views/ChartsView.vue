@@ -74,7 +74,7 @@ const featuresStore = useFeaturesStore()
 const statsStore = useStatsStore()
 const mapStore = useMapStore()
 const { querying, activeFeature, selectedFeatures } = storeToRefs(featuresStore)
-const { showStatistics } = storeToRefs(chartStore)
+const { showStatistics, hasNodeData, hasReachData } = storeToRefs(chartStore)
 
 // use a watcher to run the query once the active feature is set
 // we do this because it seems that async queries from esri leaflet
@@ -107,9 +107,11 @@ const runQuery = async () => {
   const response = await queryHydroCron(activeFeature.value)
   querying.value.hydrocron = false
   if (response == null) {
-    querying.value.nodes = false
+    hasReachData.value = false
+    hasNodeData.value = false
     return
   }
+  hasReachData.value = true
   chartStore.buildChart(selectedFeatures.value)
 
   // only get node data if the feature is a reach
@@ -118,23 +120,19 @@ const runQuery = async () => {
   }
   querying.value.nodes = true
   await getNodeDataForReach(activeFeature.value)
+  // todo: set hasNodeData based on if any data were found
+  hasNodeData.value = activeFeature.value.nodes.some(
+    (node) => node.results && node.results.length > 0
+  )
 
   // check to see if any node data were actually found
   if (hasNodeData.value) {
     chartStore.buildDistanceChart(featuresStore.nodes)
     // show stats if they are enabled
     statsStore.toggleSeriesStatistics(showStatistics.value)
-    chartStore.hasNodeData = true
-  } else {
-    chartStore.hasNodeData = false
   }
   querying.value.nodes = false
 }
-
-let hasReachData = computed(() => chartStore.chartData && chartStore.chartData.datasets?.length > 0)
-let hasNodeData = computed(
-  () => chartStore.nodeChartData && chartStore.nodeChartData.datasets?.length > 0
-)
 let hasData = computed(() => hasReachData.value || hasNodeData.value)
 let fetchingData = computed(() => querying.value.hydrocron || querying.value.nodes)
 let activeIsLake = computed(() => activeFeature.value?.feature_type.toLowerCase() === 'priorlake')
