@@ -81,7 +81,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
       closable: true,
       duration: 3
     })
-    return
+    return null
   }
 
   const start_time = EARLIEST_HYDROCRON_DATETIME
@@ -111,7 +111,7 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   // https://github.com/podaac/hydrocron/issues/306
   let response = await fetchHydroCronData(ENDPOINTS.hydrocron, params, swordFeature)
   if (response == null) {
-    return
+    return null
   }
   // TODO handle if the feature is already selected (in case of csv download)
   if (output === 'csv') {

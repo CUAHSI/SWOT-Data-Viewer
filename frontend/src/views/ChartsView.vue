@@ -20,7 +20,7 @@
       </v-container>
     </template>
     <template v-else>
-      <v-container v-if="!hasData" fluid fill-height>
+      <v-container v-if="fetchingData" fluid fill-height>
         <h2 class="text-center ma-2">
           <v-progress-circular :size="50" color="primary" indeterminate />
           Loading data...
@@ -104,12 +104,13 @@ onMounted(async () => {
 
 const runQuery = async () => {
   querying.value.hydrocron = true
-  await queryHydroCron(activeFeature.value)
+  const response = await queryHydroCron(activeFeature.value)
   querying.value.hydrocron = false
-  chartStore.buildChart(selectedFeatures.value)
-  if (!hasReachData.value) {
+  if (response == null) {
+    querying.value.nodes = false
     return
   }
+  chartStore.buildChart(selectedFeatures.value)
 
   // only get node data if the feature is a reach
   if (activeIsLake.value) {
@@ -135,5 +136,6 @@ let hasNodeData = computed(
   () => chartStore.nodeChartData && chartStore.nodeChartData.datasets?.length > 0
 )
 let hasData = computed(() => hasReachData.value || hasNodeData.value)
+let fetchingData = computed(() => querying.value.hydrocron || querying.value.nodes)
 let activeIsLake = computed(() => activeFeature.value?.feature_type.toLowerCase() === 'priorlake')
 </script>
