@@ -8,7 +8,7 @@ ADD ./ ./
 RUN npm run build
 
 # Production layer
-FROM caddy:2.7.6-alpine as prod
+FROM caddy:2.10.2-alpine AS prod
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
