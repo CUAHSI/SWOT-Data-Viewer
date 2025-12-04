@@ -2,7 +2,6 @@
   <v-app>
     <v-main>
       <TheAppBar :paths="paths" @toggle-mobile-nav="toggleMobileNav" />
-      <AlertPopup v-bind="alertStore.displayed" />
       <TheMobileNavDrawer
         :show="showMobileNavigation"
         :paths="paths"
@@ -17,6 +16,7 @@
         href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
         rel="stylesheet"
       />
+      <AlertPopup v-bind="alertStore.displayed" />
       <TheFooter />
     </v-main>
   </v-app>
