@@ -27,6 +27,11 @@ const closeEvent = () => {
 .zlert {
   position: fixed;
   z-index: 9999;
-  width: 100vw;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  max-width: calc(100vw - 10px);
+  margin: 0 auto; /* Center horizontally */
+  box-sizing: border-box;
 }
 </style>
