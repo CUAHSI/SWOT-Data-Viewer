@@ -262,6 +262,14 @@ export const useChartsStore = defineStore(
         const datasets = data?.datasets
         if (datasets == null) {
           console.warn('No datasets found when filtering data quality')
+          const alertStore = useAlertStore()
+          alertStore.displayAlert({
+            title: 'No Data to Display',
+            text: 'No data available with the selected data quality filters. Please select a broader time range or different filters.',
+            type: 'warning',
+            closable: true,
+            duration: 6
+          })
           continue
         }
         // loop over each point in the swot datasets and update the point style
