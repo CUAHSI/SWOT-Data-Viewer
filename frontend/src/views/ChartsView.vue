@@ -1,14 +1,14 @@
 <template>
-  <template v-if="activeFeature">
+  <template v-if="activeFeature || fetchingData">
     <template v-if="hasData">
       <v-container v-if="!activeIsLake" fluid fill-height>
         <v-tabs v-model="chartStore.chartTab" align-tabs="center" fixed-tabs color="primary" grow>
           <v-tab value="timeseries">
-            <v-icon :icon="mdiTimelineClock"></v-icon>
+            <v-icon :icon="mdiTimelineClock" />
             Reach Averaged
           </v-tab>
           <v-tab value="distance">
-            <v-icon :icon="mdiMapMarkerDistance"></v-icon>
+            <v-icon :icon="mdiMapMarkerDistance" />
             Node Profile
           </v-tab>
         </v-tabs>
@@ -22,7 +22,7 @@
     <template v-else>
       <v-container v-if="fetchingData">
         <h2 class="text-center ma-2">
-          <v-progress-circular :size="50" color="primary" indeterminate></v-progress-circular>
+          <v-progress-circular :size="50" color="primary" indeterminate />
           Loading data...
         </h2>
         <v-skeleton-loader height="70vh" type="image, divider, list-item-two-line" />
@@ -30,8 +30,7 @@
       <v-container v-else>
         <v-sheet border="md" class="pa-6 mx-auto ma-4" max-width="1200" rounded>
           <span>
-            No data available for the selected feature. Please try querying HydroCron again or
-            selecting a different feature from the
+            No data available for the selected feature. Please select a different feature from the
             <router-link :to="{ path: `/` }">Map</router-link>.
           </span>
         </v-sheet>
@@ -105,6 +104,13 @@ onMounted(async () => {
 const runQuery = async () => {
   querying.value.hydrocron = true
   await queryHydroCron(activeFeature.value)
+
+  // check to see if the swordfeature has an queries
+  if (!activeFeature.value.queries || activeFeature.value.queries.length === 0) {
+    querying.value.hydrocron = false
+    return
+  }
+
   chartStore.buildChart(selectedFeatures.value)
   querying.value.hydrocron = false
 
