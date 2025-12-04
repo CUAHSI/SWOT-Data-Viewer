@@ -157,7 +157,7 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
             text,
             type: 'warning',
             closable: true,
-            duration: 6
+            duration: 3
           })
           return null
         }
