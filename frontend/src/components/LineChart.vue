@@ -1,10 +1,11 @@
 <template>
   <v-container class="overflow-auto">
     <v-sheet
+      class="chart-sheet"
       :min-height="lgAndUp ? '65vh' : '50vh'"
-      :max-height="lgAndUp ? '100%' : '20vh'"
+      :max-height="lgAndUp ? '100%' : '75vh'"
+      :min-width="smAndDown ? '100%' : '500px'"
       max-width="100%"
-      min-width="500px"
     >
       <!-- Add Reset Zoom Icon -->
       <v-tooltip>
@@ -76,7 +77,7 @@ import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from
 import { convertDateStringToSeconds } from '@/_helpers/time'
 import { useStatsStore } from '../stores/stats'
 
-const { lgAndUp } = useDisplay()
+const { lgAndUp, smAndDown } = useDisplay()
 const panel = ref(['plotActions'])
 
 const hasSelectedTimeseriesPoints = computed(() => selectedTimeseriesPoints.value.length > 0)
@@ -319,3 +320,9 @@ const removeSelectedTimeseriesPoint = (timeSeriesPoint, ref = false) => {
   }
 }
 </script>
+
+<style scoped>
+.chart-sheet {
+  width: 100%;
+}
+</style>

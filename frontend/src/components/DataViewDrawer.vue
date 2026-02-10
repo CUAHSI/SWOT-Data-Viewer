@@ -3,15 +3,15 @@
     v-if="featureStore.activeFeature"
     v-model="show"
     location="right"
-    width="auto"
+    :width="drawerWidth"
+    :temporary="isMobile"
     order="1"
   >
     <v-container v-if="featureStore.activeFeature">
       <v-btn
-        v-if="featureStore.activeFeature"
+        v-if="featureStore.activeFeature && !isMobile"
         location="left"
         order="0"
-        postition="absolute"
         :style="{ bottom: '30%', transform: translate(), position: 'absolute' }"
         :icon="show ? mdiChevronRight : mdiChevronLeft"
         @click="show = !show"
@@ -31,15 +31,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot } from '@mdi/js'
 import StaticMetadata from './StaticMetadata.vue'
 import { useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 
 const featureStore = useFeaturesStore()
 
 let show = ref(false)
+const display = useDisplay()
+const isMobile = computed(() => display.smAndDown.value)
+const drawerWidth = computed(() => (isMobile.value ? '100%' : 420))
 
 const translate = () => {
   if (show.value) {

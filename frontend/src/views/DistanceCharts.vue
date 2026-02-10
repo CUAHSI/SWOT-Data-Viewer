@@ -1,7 +1,7 @@
 <template>
   <v-container v-if="chartStore.hasNodeData" fluid fill-height>
     <v-row>
-      <v-col sm="2">
+      <v-col :cols="12" :lg="3" :xl="3">
         <v-sheet class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
           <v-tabs v-model="activePlt" direction="vertical" color="primary">
@@ -27,7 +27,7 @@
         <PlotActions :chosen-plot="activeNodeChart" @reset-data="resetData" />
       </v-col>
       <v-divider v-if="lgAndUp" class="my-2" vertical />
-      <v-col sm="10">
+      <v-col :cols="12" :lg="9" :xl="9">
         <v-window v-model="activePlt">
           <v-window-item v-for="plt in chartStore.nodeCharts" :key="plt.abbreviation" :value="plt">
             <NodeChart

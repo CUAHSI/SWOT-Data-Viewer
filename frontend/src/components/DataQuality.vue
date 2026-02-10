@@ -4,7 +4,7 @@
       <v-expansion-panel-title>Data Quality</v-expansion-panel-title>
       <v-expansion-panel-text>
         <!-- create list of dataQuality options -->
-        <v-list density="compact" slim>
+        <v-list class="data-quality-list" density="compact" slim>
           <v-list-item
             v-for="item in chartStore.dataQualityOptions"
             :key="item.value"
@@ -16,6 +16,7 @@
                 v-model="dataQualityFlags"
                 :label="item.label"
                 :value="item.value"
+                class="data-quality-checkbox"
                 @update:model-value="qualityHasChanged()"
               >
                 <template #append>
@@ -53,3 +54,24 @@ function qualityHasChanged() {
   statsStore.toggleSeriesStatistics(showStatistics.value)
 }
 </script>
+
+<style scoped>
+.data-quality-checkbox {
+  width: 100%;
+}
+
+.data-quality-checkbox :deep(.v-label) {
+  white-space: nowrap;
+  line-height: 1;
+  font-size: 0.9rem;
+}
+
+.data-quality-list :deep(.v-list-item) {
+  padding-inline: 0;
+  min-height: 28px;
+}
+
+.data-quality-list :deep(.v-list-item__content) {
+  padding-block: 2px;
+}
+</style>

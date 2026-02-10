@@ -3,26 +3,33 @@
     <v-expansion-panel value="plotActions">
       <v-expansion-panel-title>Actions</v-expansion-panel-title>
       <v-expansion-panel-text>
-        <v-btn :loading="downloading.chart" class="ma-1" color="input" @click="downloadChart()">
-          <v-icon :icon="mdiDownloadBox" />
-          Download Chart
-        </v-btn>
-        <v-btn :loading="downloading.csv" class="ma-1" color="input" @click="downCsv()">
-          <v-icon :icon="mdiFileDelimited" />
-          Download CSV
-        </v-btn>
-        <v-btn :loading="downloading.json" class="ma-1" color="input" @click="downJson()">
-          <v-icon :icon="mdiCodeJson" />
-          Download JSON
-        </v-btn>
-        <v-btn color="input" class="ma-1" @click="resetZoom()">
-          <v-icon :icon="mdiMagnifyMinusOutline" />
-          Reset Zoom
-        </v-btn>
-        <v-btn v-if="isNodeChart" color="input" class="ma-1" @click="resetData()">
-          <v-icon :icon="mdiEraser" />
-          Reset Data
-        </v-btn>
+        <div class="actions-wrap">
+          <v-btn
+            :loading="downloading.chart"
+            class="action-btn"
+            color="input"
+            @click="downloadChart()"
+          >
+            <v-icon :icon="mdiDownloadBox" />
+            Download Chart
+          </v-btn>
+          <v-btn :loading="downloading.csv" class="action-btn" color="input" @click="downCsv()">
+            <v-icon :icon="mdiFileDelimited" />
+            Download CSV
+          </v-btn>
+          <v-btn :loading="downloading.json" class="action-btn" color="input" @click="downJson()">
+            <v-icon :icon="mdiCodeJson" />
+            Download JSON
+          </v-btn>
+          <v-btn class="action-btn" color="input" @click="resetZoom()">
+            <v-icon :icon="mdiMagnifyMinusOutline" />
+            Reset Zoom
+          </v-btn>
+          <v-btn v-if="isNodeChart" class="action-btn" color="input" @click="resetData()">
+            <v-icon :icon="mdiEraser" />
+            Reset Data
+          </v-btn>
+        </div>
       </v-expansion-panel-text>
     </v-expansion-panel>
   </v-expansion-panels>
@@ -175,3 +182,21 @@ const resetData = () => {
   // props.chosenPlot.chart.update()
 }
 </script>
+
+<style scoped>
+.actions-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.action-btn :deep(.v-btn__content) {
+  white-space: normal;
+  gap: 6px;
+}
+</style>
