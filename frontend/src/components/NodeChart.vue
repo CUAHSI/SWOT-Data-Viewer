@@ -15,7 +15,7 @@
             size="small"
             @click="resetZoom()"
             style="position: absolute; top: 80px; right: 45px; z-index: 10"
-            :icon="mdiMagnifyMinusOutline"
+            :icon="mdiRestore"
           >
           </v-btn>
         </template>
@@ -35,7 +35,7 @@ import { nextTick, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useChartsStore } from '@/stores/charts'
 import { storeToRefs } from 'pinia'
-import { mdiMagnifyMinusOutline } from '@mdi/js'
+import { mdiRestore } from '@mdi/js'
 
 const { lgAndUp } = useDisplay()
 
