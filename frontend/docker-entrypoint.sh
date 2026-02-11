@@ -7,7 +7,6 @@ for file in $DIST_DIR/assets/*.js $DIST_DIR/index.html; do
     sed -i 's|VITE_APP_API_URL_PLACEHOLDER|'${VITE_APP_API_URL}'|g' $file
     sed -i 's|VITE_APP_FULL_URL_PLACEHOLDER|'${VITE_APP_FULL_URL}'|g' $file
     sed -i 's|VITE_APP_BASE_PLACEHOLDER|'${VITE_APP_BASE}'|g' $file
-    sed -i 's|VITE_HYDROCRON_URL_PLACEHOLDER|'${VITE_HYDROCRON_URL}'|g' $file
     sed -i 's|VITE_HYDROSHARE_NOTEBOOKS_COLLECTION_PLACEHOLDER|'${VITE_HYDROSHARE_NOTEBOOKS_COLLECTION}'|g' $file
 done
 

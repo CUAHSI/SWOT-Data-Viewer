@@ -1,5 +1,5 @@
 <template>
-  <div v-show="$route.meta.showMap" id="mapContainer"></div>
+  <div v-show="$route.meta.showMap" id="mapContainer" />
   <v-card
     v-if="$route.meta.showMap && zoom < minReachSelectionZoom"
     id="zoomIndicator"
@@ -7,11 +7,11 @@
     density="compact"
     dense
   >
-    <v-card-text> <v-icon :icon="mdiMagnifyPlus"></v-icon> Zoom in to select reaches </v-card-text>
+    <v-card-text> <v-icon :icon="mdiMagnifyPlus" /> Zoom in to select reaches </v-card-text>
   </v-card>
   <v-card v-if="$route.meta.showMap" id="mouseposition" color="info">
     <v-card-text>
-      <v-icon :icon="mdiCrosshairsGps"></v-icon> {{ latLong.lat?.toFixed(5) }},
+      <v-icon :icon="mdiCrosshairsGps" /> {{ latLong.lat?.toFixed(5) }},
       {{ latLong.lng?.toFixed(5) }} <br />
     </v-card-text>
   </v-card>
@@ -118,7 +118,7 @@ onMounted(async () => {
 
   mapStore.generateLakesFeatures()
 
-  let url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_swot_lakes/MapServer/WmsServer?'
+  let url = 'https://arcgis.cuahsi.org/arcgis/services/SWOT/SWOT_pld_v202/MapServer/WmsServer?'
   const lakesWMS = L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
@@ -140,7 +140,7 @@ onMounted(async () => {
 
   // add reaches layer to map
   url =
-    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator/MapServer/WMSServer?'
+    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_reaches_mercator_v17b/MapServer/WMSServer?'
   const reachesWMS = L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
@@ -153,7 +153,7 @@ onMounted(async () => {
 
   // add nodes layer to map
   url =
-    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator/MapServer/WMSServer?'
+    'https://arcgis.cuahsi.org/arcgis/services/SWOT/world_SWORD_nodes_mercator_v17b/MapServer/WMSServer?'
   L.tileLayer.wms(url, {
     layers: 0,
     transparent: 'true',
@@ -351,11 +351,18 @@ onMounted(async () => {
   // validate the map
   validate_bbox_size()
 
-  const swotriverMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+  const swotRiverNameMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
     label: 'River names',
     url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer',
     layers: [0],
-    searchFields: ['river_name ']
+    searchFields: ['river_name']
+  })
+
+  const swotReachServiceProvider = esriLeafletGeocoder.mapServiceProvider({
+    label: 'Reach ID',
+    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer',
+    layers: [0],
+    searchFields: ['reach_id', 'rch_id_up', 'rch_id_dn']
   })
 
   const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
@@ -389,12 +396,16 @@ onMounted(async () => {
   esriLeafletGeocoder
     .geosearch({
       position: 'topleft',
-      placeholder: 'Search for a location',
+      placeholder: 'Search for a location or feature',
+      title: 'Enter an address, river name, reach ID, or HUC8',
       useMapBounds: false,
       expanded: true,
-      title: ' search',
-
-      providers: [swotriverMapServiceProvider, hucMapServiceProvider, addressSearchProvider]
+      providers: [
+        swotRiverNameMapServiceProvider,
+        swotReachServiceProvider,
+        hucMapServiceProvider,
+        addressSearchProvider
+      ]
     })
     .addTo(leaflet)
 

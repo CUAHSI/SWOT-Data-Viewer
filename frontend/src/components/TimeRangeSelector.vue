@@ -9,9 +9,9 @@
         variant="outlined"
         hide-details
         single-line
-        @update:modelValue="updatetimeRange"
         :rules="[rules.min]"
-      ></v-text-field>
+        @update:model-value="updatetimeRange"
+      />
       <v-text-field
         v-model="dateRange[1]"
         density="compact"
@@ -19,9 +19,9 @@
         variant="outlined"
         hide-details
         single-line
-        @update:modelValue="updatetimeRange"
         :rules="[rules.max]"
-      ></v-text-field>
+        @update:model-value="updatetimeRange"
+      />
     </v-form>
   </v-card>
 </template>

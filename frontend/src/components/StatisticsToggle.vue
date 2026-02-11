@@ -1,7 +1,7 @@
 <template>
   <v-switch
-    label="Statistics"
     v-model="showStatistics"
+    label="Statistics"
     color="primary"
     @change="statsStore.toggleSeriesStatistics(showStatistics)"
   >

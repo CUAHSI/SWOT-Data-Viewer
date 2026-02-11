@@ -123,6 +123,18 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       plottable: false
     },
     {
+      abbreviation: 'quality_f',
+      name: 'Lake Quality Flag',
+      unit: '',
+      definition:
+        'Summary quality indicator for the lake measurement. Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively. Measurements that are marked as suspect may have large errors. Measurements that are marked as degraded very likely do have large errors. Measurements that are marked as bad may be nonsensicial and should be ignored.',
+      default: false,
+      always: true,
+      selectable: false,
+      fileType: 'priorlake',
+      plottable: false
+    },
+    {
       abbreviation: 'node_dist',
       name: 'Node Dispersion',
       unit: 'm',
@@ -584,6 +596,41 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       significant_figures: 0
     },
     {
+      abbreviation: 'ice_clim_flag',
+      definition: 'A flag indicating whether the lake is affected by ice climate conditions.',
+      short_definition: 'Prior Lake Database Ice Climate Flag',
+      fileType: 'PriorLake',
+      default: false,
+      swotviz_alias: 'Prior Lake Database Ice Climate Flag',
+      units: '',
+      plottable: false,
+      significant_figures: 3
+    },
+    {
+      abbreviation: 'ice_clim_flag2',
+      definition: 'A flag indicating whether the lake is affected by ice climate conditions.',
+      fileType: 'PriorLake',
+      default: false,
+      short_definition: 'Prior Lake Database Ice Climate Flag 2',
+      swotviz_alias: 'Prior Lake Database Ice Climate Flag 2',
+      units: '',
+      plottable: false,
+      significant_figures: 3
+    },
+    {
+      abbreviation: 'reach_id_list',
+      definition:
+        'A list of reach IDs associated with the lake in the Prior Lake Database (PLD). This field can contain multiple reach IDs that are linked to the lake.',
+      fileType: 'PriorLake',
+      default: false,
+      short_definition: 'Prior Lake Database (PLD) Reach ID List',
+      swotviz_alias: 'Prior Lake Database Reach ID List',
+      units: '',
+      plottable: false,
+      significant_figures: 0,
+      hidden: true
+    },
+    {
       abbreviation: 'ref_area',
       definition:
         'The reference area of the lake in the Prior Lake Database (PLD). This field provides the area of the lake as defined in the PLD, which may be used for comparison with other measurements or models.',
@@ -634,9 +681,14 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
         return []
       }
     }
+
     const descriptions = []
     for (const [abbreviation, val] of Object.entries(feature.properties)) {
       const found = variableFromAbreviation(abbreviation, fileType, defaultOnly)
+      // Skip if variable is found and has hidden = true
+      if (found && found.hidden) {
+        continue
+      }
       if (found) {
         let displayValue
         const displayKey = found.swotviz_alias || found.short_definition // Use alias if available
@@ -659,6 +711,13 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       for (let [key, val] of Object.entries(feature.properties)) {
         // first check if the key is already in the descriptions
         if (descriptions.some((desc) => desc.abbreviation === key)) {
+          continue
+        }
+        // Also check if this would be a hidden variable if it existed in swordVariables
+        const potentialHiddenVar = swordVariables.value.find(
+          (v) => v.abbreviation === key && v.hidden
+        )
+        if (potentialHiddenVar) {
           continue
         }
         descriptions.push({

@@ -1,7 +1,7 @@
 <template>
   <v-footer v-if="!$route.meta.hideNavigation" app color="navbar" class="d-flex flex-column">
     <div class="d-flex w-100 position-relative">
-      <v-spacer></v-spacer>
+      <v-spacer />
       <div class="poweredbycontainer">
         <v-card
           href="https://cuahsi.org"
@@ -12,8 +12,8 @@
           min-width="
           16rem"
         >
-          <template v-slot:append>
-            <v-img :src="imgUrl" cover width="8rem"></v-img>
+          <template #append>
+            <v-img :src="imgUrl" cover width="8rem" />
           </template>
         </v-card>
       </div>

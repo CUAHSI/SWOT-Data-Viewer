@@ -7,10 +7,10 @@
         :max="featuresStore.maxTime"
         class="align-center"
         hide-details
-        @update:modelValue="updateDateRange"
+        @update:model-value="updateDateRange"
         @end="updateDateRangeComplete"
       >
-        <template v-slot:prepend>
+        <template #prepend>
           <v-text-field
             v-model="dateRange[0]"
             density="compact"
@@ -18,11 +18,11 @@
             variant="outlined"
             hide-details
             single-line
-            @update:modelValue="updatetimeRange"
             :rules="[rules.min]"
-          ></v-text-field>
+            @update:model-value="updatetimeRange"
+          />
         </template>
-        <template v-slot:append>
+        <template #append>
           <v-text-field
             v-model="dateRange[1]"
             density="compact"
@@ -30,9 +30,9 @@
             variant="outlined"
             hide-details
             single-line
-            @update:modelValue="updatetimeRange"
             :rules="[rules.max]"
-          ></v-text-field>
+            @update:model-value="updatetimeRange"
+          />
         </template>
       </v-range-slider>
     </v-container>

@@ -34,6 +34,8 @@ export const useFeaturesStore = defineStore(
     }
 
     function selectFeature(feature) {
+      // add a common feature_id in addition to reach_id or lake_id
+      feature.properties.feature_id = feature.properties.reach_id || feature?.properties?.lake_id
       mapStore.selectFeature(feature)
       selectedFeatures.value.push(feature)
       activeFeature.value = feature

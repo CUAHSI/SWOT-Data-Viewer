@@ -1,12 +1,11 @@
 <template>
   <v-app>
     <v-main>
-      <TheAppBar @toggle-mobile-nav="toggleMobileNav" :paths="paths" />
-      <AlertPopup v-bind="alertStore.displayed"></AlertPopup>
+      <TheAppBar :paths="paths" @toggle-mobile-nav="toggleMobileNav" />
       <TheMobileNavDrawer
-        @toggle-mobile-nav="toggleMobileNav"
         :show="showMobileNavigation"
         :paths="paths"
+        @toggle-mobile-nav="toggleMobileNav"
       />
       <RouterView />
       <!-- The leaflet map kept alive outside of the RouterView -->
@@ -17,6 +16,7 @@
         href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
         rel="stylesheet"
       />
+      <AlertPopup v-bind="alertStore.displayed" />
       <TheFooter />
     </v-main>
   </v-app>

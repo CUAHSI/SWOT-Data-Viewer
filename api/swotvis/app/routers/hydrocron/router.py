@@ -47,6 +47,9 @@ async def proxy_hydrocron_timeseries(
 
     try:
         async with httpx.AsyncClient() as client:
+            print(
+                f"Original request url with params: {client.build_request('GET', HYDROCRON_BASE_URL, params=params).url}"
+            )
             response = await client.get(HYDROCRON_BASE_URL, params=params, timeout=30.0)
 
             # If the response is successful, return the content
@@ -57,7 +60,15 @@ async def proxy_hydrocron_timeseries(
                     return JSONResponse(content=response.json())
             else:
                 # Forward the error from the external API
-                raise HTTPException(status_code=response.status_code, detail=f"HydroCron API error: {response.text}")
+                # check if response has json content
+                if response.headers.get("Content-Type") == "application/json":
+                    error_detail = response.json()
+                else:
+                    error_detail = response.text
+                # ensure we include statusText as well
+                if "statusText" in response.headers:
+                    error_detail += f": {response.headers['statusText']}"
+                return JSONResponse(content=error_detail, status_code=response.status_code)
 
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Request timeout")
