@@ -1,7 +1,8 @@
-import { HYDROCRON_URL } from '@/constants'
+import { ENDPOINTS } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
+import { useChartsStore } from '@/stores/charts'
 import { EARLIEST_HYDROCRON_DATETIME } from '../constants'
 
 String.prototype.hashCode = function () {
@@ -87,6 +88,12 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const start_time = EARLIEST_HYDROCRON_DATETIME
   const end_time = new Date(Date.now() + MS_TO_KEEP_CACHE).toISOString().split('.')[0] + 'Z'
 
+  // determine which collection name to use based on feature type ('Reach' or 'PriorLake')
+  let collection_name = 'SWOT_L2_HR_RiverSP_D'
+  if (feature_type === 'PriorLake') {
+    collection_name = 'SWOT_L2_HR_LakeSP_D'
+  }
+
   params = {
     feature: feature_type,
     feature_id,
@@ -95,9 +102,15 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
     output,
     fields,
     // https://podaac.github.io/hydrocron/timeseries.html#compact-string-required-no
-    compact: 'true'
+    compact: 'true',
+    // https://podaac.github.io/hydrocron/timeseries.html#collection-name-string-required-no
+    collection_name
   }
-  let response = await fetchHydroCronData(HYDROCRON_URL, params, swordFeature)
+
+  // Use our API proxy URL instead of the direct HydroCron URL
+  // This is due to CORS issues with the HydroCron server
+  // https://github.com/podaac/hydrocron/issues/306
+  let response = await fetchHydroCronData(ENDPOINTS.hydrocron, params, swordFeature)
   if (response == null) {
     return
   }
@@ -134,19 +147,31 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
       })
       if (response.status < 500) {
         if (response.status == 400) {
+          let text = 'No data found for: '
+          if (params.feature && params.feature_id) {
+            text += `${params.feature} ${params.feature_id}`
+          } else {
+            text += JSON.stringify(params)
+          }
           alertStore.displayAlert({
             title: 'No data found',
-            text: `No data found for ${JSON.stringify(params)}`,
+            text,
             type: 'warning',
             closable: true,
-            duration: 6
+            duration: 3
           })
           return null
         }
       } else {
+        let text = 'Error while fetching SWOT data: '
+        if (response.statusText) {
+          text += response.statusText
+        } else {
+          text += 'Unknown error'
+        }
         alertStore.displayAlert({
           title: 'Error fetching SWOT data',
-          text: `Error while fetching SWOT data: ${response.statusText}`,
+          text,
           type: 'error',
           closable: true,
           duration: 3
@@ -218,7 +243,48 @@ async function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url)
 }
 
+const buildJsonFromDatasets = (datasets, options = {}) => {
+  const { includeLabel = true, labelKey = 'series_label' } = options
+  const rows = []
+  datasets.forEach((dataset) => {
+    if (!dataset?.data?.length || dataset.hidden) {
+      return
+    }
+    dataset.data.forEach((point) => {
+      const row = {}
+      if (includeLabel && dataset.label) {
+        row[labelKey] = dataset.label
+      }
+      Object.entries(point).forEach(([key, value]) => {
+        if (key === 'datetime') {
+          return
+        }
+        row[key] = value
+      })
+      rows.push(row)
+    })
+  })
+  return rows
+}
+
 async function downloadFeatureJson(feature = null) {
+  const chartStore = useChartsStore()
+  const filteredDatasets =
+    chartStore.chartData?.datasets?.filter((dataset) => {
+      return dataset.seriesType === 'swot_reach_series'
+    }) || []
+
+  if (filteredDatasets.length > 0) {
+    const rows = buildJsonFromDatasets(filteredDatasets)
+    const jsonData = JSON.stringify({ rows })
+    const blob = new Blob([jsonData], { type: 'application/json' })
+    const featuresStore = useFeaturesStore()
+    const activeFeature = featuresStore.activeFeature
+    const filename = getLongFilename(activeFeature) + '.json'
+    downloadBlob(blob, filename)
+    return
+  }
+
   if (feature == null) {
     const featuresStore = useFeaturesStore()
     feature = featuresStore.activeFeature
@@ -235,6 +301,26 @@ async function downloadFeatureJson(feature = null) {
 }
 
 async function downloadMultiNodesJson(nodes = []) {
+  const chartStore = useChartsStore()
+  const filteredDatasets =
+    chartStore.nodeChartData?.datasets?.filter((dataset) => {
+      return dataset.seriesType === 'swot_node_series'
+    }) || []
+
+  if (filteredDatasets.length > 0) {
+    const rows = buildJsonFromDatasets(filteredDatasets)
+    const jsonData = JSON.stringify({ rows })
+    const blob = new Blob([jsonData], { type: 'application/json' })
+    const featuresStore = useFeaturesStore()
+    const firstNode = featuresStore.nodes?.[0]
+    const filenameBase = firstNode ? getLongFilename(firstNode) : getLongFilename()
+    const nodeCount = featuresStore.nodes?.length || filteredDatasets.length
+    let filename = `${filenameBase}.json`
+    filename = `${nodeCount}_nodes_${filename}`
+    downloadBlob(blob, filename)
+    return
+  }
+
   if (nodes.length === 0) {
     nodes = useFeaturesStore().nodes
   }
@@ -257,7 +343,86 @@ async function modifyDateTimeStringForExcel(csvData) {
   return csvData
 }
 
+const escapeCsvValue = (value) => {
+  if (value == null) {
+    return ''
+  }
+  let text = value instanceof Date ? value.toISOString() : String(value)
+  if (text.includes('"')) {
+    text = text.replace(/"/g, '""')
+  }
+  if (/[",\n]/.test(text)) {
+    return `"${text}"`
+  }
+  return text
+}
+
+const buildCsvFromDatasets = (datasets, options = {}) => {
+  const { includeLabelColumn = true, labelKey = 'series_label' } = options
+  const rows = []
+  const headerSet = new Set()
+
+  datasets.forEach((dataset) => {
+    if (!dataset?.data?.length || dataset.hidden) {
+      return
+    }
+    dataset.data.forEach((point) => {
+      const row = {}
+      if (includeLabelColumn && dataset.label) {
+        row[labelKey] = dataset.label
+      }
+      Object.entries(point).forEach(([key, value]) => {
+        if (key === 'datetime') {
+          return
+        }
+        row[key] = value
+      })
+      rows.push(row)
+      Object.keys(row).forEach((key) => headerSet.add(key))
+    })
+  })
+
+  const headers = []
+  if (headerSet.has(labelKey)) {
+    headers.push(labelKey)
+    headerSet.delete(labelKey)
+  }
+  if (headerSet.has('time_str')) {
+    headers.push('time_str')
+    headerSet.delete('time_str')
+  }
+  const remaining = Array.from(headerSet).sort()
+  headers.push(...remaining)
+
+  const lines = [headers.join(',')]
+  rows.forEach((row) => {
+    const line = headers.map((header) => escapeCsvValue(row[header])).join(',')
+    lines.push(line)
+  })
+  return lines.join('\n')
+}
+
 async function downloadMultiNodesCsv(nodes = []) {
+  const chartStore = useChartsStore()
+  const filteredDatasets =
+    chartStore.nodeChartData?.datasets?.filter((dataset) => {
+      return dataset.seriesType === 'swot_node_series'
+    }) || []
+
+  if (filteredDatasets.length > 0) {
+    let csvData = buildCsvFromDatasets(filteredDatasets)
+    csvData = await modifyDateTimeStringForExcel(csvData)
+    const blob = new Blob([csvData], { type: 'text/csv' })
+    const featuresStore = useFeaturesStore()
+    const firstNode = featuresStore.nodes?.[0]
+    const filenameBase = firstNode ? getLongFilename(firstNode) : getLongFilename()
+    const nodeCount = featuresStore.nodes?.length || filteredDatasets.length
+    let filename = `${filenameBase}.csv`
+    filename = `${nodeCount}_nodes_${filename}`
+    downloadBlob(blob, filename)
+    return
+  }
+
   if (nodes.length === 0) {
     nodes = useFeaturesStore().nodes
   }
@@ -279,6 +444,23 @@ async function downloadMultiNodesCsv(nodes = []) {
 }
 
 async function downloadCsv(feature = null) {
+  const chartStore = useChartsStore()
+  const filteredDatasets =
+    chartStore.chartData?.datasets?.filter((dataset) => {
+      return dataset.seriesType === 'swot_reach_series'
+    }) || []
+
+  if (filteredDatasets.length > 0) {
+    let csvData = buildCsvFromDatasets(filteredDatasets)
+    csvData = await modifyDateTimeStringForExcel(csvData)
+    const blob = new Blob([csvData], { type: 'text/csv' })
+    const featuresStore = useFeaturesStore()
+    const activeFeature = featuresStore.activeFeature
+    const filename = `${getLongFilename(activeFeature)}.csv`
+    downloadBlob(blob, filename)
+    return
+  }
+
   // if feature not defined, use featuresStore.activeFeature
   if (feature == null) {
     const featuresStore = useFeaturesStore()
