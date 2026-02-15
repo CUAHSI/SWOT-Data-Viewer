@@ -16,7 +16,7 @@
           Download JSON
         </v-btn>
         <v-btn @click="resetZoom()" color="input" class="ma-1">
-          <v-icon :icon="mdiRestore"></v-icon>
+          <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
           Reset Zoom
         </v-btn>
         <v-btn v-if="isNodeChart" color="input" class="ma-1" @click="resetData()">
@@ -34,7 +34,13 @@ import { useChartsStore } from '@/stores/charts'
 import { useFeaturesStore } from '@/stores/features'
 import { ref, computed, defineEmits, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { mdiDownloadBox, mdiFileDelimited, mdiCodeJson, mdiRestore, mdiEraser } from '@mdi/js'
+import {
+  mdiDownloadBox,
+  mdiFileDelimited,
+  mdiCodeJson,
+  mdiMagnifyMinusOutline,
+  mdiEraser
+} from '@mdi/js'
 import {
   downloadCsv,
   downloadMultiNodesCsv,

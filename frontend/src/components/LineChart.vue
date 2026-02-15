@@ -14,7 +14,7 @@
             color="input"
             size="small"
             style="position: absolute; top: 120px; right: 45px; z-index: 10"
-            :icon="mdiRestore"
+            :icon="mdiMagnifyMinusOutline"
           >
           </v-btn>
         </template>
@@ -72,7 +72,7 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
 import { onMounted, nextTick } from 'vue'
-import { mdiChartBellCurveCumulative, mdiCloseBox, mdiRestore } from '@mdi/js'
+import { mdiChartBellCurveCumulative, mdiCloseBox, mdiMagnifyMinusOutline } from '@mdi/js'
 import { convertDateStringToSeconds } from '@/_helpers/time'
 import { useStatsStore } from '../stores/stats'
 
