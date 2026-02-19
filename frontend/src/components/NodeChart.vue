@@ -1,11 +1,10 @@
 <template>
   <v-container class="overflow-auto">
     <v-sheet
-      class="chart-sheet"
       :min-height="lgAndUp ? '65vh' : '50vh'"
-      :max-height="lgAndUp ? '100%' : '75vh'"
-      :min-width="smAndDown ? '100%' : '500px'"
+      :max-height="lgAndUp ? '100%' : '20vh'"
       max-width="100%"
+      min-width="500px"
     >
       <!-- Add Reset Zoom Icon -->
       <v-tooltip>
@@ -37,7 +36,7 @@ import { useChartsStore } from '@/stores/charts'
 import { storeToRefs } from 'pinia'
 import { mdiMagnifyMinusOutline } from '@mdi/js'
 
-const { lgAndUp, smAndDown } = useDisplay()
+const { lgAndUp } = useDisplay()
 
 const chartStore = useChartsStore()
 
@@ -179,9 +178,3 @@ const options = {
   }
 }
 </script>
-
-<style scoped>
-.chart-sheet {
-  width: 100%;
-}
-</style>

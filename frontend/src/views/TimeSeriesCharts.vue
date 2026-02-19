@@ -1,7 +1,7 @@
 <template>
   <v-container v-if="hasData" fluid fill-height>
     <v-row>
-      <v-col :cols="12" :lg="3" :xl="3">
+      <v-col sm="2">
         <v-card class="elevation-1" color="input">
           <v-card-title> Variables </v-card-title>
           <v-tabs v-model="activePlt" direction="vertical" color="primary">
@@ -27,7 +27,7 @@
         <PlotActions :chosen-plot="activeReachChart" />
       </v-col>
       <v-divider v-if="lgAndUp" class="my-2" vertical />
-      <v-col :cols="12" :lg="9" :xl="9">
+      <v-col sm="10">
         <v-window v-model="activePlt">
           <v-window-item v-for="plt in timeSeriesCharts" :key="plt.abbreviation" :value="plt">
             <LineChart v-if="plt" class="chart" :data="chartStore.chartData" :chosen-plot="plt" />
