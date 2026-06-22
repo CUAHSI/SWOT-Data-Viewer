@@ -337,7 +337,7 @@ function getLongFilename(feature = null) {
  */
 async function getNodesFromReach(reachFeature) {
   let url =
-    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0/query'
+    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator_v17b/FeatureServer/0/query'
   let params = {
     f: 'json',
     where: `reach_id=${reachFeature.properties.reach_id}`,
