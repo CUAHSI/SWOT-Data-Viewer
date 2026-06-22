@@ -1,5 +1,15 @@
 FROM python:3.10-slim
 
+# Ensure all system packages are up to date to reduce vulnerabilities
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && apt-get clean
+
+# Install system dependencies (required for Google Cloud SDK)
+RUN apt-get update && apt-get install -y \
+    curl \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
@@ -7,9 +17,8 @@ RUN pip install -r requirements.txt
 COPY requirements-dev.txt requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
-RUN python -m wget https://dl.min.io/client/mc/release/linux-amd64/mc
-RUN chmod +x mc
-RUN mv mc /usr/local/bin/mc
+RUN curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc \
+ && chmod +x /usr/local/bin/mc
 
 COPY ./swotvis /swotvis
 

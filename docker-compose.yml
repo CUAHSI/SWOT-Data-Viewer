@@ -1,5 +1,6 @@
 services:
   api:
+    platform: linux/amd64
     image: api
     ports:
       - 8000:8000

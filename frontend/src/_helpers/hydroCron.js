@@ -153,7 +153,7 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
             text += JSON.stringify(params)
           }
           alertStore.displayAlert({
-            title: 'No data found',
+            title: 'No data found: ' + response.status,
             text,
             type: 'warning',
             closable: true,
