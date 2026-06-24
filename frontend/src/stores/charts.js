@@ -258,18 +258,24 @@ export const useChartsStore = defineStore(
       chartData.value = JSON.parse(JSON.stringify(unfilteredChartData.value))
       nodeChartData.value = JSON.parse(JSON.stringify(unfilteredNodeChartData.value))
 
-      for (const data of [chartData.value, nodeChartData.value]) {
+      for (const [data, hasData] of [
+        [chartData.value, unfilteredChartData.value?.datasets != null],
+        [nodeChartData.value, hasNodeData.value]
+      ]) {
         const datasets = data?.datasets
         if (datasets == null) {
-          console.warn('No datasets found when filtering data quality')
-          const alertStore = useAlertStore()
-          alertStore.displayAlert({
-            title: 'No Data to Display',
-            text: 'No data available with the selected data quality filters. Please select a broader time range or different filters.',
-            type: 'warning',
-            closable: true,
-            duration: 6
-          })
+          // Only warn if the source data was expected to be present
+          if (hasData) {
+            console.warn('No datasets found when filtering data quality')
+            const alertStore = useAlertStore()
+            alertStore.displayAlert({
+              title: 'No Data to Display',
+              text: 'No data available with the selected data quality filters. Please select a broader time range or different filters.',
+              type: 'warning',
+              closable: true,
+              duration: 6
+            })
+          }
           continue
         }
         // loop over each point in the swot datasets and update the point style
