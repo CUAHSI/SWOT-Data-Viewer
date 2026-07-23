@@ -338,14 +338,14 @@ onMounted(async () => {
 
   const swotRiverNameMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
     label: 'River names',
-    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer',
+    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator_v17b/MapServer',
     layers: [0],
     searchFields: ['river_name']
   })
 
   const swotReachServiceProvider = esriLeafletGeocoder.mapServiceProvider({
     label: 'Reach ID',
-    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/MapServer',
+    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator_v17b/MapServer',
     layers: [0],
     searchFields: ['reach_id', 'rch_id_up', 'rch_id_dn']
   })

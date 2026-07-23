@@ -192,7 +192,7 @@ export const useMapStore = defineStore('map', () => {
       return reachesFeatures.value
     }
     const url =
-      'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator/FeatureServer/0'
+      'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator_v17b/FeatureServer/0'
     reachesFeatures.value = esriLeaflet.featureLayer({
       url: url,
       renderer: canvas({ tolerance: 5 }),
