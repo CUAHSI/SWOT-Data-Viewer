@@ -1,20 +1,5 @@
 <template>
   <div v-show="$route.meta.showMap" id="mapContainer" />
-  <v-card
-    v-if="$route.meta.showMap && zoom < minReachSelectionZoom"
-    id="zoomIndicator"
-    color="info"
-    density="compact"
-    dense
-  >
-    <v-card-text> <v-icon :icon="mdiMagnifyPlus" /> Zoom in to select reaches </v-card-text>
-  </v-card>
-  <v-card v-if="$route.meta.showMap" id="mouseposition" color="info">
-    <v-card-text>
-      <v-icon :icon="mdiCrosshairsGps" /> {{ latLong.lat?.toFixed(5) }},
-      {{ latLong.lng?.toFixed(5) }} <br />
-    </v-card-text>
-  </v-card>
 </template>
 
 <script setup>
@@ -26,11 +11,11 @@ import * as esriLeafletGeocoder from 'esri-leaflet-geocoder'
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import 'leaflet-easybutton/src/easy-button'
 import { onMounted, onUpdated } from 'vue'
+import { mdiMagnifyPlus, mdiMagnifyMinus } from '@mdi/js'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
-import { mdiMagnifyPlus, mdiCrosshairsGps } from '@mdi/js'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
@@ -163,7 +148,7 @@ onMounted(async () => {
   })
 
   url =
-    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator/FeatureServer/0'
+    'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_nodes_mercator_v17b/FeatureServer/0'
   const nodesFeatures = esriLeaflet.featureLayer({
     url: url,
     simplifyFactor: 0.35,
@@ -410,9 +395,14 @@ onMounted(async () => {
     .addTo(leaflet)
 
   // add zoom control again they are ordered in the order they are added
+  const mdiIconHtml = (path) =>
+    `<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="${path}"></path></svg>`
+
   L.control
     .zoom({
-      position: 'topleft'
+      position: 'topleft',
+      zoomInText: mdiIconHtml(mdiMagnifyPlus),
+      zoomOutText: mdiIconHtml(mdiMagnifyMinus)
     })
     .addTo(leaflet)
 
