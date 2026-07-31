@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { mdiChevronRight, mdiChevronLeft, mdiChartScatterPlot } from '@mdi/js'
 import StaticMetadata from './StaticMetadata.vue'
@@ -55,12 +55,14 @@ const hasResults = () => {
   return featureStore?.activeFeature?.results !== undefined
 }
 
-featureStore.$subscribe((mutation, state) => {
-  if (state.activeFeature !== null) {
-    // && typeof mutation.events.newValue === 'object'
-    show.value = true
+watch(
+  () => featureStore.activeFeature?.properties?.feature_id,
+  (newId, oldId) => {
+    if (newId != null && newId !== oldId) {
+      show.value = true
+    }
   }
-})
+)
 </script>
 
 <style scoped>

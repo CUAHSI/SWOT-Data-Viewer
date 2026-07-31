@@ -532,6 +532,7 @@ function clearSelection() {
 
   featureStore.clearSelectedFeatures()
   chartStore.clearChartData()
+  featureStore.activeFeature = null
 
   // update the map
   updateMapBBox()
