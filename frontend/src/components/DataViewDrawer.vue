@@ -12,7 +12,7 @@
         location="left"
         order="0"
         postition="absolute"
-        :style="{ bottom: '30%', transform: translate(), position: 'absolute' }"
+        :style="{ bottom: '30%', transform: translate(), position: 'absolute', zIndex: 2 }"
         :icon="show ? mdiChevronRight : mdiChevronLeft"
         @click="show = !show"
       />
