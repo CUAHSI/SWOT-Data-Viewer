@@ -531,11 +531,14 @@ export const useChartsStore = defineStore(
         for (const key in propertyObject) {
           let values = propertyObject[key]
           if (key == 'time_str') {
+            //convert time_str to Date objects and filter out any 'no_data' values
+            const validTimes = values.filter((t) => t !== 'no_data').map((t) => new Date(t))
+
             // set the min and max date times
-            // time_str should be in order but we make sure
-            values.sort()
-            minDateTime = new Date(values[0])
-            maxDateTime = new Date(values[values.length - 1])
+            if (validTimes.length > 0) {
+              minDateTime = new Date(Math.min(...validTimes))
+              maxDateTime = new Date(Math.max(...validTimes))
+            }
           }
           values.forEach((value, i) => {
             if (measurements[i] == null) {
