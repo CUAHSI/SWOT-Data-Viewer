@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useChartsStore } from '@/stores/charts'
 import { APP_API_URL } from '@/constants'
 
@@ -131,6 +131,9 @@ export const useStatsStore = defineStore('stats', () => {
 
   const recomputeStatsAndUpdateCharts = async () => {
     if (showStatistics.value == true) {
+      if (!nodeChartData.value?.datasets?.length) {
+        return
+      }
       // remove statistics from the chart
       let datasets = chartStore.nodeChartData.datasets.filter(
         (s) => s.seriesType != 'computed_series'
@@ -145,11 +148,17 @@ export const useStatsStore = defineStore('stats', () => {
       // save these data to the chartStore
       chartStore.updateNodeChartData(datasets)
 
-      // update the chart
-      chartStore.refreshAllCharts()
-      toggleSeriesStatistics(chartStore.showStatistics.value)
+      // update the chart data
+      chartStore.updateAllChartsData()
     }
   }
+
+
+  watch(activePlt, async () => {
+    if (showStatistics.value === true) {
+      await recomputeStatsAndUpdateCharts()
+    }
+  })
 
   return {
     toggleSeriesStatistics,
