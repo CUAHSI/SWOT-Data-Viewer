@@ -15,8 +15,8 @@
           <v-icon :icon="mdiCodeJson" />
           Download JSON
         </v-btn>
-        <v-btn color="input" class="ma-1" @click="resetZoom()">
-          <v-icon :icon="mdiMagnifyMinusOutline" />
+        <v-btn @click="resetZoom()" color="input" class="ma-1">
+          <v-icon :icon="mdiMagnifyMinusOutline"></v-icon>
           Reset Zoom
         </v-btn>
         <v-btn v-if="isNodeChart" color="input" class="ma-1" @click="resetData()">

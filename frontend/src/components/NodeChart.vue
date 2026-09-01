@@ -15,8 +15,8 @@
             size="small"
             style="position: absolute; top: 80px; right: 45px; z-index: 10"
             :icon="mdiMagnifyMinusOutline"
-            @click="resetZoom()"
-          />
+          >
+          </v-btn>
         </template>
         RESET ZOOM
       </v-tooltip>
