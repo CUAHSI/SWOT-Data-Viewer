@@ -66,7 +66,7 @@ onUpdated(async () => {
 onMounted(async () => {
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
-    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png',
+    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png?key=cb1_2px2_1_ff7d7d64dda9c23d26b82d71',
     {
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
@@ -76,7 +76,7 @@ onMounted(async () => {
   )
 
   var CartoDB_PositronNoLabels = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+    'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key=cb1_2px2_1_ff7d7d64dda9c23d26b82d71',
     {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -86,7 +86,17 @@ onMounted(async () => {
   )
 
   var CartoDB_DarkMatterNoLabels = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
+    'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png?key=cb1_2px2_1_ff7d7d64dda9c23d26b82d71',
+    {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }
+  )
+
+  var CartoDB_Voyager = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_2px2_1_ff7d7d64dda9c23d26b82d71',
     {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -98,7 +108,8 @@ onMounted(async () => {
   baselayers.value = {
     CartoDB,
     CartoDB_PositronNoLabels,
-    CartoDB_DarkMatterNoLabels
+    CartoDB_DarkMatterNoLabels,
+    CartoDB_Voyager
   }
 
   mapStore.generateLakesFeatures()
@@ -204,8 +215,8 @@ onMounted(async () => {
   if (activeBaseLayer) {
     activeBaseLayer.addTo(leaflet)
   } else {
-    CartoDB.addTo(leaflet)
-    activeBaseLayerName.value = CartoDB.name
+    CartoDB_Voyager.addTo(leaflet)
+    activeBaseLayerName.value = CartoDB_Voyager.name
   }
 
   // these layers are added and cannot be toggled
