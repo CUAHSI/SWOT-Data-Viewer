@@ -1,20 +1,5 @@
 <template>
   <div v-show="$route.meta.showMap" id="mapContainer" />
-  <v-card
-    v-if="$route.meta.showMap && zoom < minReachSelectionZoom"
-    id="zoomIndicator"
-    color="info"
-    density="compact"
-    dense
-  >
-    <v-card-text> <v-icon :icon="mdiMagnifyPlus" /> Zoom in to select reaches </v-card-text>
-  </v-card>
-  <v-card v-if="$route.meta.showMap" id="mouseposition" color="info">
-    <v-card-text>
-      <v-icon :icon="mdiCrosshairsGps" /> {{ latLong.lat?.toFixed(5) }},
-      {{ latLong.lng?.toFixed(5) }} <br />
-    </v-card-text>
-  </v-card>
 </template>
 
 <script setup>
@@ -26,11 +11,11 @@ import * as esriLeafletGeocoder from 'esri-leaflet-geocoder'
 // import * as esriLeafletVector from 'esri-leaflet-vector';
 import 'leaflet-easybutton/src/easy-button'
 import { onMounted, onUpdated } from 'vue'
+import { mdiMagnifyPlus, mdiMagnifyMinus } from '@mdi/js'
 import { useMapStore } from '@/stores/map'
 import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { useChartsStore } from '@/stores/charts'
-import { mdiMagnifyPlus, mdiCrosshairsGps } from '@mdi/js'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
@@ -81,7 +66,7 @@ onUpdated(async () => {
 onMounted(async () => {
   // Initial OSM tile layer
   const CartoDB = L.tileLayer(
-    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png',
+    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png?key=cb1_2px2_1_ff7d7d64dda9c23d26b82d71',
     {
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
@@ -91,7 +76,7 @@ onMounted(async () => {
   )
 
   var CartoDB_PositronNoLabels = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+    'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key=cb1_2px2_1_ff7d7d64dda9c23d26b82d71',
     {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -101,7 +86,17 @@ onMounted(async () => {
   )
 
   var CartoDB_DarkMatterNoLabels = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
+    'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png?key=cb1_2px2_1_ff7d7d64dda9c23d26b82d71',
+    {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }
+  )
+
+  var CartoDB_Voyager = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_2px2_1_ff7d7d64dda9c23d26b82d71',
     {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -113,7 +108,8 @@ onMounted(async () => {
   baselayers.value = {
     CartoDB,
     CartoDB_PositronNoLabels,
-    CartoDB_DarkMatterNoLabels
+    CartoDB_DarkMatterNoLabels,
+    CartoDB_Voyager
   }
 
   mapStore.generateLakesFeatures()
@@ -219,8 +215,8 @@ onMounted(async () => {
   if (activeBaseLayer) {
     activeBaseLayer.addTo(leaflet)
   } else {
-    CartoDB.addTo(leaflet)
-    activeBaseLayerName.value = CartoDB.name
+    CartoDB_Voyager.addTo(leaflet)
+    activeBaseLayerName.value = CartoDB_Voyager.name
   }
 
   // these layers are added and cannot be toggled
@@ -410,9 +406,14 @@ onMounted(async () => {
     .addTo(leaflet)
 
   // add zoom control again they are ordered in the order they are added
+  const mdiIconHtml = (path) =>
+    `<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="${path}"></path></svg>`
+
   L.control
     .zoom({
-      position: 'topleft'
+      position: 'topleft',
+      zoomInText: mdiIconHtml(mdiMagnifyPlus),
+      zoomOutText: mdiIconHtml(mdiMagnifyMinus)
     })
     .addTo(leaflet)
 
@@ -532,6 +533,7 @@ function clearSelection() {
 
   featureStore.clearSelectedFeatures()
   chartStore.clearChartData()
+  featureStore.activeFeature = null
 
   // update the map
   updateMapBBox()
