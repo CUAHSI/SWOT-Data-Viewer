@@ -36,9 +36,17 @@ async def compute_node_series(data: List[List[SwotNodeDataModel]]):
     # from HydroCron.
     series = SwotNodeDataSeriesModel(all_series=data)
 
+    df = series.as_dataframe()
+
+    # With no observations to summarize, the dataframe has no node-variable
+    # columns and the selection below raises a KeyError -> HTTP 500. Return
+    # empty series in that case instead.
+    if df.empty:
+        return {"median": [], "q0.25": [], "q0.75": []}
+
     # group all data by p_dist_out and remove all columns except
     # those corresponding to node variables
-    grouped = series.as_dataframe()[NodeVariables.list()].groupby("p_dist_out")
+    grouped = df[NodeVariables.list()].groupby("p_dist_out")
 
     # Compute node-level statistics. Replace np.nan with None because np.nan
     # is not JSON serializable. Convert all pandas dataframes to dictionaries
