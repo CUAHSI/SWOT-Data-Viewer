@@ -77,15 +77,17 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       plottable: true
     },
     {
-      abbreviation: 'dschg_c',
+      abbreviation: 'sos_consensus_q',
       name: 'Discharge',
       unit: 'm^3/s',
-      definition: 'Discharge from the consensus algorithm',
+      definition:
+        'Consensus (derived) discharge from the SWORD of Science (SoS), combining the estimates of the individual discharge algorithms (HiVDI, MetroMan, MOMMA, SAD, SIC4DVar). Discharge is only available for a subset of reaches and observations.',
       default: false,
       always: false,
       selectable: false,
       fileType: 'reach',
-      plottable: true
+      plottable: true,
+      collection_name: 'SWOT_L2_HR_RiverSP_2.0'
     },
     {
       abbreviation: 'geometry',
@@ -186,10 +188,14 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
       return (
         (variable.fileType.toLowerCase().includes(fileType.toLowerCase()) ||
           variable.fileType === 'all') &&
-        (always === undefined || variable.always === always)
+        (always === undefined || variable.always === always) &&
+        // variables from another collection are queried separately
+        !variable.collection_name
       )
     })
   }
+
+  const dischargeVariables = swotVariables.value.filter((variable) => variable.collection_name)
   const selectedVariables = ref(defaultVariables)
 
   const selectableVariables = swotVariables.value.filter((variable) => variable.selectable)
@@ -746,6 +752,7 @@ export const useHydrologicStore = defineStore('hydrologic', () => {
     selectedVariables,
     defaultVariables,
     queryVariables,
+    dischargeVariables,
     swordVariables,
     getSwordDescriptions
   }

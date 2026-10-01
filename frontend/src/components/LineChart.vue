@@ -127,6 +127,8 @@ const options = {
   responsive: true,
   maintainAspectRatio: false,
   parsing: getParsing,
+  // discharge is not available for every observation, so connect the line across gaps
+  spanGaps: true,
   plugins: {
     legend: {
       display: true,

@@ -2,7 +2,7 @@ import { ENDPOINTS } from '@/constants'
 import { useFeaturesStore } from '@/stores/features'
 import { useAlertStore } from '@/stores/alerts'
 import { useHydrologicStore } from '@/stores/hydrologic'
-import { EARLIEST_HYDROCRON_DATETIME } from '../constants'
+import { EARLIEST_HYDROCRON_DATETIME, NODE_DATETIME_VARIATION } from '../constants'
 
 String.prototype.hashCode = function () {
   var hash = 0,
@@ -18,6 +18,7 @@ String.prototype.hashCode = function () {
 }
 
 const MS_TO_KEEP_CACHE = 1000 * 60 * 60 * 24 * 7 // 7 days
+const HYDROCRON_FILL_VALUE = -999999999999
 
 const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   const hydrologicStore = useHydrologicStore()
@@ -109,7 +110,12 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   // Use our API proxy URL instead of the direct HydroCron URL
   // This is due to CORS issues with the HydroCron server
   // https://github.com/podaac/hydrocron/issues/306
-  let response = await fetchHydroCronData(ENDPOINTS.hydrocron, params, swordFeature)
+  // discharge lives in a different collection, so fetch it before the main response is processed
+  const discharge = feature_type === 'Reach' ? await queryDischarge(params) : null
+
+  let response = await fetchHydroCronData(ENDPOINTS.hydrocron, params, swordFeature, {
+    beforeStore: (data) => mergeDischarge(data, discharge, output)
+  })
   if (response == null) {
     return
   }
@@ -120,7 +126,107 @@ const queryHydroCron = async (swordFeature = null, output = 'geojson') => {
   return response
 }
 
-const fetchHydroCronData = async (url, params, swordFeature) => {
+/**
+ * Queries SoS discharge for a reach.
+ * https://podaac.github.io/hydrocron/user-guide/discharge/#discharge-algorithms
+ * Discharge is only served for the v2.0 collection, while the rest of the app uses the
+ * (newer) vD collection, so it is fetched separately and joined onto the vD time series.
+ */
+const queryDischarge = async (reachParams) => {
+  const hydrologicStore = useHydrologicStore()
+  const dischargeVariables = hydrologicStore.dischargeVariables
+  if (dischargeVariables.length === 0) {
+    return null
+  }
+  const params = {
+    ...reachParams,
+    output: 'geojson',
+    fields: ['time_str', ...dischargeVariables.map((v) => v.abbreviation)].join(','),
+    compact: 'true',
+    collection_name: dischargeVariables[0].collection_name
+  }
+  // many reaches have no discharge, so don't alert the user when nothing is found
+  const data = await fetchHydroCronData(ENDPOINTS.hydrocron, params, null, { silent: true })
+  const properties = data?.results?.geojson?.features?.[0]?.properties
+  if (!properties?.time_str) {
+    return null
+  }
+  const discharge = { times: [] }
+  dischargeVariables.forEach((v) => (discharge[v.abbreviation] = []))
+  properties.time_str.forEach((time_str, i) => {
+    if (time_str === 'no_data') {
+      return
+    }
+    discharge.times.push(new Date(time_str))
+    dischargeVariables.forEach((v) => {
+      const value = parseFloat(properties[v.abbreviation]?.[i])
+      discharge[v.abbreviation].push(isNaN(value) || value <= HYDROCRON_FILL_VALUE ? null : value)
+    })
+  })
+  return discharge
+}
+
+/**
+ * Finds the discharge observation within NODE_DATETIME_VARIATION of the given time.
+ * The v2.0 and vD time_str values for the same pass differ by a few seconds.
+ */
+const findDischargeIndex = (discharge, time_str) => {
+  if (time_str === 'no_data') {
+    return -1
+  }
+  const time = new Date(time_str)
+  const tolerance = NODE_DATETIME_VARIATION * 60 * 1000
+  return discharge.times.findIndex((t) => Math.abs(t - time) <= tolerance)
+}
+
+//Joins discharge values onto a vD reach response
+const mergeDischarge = (data, discharge, output) => {
+  if (!discharge) {
+    return
+  }
+  const keys = Object.keys(discharge).filter((key) => key !== 'times')
+  const hydrologicStore = useHydrologicStore()
+  if (output === 'csv') {
+    const lines = data.results.csv.split('\n')
+    const header = lines[0].split(',')
+    const timeIndex = header.indexOf('time_str')
+    if (timeIndex === -1) {
+      return
+    }
+    const units = keys.map(
+      (key) => hydrologicStore.dischargeVariables.find((v) => v.abbreviation === key).unit
+    )
+    data.results.csv = lines
+      .map((line, i) => {
+        if (line === '') {
+          return line
+        }
+        if (i === 0) {
+          return [line, ...keys, ...keys.map((key) => `${key}_units`)].join(',')
+        }
+        const index = findDischargeIndex(discharge, line.split(',')[timeIndex])
+        const values = keys.map((key) =>
+          index === -1 || discharge[key][index] == null
+            ? `${HYDROCRON_FILL_VALUE}.0`
+            : discharge[key][index]
+        )
+        return [line, ...values, ...units].join(',')
+      })
+      .join('\n')
+    return
+  }
+  const properties = data?.results?.geojson?.features?.[0]?.properties
+  if (!properties?.time_str) {
+    return
+  }
+  const indexes = properties.time_str.map((time_str) => findDischargeIndex(discharge, time_str))
+  keys.forEach((key) => {
+    properties[key] = indexes.map((index) => (index === -1 ? null : discharge[key][index]))
+  })
+}
+
+const fetchHydroCronData = async (url, params, swordFeature, options = {}) => {
+  const { silent = false, beforeStore = null } = options
   const alertStore = useAlertStore()
 
   // create a hash based on this unique url and params, to use as the key in local storage
@@ -146,6 +252,9 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
       })
       if (response.status < 500) {
         if (response.status == 400) {
+          if (silent) {
+            return null
+          }
           let text = 'No data found for: '
           if (params.feature && params.feature_id) {
             text += `${params.feature} ${params.feature_id}`
@@ -162,6 +271,9 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
           return null
         }
       } else {
+        if (silent) {
+          return null
+        }
         let text = 'Error while fetching SWOT data: '
         if (response.statusText) {
           text += response.statusText
@@ -193,10 +305,16 @@ const fetchHydroCronData = async (url, params, swordFeature) => {
     } else {
       data = JSON.parse(data)
     }
+    if (beforeStore) {
+      beforeStore(data)
+    }
     const processedResult = await processHydroCronResult(data, params, swordFeature)
     return processedResult
   } catch (e) {
     console.error('Error fetching data', e)
+    if (silent) {
+      return null
+    }
     alertStore.displayAlert({
       title: 'Error fetching SWOT data',
       text: `Error while fetching SWOT data from ${url}: ${e}`,
