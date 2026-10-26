@@ -305,6 +305,9 @@ const fetchHydroCronData = async (url, params, swordFeature, options = {}) => {
     } else {
       data = JSON.parse(data)
     }
+    if (swordFeature == null) {
+      return data
+    }
     if (beforeStore) {
       beforeStore(data)
     }
