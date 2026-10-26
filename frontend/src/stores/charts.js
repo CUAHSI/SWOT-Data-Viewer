@@ -126,6 +126,14 @@ export const useChartsStore = defineStore(
         title: 'Reach Slope',
         help: swotVariables.value.find((v) => v.abbreviation == 'slope').definition,
         name: 'Slope vs Time'
+      },
+      {
+        abbreviation: 'discharge/time',
+        xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+        yvar: swotVariables.value.find((v) => v.abbreviation == 'sos_consensus_q'),
+        title: 'Consensus Discharge',
+        help: swotVariables.value.find((v) => v.abbreviation == 'sos_consensus_q').definition,
+        name: 'Discharge vs Time'
       }
     ])
 
