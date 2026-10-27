@@ -210,11 +210,9 @@ const options = {
           if (!hasQualityFlags) {
             return ''
           }
-          const dataQualityOption = chartStore.dataQualityOptions.find(
-            (option) => option.value == context[0]?.raw?.reach_q
-          )
-          if (dataQualityOption) {
-            return `\n Data Quality: ${dataQualityOption.label}`
+          const qualityLevelOption = chartStore.getQualityLevelOption(context[0]?.raw)
+          if (qualityLevelOption) {
+            return `\n Data Quality: ${qualityLevelOption.label}`
           }
           return ''
         }

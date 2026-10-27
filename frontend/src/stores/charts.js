@@ -726,14 +726,17 @@ export const useChartsStore = defineStore(
       return context.dataset.data[index]?.selected === true
     }
 
-    const getQualityLevelPointColor = (context) => {
-      const dataPoint = context.raw
+    // Returns the Quality Level option for a data point's Quality Flag (quality_f, reach_q or node_q).
+    const getQualityLevelOption = (dataPoint) => {
       const qualityLabel = dataPoint ? determineQualityLabel(dataPoint) : null
       // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
-      const dataQualityOption = qualityLabel
+      return qualityLabel
         ? dataQualityOptions.find((option) => option.value == dataPoint[qualityLabel])
-        : null
-      return dataQualityOption?.color ?? NO_QUALITY_FLAG_POINT_COLOR
+        : undefined
+    }
+
+    const getQualityLevelPointColor = (context) => {
+      return getQualityLevelOption(context.raw)?.color ?? NO_QUALITY_FLAG_POINT_COLOR
     }
 
     // a selected time-series point gets a thicker black ring in place of the outline
@@ -1005,6 +1008,7 @@ export const useChartsStore = defineStore(
       activePlt,
       generateDataQualityLegend,
       plotHasQualityFlags,
+      getQualityLevelOption,
       getChartDataForPlot,
       activeNodeChart,
       activeReachChart,
