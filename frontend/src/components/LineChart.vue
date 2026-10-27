@@ -23,7 +23,7 @@
       <!-- Chart -->
       <Line ref="activeReachChart" :data="plotChartData" :options="options" />
     </v-sheet>
-    <v-card v-if="hasSelectedTimeseriesPoints">
+    <v-card v-if="canSelectPoints && hasSelectedTimeseriesPoints">
       <v-card-title>Selected Timestamps</v-card-title>
       <v-card-text>
         <v-list>
@@ -87,7 +87,10 @@ const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
 const { activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
-const { timeRange } = storeToRefs(featuresStore)
+const { timeRange, activeFeature } = storeToRefs(featuresStore)
+
+// Points are selected to filter the Long Profile, which lakes don't have.
+const canSelectPoints = computed(() => activeFeature.value?.feature_type !== 'PriorLake')
 
 const hasQualityFlags = chartStore.plotHasQualityFlags(props.chosenPlot)
 const plotChartData = computed(() => chartStore.getChartDataForPlot(props.chosenPlot))
@@ -254,6 +257,9 @@ const resetZoom = () => {
 }
 
 const handleTimeseriesPointClick = (e, chart) => {
+  if (!canSelectPoints.value) {
+    return
+  }
   // use the clicked chart: each chart may hold its own copy of the data (e.g. Discharge)
   const elems = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
