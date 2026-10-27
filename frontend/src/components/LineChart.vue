@@ -66,7 +66,6 @@ import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns'
 import { enUS } from 'date-fns/locale'
 import { useChartsStore } from '@/stores/charts'
-import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -83,7 +82,6 @@ const hasSelectedTimeseriesPoints = computed(() => selectedTimeseriesPoints.valu
 
 const chartStore = useChartsStore()
 const statsStore = useStatsStore()
-const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
 const { activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
@@ -293,13 +291,6 @@ const viewLongProfileByDates = () => {
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
   // first make sure the node is not already selected
   if (selectedTimeseriesPoints.value.includes(timeSeriesPoint)) {
-    alertStore.displayAlert({
-      title: 'Timstamp deselected',
-      text: `The point at ${timeSeriesPoint.datetime} deselected.`,
-      type: 'success',
-      closable: true,
-      duration: 3
-    })
     removeSelectedTimeseriesPoint(timeSeriesPoint)
     return
   }
