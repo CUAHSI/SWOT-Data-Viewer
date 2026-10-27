@@ -40,11 +40,15 @@ CAM-1027  Research Project   SWOT Viz Research Project
 
 ## Branches
 
-Work on a Story in its own branch named `<KEY>-<short-description>`: the Jira key, then a few lowercase, hyphenated words summarising the change (e.g. `CAM-1448-streamflow-plot`, `CAM-1484-discharge-no-quality-flags`). The key ties the branch, and the PR opened from it, back to the Story.
+Work on a Story in its own branch off the latest `develop` (never `main`), named `<KEY>-<short-description>`: the Jira key, then a few lowercase, hyphenated words summarising the change (e.g. `develop` -> `CAM-1484-discharge-no-quality-flags`). The key ties the branch, and the PR opened from it, back to the Story.
+
+```sh
+git checkout develop && git pull && git checkout -b CAM-1484-discharge-no-quality-flags
+```
 
 ## Pull requests (GitHub)
 
-PRs are opened on GitHub with `gh pr create`, from a branch named as in **Branches** above. Put the Jira key in the PR title (e.g. `CAM-1448: Add streamflow data to the plot page`) so the PR can be traced back to its Story. When a PR is opened for a Story, transition the Story to `In Review`.
+PRs are opened on GitHub with `gh pr create --base develop`, from a branch named as in **Branches** above. The repo's default branch is `main`, so always pass `--base develop`. Put the Jira key in the PR title (e.g. `CAM-1448: Add streamflow data to the plot page`) so the PR can be traced back to its Story. When a PR is opened for a Story, transition the Story to `In Review`.
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_ When `yes`, triage external PRs with `gh pr view <n> --comments`, `gh pr diff <n>`, `gh pr comment`, `gh pr edit --add-label`/`--remove-label`, and `gh pr close`.
 
