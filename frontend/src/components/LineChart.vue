@@ -21,7 +21,7 @@
         RESET ZOOM
       </v-tooltip>
       <!-- Chart -->
-      <Line ref="activeReachChart" :data="chartData" :options="options" />
+      <Line ref="activeReachChart" :data="plotChartData" :options="options" />
     </v-sheet>
     <v-card v-if="hasSelectedTimeseriesPoints">
       <v-card-title>Selected Timestamps</v-card-title>
@@ -86,8 +86,11 @@ const statsStore = useStatsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { chartData, activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
+const { activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
 const { timeRange } = storeToRefs(featuresStore)
+
+const hasQualityFlags = chartStore.plotHasQualityFlags(props.chosenPlot)
+const plotChartData = computed(() => chartStore.getChartDataForPlot(props.chosenPlot))
 
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -110,7 +113,7 @@ onMounted(async () => {
   await nextTick()
 
   // push the chart to the store
-  chartStore.storeMountedChart(activeReachChart.value)
+  chartStore.storeMountedChart(activeReachChart.value, props.chosenPlot)
   chartStore.updateSymbology()
 })
 
@@ -136,11 +139,16 @@ const options = {
       align: 'end',
       labels: {
         usePointStyle: true,
-        generateLabels: () => chartStore.generateDataQualityLegend('line'),
+        // charts without Quality Flags show a note in place of the markers
+        generateLabels: () =>
+          hasQualityFlags
+            ? chartStore.generateDataQualityLegend('line')
+            : [{ text: 'Quality Flags are not available for Discharge.' }],
         font: {
           size: 12
         },
-        boxWidth: 20,
+        // a zero box width skips drawing a marker beside the note
+        boxWidth: hasQualityFlags ? 20 : 0,
         padding: 10
       },
       title: {
@@ -199,6 +207,9 @@ const options = {
           return label
         },
         footer: function (context) {
+          if (!hasQualityFlags) {
+            return ''
+          }
           const dataQualityOption = chartStore.dataQualityOptions.find(
             (option) => option.value == context[0]?.raw?.reach_q
           )
@@ -233,7 +244,7 @@ const options = {
       }
     }
   },
-  onClick: (e) => handleTimeseriesPointClick(e)
+  onClick: (e, elements, chart) => handleTimeseriesPointClick(e, chart)
 }
 
 const resetZoom = () => {
@@ -244,19 +255,15 @@ const resetZoom = () => {
   }
 }
 
-const handleTimeseriesPointClick = (e) => {
-  const elems = activeReachChart.value.chart.getElementsAtEventForMode(
-    e,
-    'nearest',
-    { intersect: true },
-    false
-  )
+const handleTimeseriesPointClick = (e, chart) => {
+  // use the clicked chart: each chart may hold its own copy of the data (e.g. Discharge)
+  const elems = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
   }
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
-  const dataset = activeReachChart.value.chart.data.datasets[datasetIndex]
+  const dataset = chart.data.datasets[datasetIndex]
   const timeSeriesPoint = dataset.data[index]
 
   addSelectedTimeseriesPoint(timeSeriesPoint)
