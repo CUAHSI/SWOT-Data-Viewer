@@ -921,21 +921,6 @@ export const useChartsStore = defineStore(
           }
           updateSymbology()
           storedChart.chart.update()
-
-          // if all datasets in the chart are hidden, alert the user!
-          const allHidden = storedChart.chart.data.datasets.every(
-            (ds) => ds.hidden || ds.data.length == 0
-          )
-          if (allHidden) {
-            const alertStore = useAlertStore()
-            alertStore.displayAlert({
-              title: 'No Data to Display',
-              text: 'No data available in the selected time range. Please select a broader time range.',
-              type: 'warning',
-              closable: true,
-              duration: 3
-            })
-          }
         } catch (error) {
           console.error('Error updating chart', error)
         }
