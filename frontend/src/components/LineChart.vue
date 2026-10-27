@@ -250,7 +250,7 @@ const options = {
       }
     }
   },
-  onClick: (e) => handleTimeseriesPointClick(e)
+  onClick: (e, elements, chart) => handleTimeseriesPointClick(e, chart)
 }
 
 const resetZoom = () => {
@@ -261,19 +261,15 @@ const resetZoom = () => {
   }
 }
 
-const handleTimeseriesPointClick = (e) => {
-  const elems = activeReachChart.value.chart.getElementsAtEventForMode(
-    e,
-    'nearest',
-    { intersect: true },
-    false
-  )
+const handleTimeseriesPointClick = (e, chart) => {
+  // use the clicked chart: each chart may hold its own copy of the data (e.g. Discharge)
+  const elems = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
   }
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
-  const dataset = activeReachChart.value.chart.data.datasets[datasetIndex]
+  const dataset = chart.data.datasets[datasetIndex]
   const timeSeriesPoint = dataset.data[index]
 
   addSelectedTimeseriesPoint(timeSeriesPoint)

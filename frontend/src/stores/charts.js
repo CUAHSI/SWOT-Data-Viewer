@@ -1066,7 +1066,6 @@ export const useChartsStore = defineStore(
     return {
       updateNodeChartData,
       chartData,
-      chartDataWithoutQualityFilter,
       nodeChartData,
       clearChartData,
       buildChart,
