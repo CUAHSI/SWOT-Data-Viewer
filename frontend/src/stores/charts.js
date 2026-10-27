@@ -547,6 +547,20 @@ export const useChartsStore = defineStore(
       return measurements
     }
 
+    // HydroCron can return the same observation more than once: for some passes the LakeSP_D
+    // collection holds two versions of a granule (product counters _01 and _02). Keep the first
+    // measurement for each time so that a chart doesn't draw two points at the same timestamp.
+    const removeDuplicateMeasurements = (measurements) => {
+      const seenTimes = new Set()
+      return measurements.filter((m) => {
+        if (seenTimes.has(m.time_str)) {
+          return false
+        }
+        seenTimes.add(m.time_str)
+        return true
+      })
+    }
+
     const getChartDatasets = (selectedFeatures) => {
       // builds the datasets for the time series chart. These are labeled
       // using seriesType='swot_reach_series' to differentiate them from
@@ -586,7 +600,7 @@ export const useChartsStore = defineStore(
           })
         }
 
-        measurements = removeInvalidMeasurements(measurements)
+        measurements = removeDuplicateMeasurements(removeInvalidMeasurements(measurements))
         return {
           // TODO: nodes label assumes reach
           label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
