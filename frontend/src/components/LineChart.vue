@@ -142,7 +142,7 @@ const options = {
         // charts without Quality Flags show a note in place of the markers
         generateLabels: () =>
           hasQualityFlags
-            ? chartStore.generateDataQualityLegend('line')
+            ? chartStore.generateDataQualityLegend()
             : [{ text: 'Quality Flags are not available for Discharge.' }],
         font: {
           size: 12
