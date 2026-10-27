@@ -4,6 +4,7 @@ import {
   PointElement,
   LineElement,
   Title,
+  SubTitle,
   Tooltip,
   Legend,
   TimeScale
@@ -17,6 +18,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Title,
+  SubTitle,
   Tooltip,
   Legend,
   customCanvasBackgroundColor,

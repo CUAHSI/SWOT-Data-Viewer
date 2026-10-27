@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { nextTick, ref, watch, shallowRef } from 'vue'
+import { nextTick, ref, watch, shallowRef, toRaw } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
@@ -15,8 +15,12 @@ export const useChartsStore = defineStore(
     const unfilteredChartData = ref({})
     const unfilteredNodeChartData = ref({})
     const chartData = ref({})
+    // reach data filtered to the time range only, for charts that have no Quality Flags
+    const chartDataWithoutQualityFilter = ref({})
     const nodeChartData = ref({})
     const storedCharts = ref([])
+    // the plot each stored chart was mounted for, keyed by the stored chart
+    const storedChartPlots = new WeakMap()
     const activeNodeChart = ref(null)
     const activeReachChart = ref(null)
     const hasNodeData = ref(false)
@@ -46,6 +50,16 @@ export const useChartsStore = defineStore(
       },
       { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
     ]
+
+    const NO_QUALITY_FLAG_POINT_COLOR = '#0072B2'
+
+    // A chart has no Quality Flags when its y-variable comes from the SoS Discharge collection.
+    // This is keyed on the variable, not the data: Discharge points still carry the joined vD reach_q.
+    const plotHasQualityFlags = (plt) => !plt?.yvar?.collection_name
+
+    const getChartDataForPlot = (plt) => {
+      return plotHasQualityFlags(plt) ? chartData.value : chartDataWithoutQualityFilter.value
+    }
 
     const generateDataQualityLegend = (chartType = 'line') => {
       return dataQualityOptions.map((option) => ({
@@ -167,6 +181,7 @@ export const useChartsStore = defineStore(
     const clearChartData = () => {
       chartData.value = {}
       chartData.value = {}
+      chartDataWithoutQualityFilter.value = {}
       nodeChartData.value = {}
       hasNodeData.value = false
     }
@@ -368,26 +383,7 @@ export const useChartsStore = defineStore(
           if (dataset.seriesType !== 'swot_reach_series') {
             return
           }
-          // reach points are all in a single dataset
-          // we need to filter the points individually
-          dataset.data = dataset.data.filter((dataPoint) => {
-            const datetime = new Date(dataPoint.time_str)
-            if (datetime < start || datetime > end) {
-              return false
-            }
-            return true
-          })
-          // calculate a new min/max date time for the dataset
-          dataset.minDateTime = Math.min(
-            ...dataset.data.map((m) => {
-              return new Date(m.datetime)
-            })
-          )
-          dataset.maxDateTime = Math.max(
-            ...dataset.data.map((m) => {
-              return new Date(m.datetime)
-            })
-          )
+          filterReachDatasetToTimeRange(dataset, start, end)
           dataset.pointStyle = getPointStyles(dataset)
           dataset.pointBorderColor = getPointBorderColors(dataset)
         })
@@ -396,6 +392,8 @@ export const useChartsStore = defineStore(
       chartData.value.labels = chartData.value.datasets[0].data.map((dataPoint) => {
         return dataPoint.time_str
       })
+
+      chartDataWithoutQualityFilter.value = buildChartDataWithoutQualityFilter(start, end)
 
       const nodeDataSets = nodeChartData.value.datasets
       if (nodeDataSets) {
@@ -416,6 +414,45 @@ export const useChartsStore = defineStore(
       updateNodeDataSetStyles()
       updateAllChartsData()
       refreshAllCharts()
+    }
+
+    const filterReachDatasetToTimeRange = (dataset, start, end) => {
+      // reach points are all in a single dataset
+      // we need to filter the points individually
+      dataset.data = dataset.data.filter((dataPoint) => {
+        const datetime = new Date(dataPoint.time_str)
+        if (datetime < start || datetime > end) {
+          return false
+        }
+        return true
+      })
+      // calculate a new min/max date time for the dataset
+      dataset.minDateTime = Math.min(
+        ...dataset.data.map((m) => {
+          return new Date(m.datetime)
+        })
+      )
+      dataset.maxDateTime = Math.max(
+        ...dataset.data.map((m) => {
+          return new Date(m.datetime)
+        })
+      )
+    }
+
+    const buildChartDataWithoutQualityFilter = (start, end) => {
+      // Discharge is exempt from the Data Quality filter. Discharge is joined onto vD reach rows
+      // by time, so each point carries the vD reach_q, but that reach_q describes the vD
+      // WSE/width/slope observation, not the Discharge. Only the time range applies here.
+      const data = JSON.parse(JSON.stringify(unfilteredChartData.value))
+      data.datasets?.forEach((dataset) => {
+        if (dataset.seriesType !== 'swot_reach_series') {
+          return
+        }
+        filterReachDatasetToTimeRange(dataset, start, end)
+        Object.assign(dataset, getNoQualityFlagDataSetStyle())
+      })
+      data.labels = data.datasets?.[0]?.data.map((dataPoint) => dataPoint.time_str)
+      return data
     }
 
     const filterDatasetsBySetOfDates = (datasets, tolerance) => {
@@ -765,6 +802,18 @@ export const useChartsStore = defineStore(
       return style
     }
 
+    const getNoQualityFlagDataSetStyle = () => {
+      return {
+        pointStyle: 'circle',
+        pointBackgroundColor: NO_QUALITY_FLAG_POINT_COLOR,
+        pointHoverBackgroundColor: NO_QUALITY_FLAG_POINT_COLOR,
+        pointBorderColor: 'white',
+        pointHoverBorderColor: 'white',
+        pointBorderWidth: 1,
+        pointHoverBorderWidth: 1
+      }
+    }
+
     function getPointRadius(context) {
       // if the data point is selected, increase the radius
       const index = context.dataIndex
@@ -867,7 +916,8 @@ export const useChartsStore = defineStore(
           if (storedChart.chart.data.datasets[0].seriesType == 'swot_node_series') {
             storedChart.chart.data.datasets = nodeChartData.value.datasets
           } else {
-            storedChart.chart.data.datasets = chartData.value.datasets
+            const plt = storedChartPlots.get(toRaw(storedChart))
+            storedChart.chart.data.datasets = getChartDataForPlot(plt).datasets
           }
           updateSymbology()
           storedChart.chart.update()
@@ -904,8 +954,11 @@ export const useChartsStore = defineStore(
       return
     }
 
-    const storeMountedChart = (chart) => {
+    const storeMountedChart = (chart, plt = null) => {
       storedCharts.value.push(chart)
+      if (plt) {
+        storedChartPlots.set(toRaw(chart), plt)
+      }
 
       // clean stored charts that are undifined
       cleanStoredCharts()
@@ -1013,6 +1066,7 @@ export const useChartsStore = defineStore(
     return {
       updateNodeChartData,
       chartData,
+      chartDataWithoutQualityFilter,
       nodeChartData,
       clearChartData,
       buildChart,
@@ -1038,6 +1092,8 @@ export const useChartsStore = defineStore(
       storeMountedChart,
       activePlt,
       generateDataQualityLegend,
+      plotHasQualityFlags,
+      getChartDataForPlot,
       activeNodeChart,
       activeReachChart,
       updateNodeDataSetStyles,

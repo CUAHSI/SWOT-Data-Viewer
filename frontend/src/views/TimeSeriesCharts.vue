@@ -21,8 +21,11 @@
         <TimeRangeSelector />
         <v-divider v-if="lgAndUp" class="my-2" />
         <PlotOptions />
-        <v-divider v-if="lgAndUp" class="my-2" />
-        <DataQuality />
+        <!-- hidden, not unmounted, so the filter selection is kept for the other charts -->
+        <div v-show="chartStore.plotHasQualityFlags(activePlt)">
+          <v-divider v-if="lgAndUp" class="my-2" />
+          <DataQuality />
+        </div>
         <v-divider v-if="lgAndUp" class="my-2" />
         <PlotActions :chosen-plot="activeReachChart" />
       </v-col>

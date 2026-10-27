@@ -21,7 +21,7 @@
         RESET ZOOM
       </v-tooltip>
       <!-- Chart -->
-      <Line ref="activeReachChart" :data="chartData" :options="options" />
+      <Line ref="activeReachChart" :data="plotChartData" :options="options" />
     </v-sheet>
     <v-card v-if="hasSelectedTimeseriesPoints">
       <v-card-title>Selected Timestamps</v-card-title>
@@ -86,8 +86,11 @@ const statsStore = useStatsStore()
 const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { chartData, activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
+const { activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
 const { timeRange } = storeToRefs(featuresStore)
+
+const hasQualityFlags = chartStore.plotHasQualityFlags(props.chosenPlot)
+const plotChartData = computed(() => chartStore.getChartDataForPlot(props.chosenPlot))
 
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -110,7 +113,7 @@ onMounted(async () => {
   await nextTick()
 
   // push the chart to the store
-  chartStore.storeMountedChart(activeReachChart.value)
+  chartStore.storeMountedChart(activeReachChart.value, props.chosenPlot)
   chartStore.updateSymbology()
 })
 
@@ -131,7 +134,7 @@ const options = {
   spanGaps: true,
   plugins: {
     legend: {
-      display: true,
+      display: hasQualityFlags,
       position: 'top',
       align: 'end',
       labels: {
@@ -160,6 +163,17 @@ const options = {
       text: title,
       font: {
         size: 16
+      }
+    },
+    subtitle: {
+      display: !hasQualityFlags,
+      text: 'Quality Flags are not available for Discharge.',
+      font: {
+        size: 12,
+        style: 'italic'
+      },
+      padding: {
+        bottom: 10
       }
     },
     customCanvasBackgroundColor: {
@@ -199,6 +213,9 @@ const options = {
           return label
         },
         footer: function (context) {
+          if (!hasQualityFlags) {
+            return ''
+          }
           const dataQualityOption = chartStore.dataQualityOptions.find(
             (option) => option.value == context[0]?.raw?.reach_q
           )
