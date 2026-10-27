@@ -19,7 +19,13 @@
                 @update:model-value="qualityHasChanged()"
               >
                 <template #append>
-                  <v-icon :icon="item.icon" :color="item.pointBorderColor" size="small" />
+                  <span
+                    class="quality-level-dot"
+                    :style="{
+                      backgroundColor: item.color,
+                      borderColor: chartStore.POINT_OUTLINE_COLOR
+                    }"
+                  />
                 </template>
               </v-checkbox>
             </v-list-item-action>
@@ -53,3 +59,13 @@ function qualityHasChanged() {
   statsStore.toggleSeriesStatistics(showStatistics.value)
 }
 </script>
+
+<style scoped>
+.quality-level-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid;
+  border-radius: 50%;
+}
+</style>
