@@ -134,16 +134,21 @@ const options = {
   spanGaps: true,
   plugins: {
     legend: {
-      display: hasQualityFlags,
+      display: true,
       position: 'top',
       align: 'end',
       labels: {
         usePointStyle: true,
-        generateLabels: () => chartStore.generateDataQualityLegend('line'),
+        // charts without Quality Flags show a note in place of the markers
+        generateLabels: () =>
+          hasQualityFlags
+            ? chartStore.generateDataQualityLegend('line')
+            : [{ text: 'Quality Flags are not available for Discharge.' }],
         font: {
           size: 12
         },
-        boxWidth: 20,
+        // a zero box width skips drawing a marker beside the note
+        boxWidth: hasQualityFlags ? 20 : 0,
         padding: 10
       },
       title: {
@@ -163,17 +168,6 @@ const options = {
       text: title,
       font: {
         size: 16
-      }
-    },
-    subtitle: {
-      display: !hasQualityFlags,
-      text: 'Quality Flags are not available for Discharge.',
-      font: {
-        size: 12,
-        style: 'italic'
-      },
-      padding: {
-        bottom: 10
       }
     },
     customCanvasBackgroundColor: {
