@@ -195,6 +195,7 @@ const options = {
     tooltip: {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
       // HydroCron can return overlapping observations for one pass; show only the first
+      // TODO: remove this filter once https://github.com/podaac/hydrocron/issues/408 is resolved
       filter: (tooltipItem, index) => index === 0,
       callbacks: {
         label: function (context) {
