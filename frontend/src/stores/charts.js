@@ -550,6 +550,7 @@ export const useChartsStore = defineStore(
     // HydroCron can return the same observation more than once: for some passes the LakeSP_D
     // collection holds two versions of a granule (product counters _01 and _02). Keep the first
     // measurement for each time so that a chart doesn't draw two points at the same timestamp.
+    // TODO: remove this once https://github.com/podaac/hydrocron/issues/408 is resolved
     const removeDuplicateMeasurements = (measurements) => {
       const seenTimes = new Set()
       return measurements.filter((m) => {
