@@ -547,6 +547,21 @@ export const useChartsStore = defineStore(
       return measurements
     }
 
+    // HydroCron can return the same observation more than once: for some passes the LakeSP_D
+    // collection holds two versions of a granule (product counters _01 and _02). Keep the first
+    // measurement for each time so that a chart doesn't draw two points at the same timestamp.
+    // TODO: remove this once https://github.com/podaac/hydrocron/issues/408 is resolved
+    const removeDuplicateMeasurements = (measurements) => {
+      const seenTimes = new Set()
+      return measurements.filter((m) => {
+        if (seenTimes.has(m.time_str)) {
+          return false
+        }
+        seenTimes.add(m.time_str)
+        return true
+      })
+    }
+
     const getChartDatasets = (selectedFeatures) => {
       // builds the datasets for the time series chart. These are labeled
       // using seriesType='swot_reach_series' to differentiate them from
@@ -586,7 +601,7 @@ export const useChartsStore = defineStore(
           })
         }
 
-        measurements = removeInvalidMeasurements(measurements)
+        measurements = removeDuplicateMeasurements(removeInvalidMeasurements(measurements))
         return {
           // TODO: nodes label assumes reach
           label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
@@ -726,14 +741,17 @@ export const useChartsStore = defineStore(
       return context.dataset.data[index]?.selected === true
     }
 
-    const getQualityLevelPointColor = (context) => {
-      const dataPoint = context.raw
+    // Returns the Quality Level option for a data point's Quality Flag (quality_f, reach_q or node_q).
+    const getQualityLevelOption = (dataPoint) => {
       const qualityLabel = dataPoint ? determineQualityLabel(dataPoint) : null
       // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
-      const dataQualityOption = qualityLabel
+      return qualityLabel
         ? dataQualityOptions.find((option) => option.value == dataPoint[qualityLabel])
-        : null
-      return dataQualityOption?.color ?? NO_QUALITY_FLAG_POINT_COLOR
+        : undefined
+    }
+
+    const getQualityLevelPointColor = (context) => {
+      return getQualityLevelOption(context.raw)?.color ?? NO_QUALITY_FLAG_POINT_COLOR
     }
 
     // a selected time-series point gets a thicker black ring in place of the outline
@@ -1005,6 +1023,7 @@ export const useChartsStore = defineStore(
       activePlt,
       generateDataQualityLegend,
       plotHasQualityFlags,
+      getQualityLevelOption,
       getChartDataForPlot,
       activeNodeChart,
       activeReachChart,
