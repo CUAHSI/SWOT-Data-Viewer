@@ -1,10 +1,10 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { nextTick, ref, watch, shallowRef } from 'vue'
+import { nextTick, ref, watch, shallowRef, toRaw } from 'vue'
 import { useFeaturesStore } from '@/stores/features'
 import { NODE_DATETIME_VARIATION } from '@/constants'
 import { addMinutes, subMinutes } from 'date-fns'
 import chroma from 'chroma-js'
-import { mdiCircle, mdiSquareRounded, mdiRectangle, mdiRhombus } from '@mdi/js'
+
 import { useHydrologicStore } from '@/stores/hydrologic'
 import { useAlertStore } from '@/stores/alerts'
 import { useRouter } from 'vue-router'
@@ -15,8 +15,12 @@ export const useChartsStore = defineStore(
     const unfilteredChartData = ref({})
     const unfilteredNodeChartData = ref({})
     const chartData = ref({})
+    // reach data filtered to the time range only, for charts that have no Quality Flags
+    const chartDataWithoutQualityFilter = ref({})
     const nodeChartData = ref({})
     const storedCharts = ref([])
+    // the plot each stored chart was mounted for, keyed by the stored chart
+    const storedChartPlots = new WeakMap()
     const activeNodeChart = ref(null)
     const activeReachChart = ref(null)
     const hasNodeData = ref(false)
@@ -28,33 +32,38 @@ export const useChartsStore = defineStore(
     const router = useRouter()
     const selectedTimeseriesPoints = ref([])
 
+    // Quality Levels are shown by point colour only, using the familiar green/yellow/orange/red
+    // order of increasing severity. Green, yellow and orange are from the Okabe-Ito palette and
+    // red from Paul Tol's vibrant palette, so all four stay distinct under red-green and
+    // blue-yellow colour blindness.
     const dataQualityOptions = [
-      { value: 0, label: 'good', pointStyle: 'circle', pointBorderColor: 'white', icon: mdiCircle },
-      {
-        value: 1,
-        label: 'suspect',
-        pointStyle: 'rectRounded',
-        pointBorderColor: 'yellow',
-        icon: mdiSquareRounded
-      },
-      {
-        value: 2,
-        label: 'degraded',
-        pointStyle: 'rect',
-        pointBorderColor: 'orange',
-        icon: mdiRectangle
-      },
-      { value: 3, label: 'bad', pointStyle: 'rectRot', pointBorderColor: 'red', icon: mdiRhombus }
+      { value: 0, label: 'good', color: '#009E73' },
+      { value: 1, label: 'suspect', color: '#F0E442' },
+      { value: 2, label: 'degraded', color: '#E69F00' },
+      { value: 3, label: 'bad', color: '#CC3311' }
     ]
 
-    const generateDataQualityLegend = (chartType = 'line') => {
+    const NO_QUALITY_FLAG_POINT_COLOR = '#0072B2'
+    const TIME_SERIES_LINE_COLOR = '#9E9E9E'
+    // A dark outline gives every point at least 3:1 contrast against the white background,
+    // which the yellow and orange fills do not have on their own (WCAG 1.4.11).
+    const POINT_OUTLINE_COLOR = '#424242'
+
+    // A chart has no Quality Flags when its y-variable comes from the SoS Discharge collection.
+    // This is keyed on the variable, not the data: Discharge points still carry the joined vD reach_q.
+    const plotHasQualityFlags = (plt) => !plt?.yvar?.collection_name
+
+    const getChartDataForPlot = (plt) => {
+      return plotHasQualityFlags(plt) ? chartData.value : chartDataWithoutQualityFilter.value
+    }
+
+    const generateDataQualityLegend = () => {
       return dataQualityOptions.map((option) => ({
         text: option.label,
-        fillStyle: 'black',
-        strokeStyle: option.pointBorderColor,
-        pointStyle: option.pointStyle,
-        lineWidth: chartType === 'line' ? 5 : 3,
-        pointBorderWidth: chartType === 'line' ? 5 : 3
+        fillStyle: option.color,
+        strokeStyle: POINT_OUTLINE_COLOR,
+        pointStyle: 'circle',
+        lineWidth: 1
       }))
     }
 
@@ -126,6 +135,14 @@ export const useChartsStore = defineStore(
         title: 'Reach Slope',
         help: swotVariables.value.find((v) => v.abbreviation == 'slope').definition,
         name: 'Slope vs Time'
+      },
+      {
+        abbreviation: 'discharge/time',
+        xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
+        yvar: swotVariables.value.find((v) => v.abbreviation == 'sos_consensus_q'),
+        title: 'Consensus Discharge',
+        help: swotVariables.value.find((v) => v.abbreviation == 'sos_consensus_q').definition,
+        name: 'Discharge vs Time'
       }
     ])
 
@@ -159,6 +176,7 @@ export const useChartsStore = defineStore(
     const clearChartData = () => {
       chartData.value = {}
       chartData.value = {}
+      chartDataWithoutQualityFilter.value = {}
       nodeChartData.value = {}
       hasNodeData.value = false
     }
@@ -319,8 +337,8 @@ export const useChartsStore = defineStore(
         }
         return true
       })
-      dataset.pointStyle = getPointStyles(dataset)
-      dataset.pointBorderColor = getPointBorderColors(dataset)
+      // the dataset was copied with JSON, which drops the scriptable point options
+      Object.assign(dataset, getQualityLevelPointOptions())
     }
 
     const filterDatasetsToTimeRange = async (start, end, tolerance) => {
@@ -360,34 +378,15 @@ export const useChartsStore = defineStore(
           if (dataset.seriesType !== 'swot_reach_series') {
             return
           }
-          // reach points are all in a single dataset
-          // we need to filter the points individually
-          dataset.data = dataset.data.filter((dataPoint) => {
-            const datetime = new Date(dataPoint.time_str)
-            if (datetime < start || datetime > end) {
-              return false
-            }
-            return true
-          })
-          // calculate a new min/max date time for the dataset
-          dataset.minDateTime = Math.min(
-            ...dataset.data.map((m) => {
-              return new Date(m.datetime)
-            })
-          )
-          dataset.maxDateTime = Math.max(
-            ...dataset.data.map((m) => {
-              return new Date(m.datetime)
-            })
-          )
-          dataset.pointStyle = getPointStyles(dataset)
-          dataset.pointBorderColor = getPointBorderColors(dataset)
+          filterReachDatasetToTimeRange(dataset, start, end)
         })
       }
       // update the chartData.value.labels to match the new time range
       chartData.value.labels = chartData.value.datasets[0].data.map((dataPoint) => {
         return dataPoint.time_str
       })
+
+      chartDataWithoutQualityFilter.value = buildChartDataWithoutQualityFilter(start, end)
 
       const nodeDataSets = nodeChartData.value.datasets
       if (nodeDataSets) {
@@ -408,6 +407,45 @@ export const useChartsStore = defineStore(
       updateNodeDataSetStyles()
       updateAllChartsData()
       refreshAllCharts()
+    }
+
+    const filterReachDatasetToTimeRange = (dataset, start, end) => {
+      // reach points are all in a single dataset
+      // we need to filter the points individually
+      dataset.data = dataset.data.filter((dataPoint) => {
+        const datetime = new Date(dataPoint.time_str)
+        if (datetime < start || datetime > end) {
+          return false
+        }
+        return true
+      })
+      // calculate a new min/max date time for the dataset
+      dataset.minDateTime = Math.min(
+        ...dataset.data.map((m) => {
+          return new Date(m.datetime)
+        })
+      )
+      dataset.maxDateTime = Math.max(
+        ...dataset.data.map((m) => {
+          return new Date(m.datetime)
+        })
+      )
+    }
+
+    const buildChartDataWithoutQualityFilter = (start, end) => {
+      // Discharge is exempt from the Data Quality filter. Discharge is joined onto vD reach rows
+      // by time, so each point carries the vD reach_q, but that reach_q describes the vD
+      // WSE/width/slope observation, not the Discharge. Only the time range applies here.
+      const data = JSON.parse(JSON.stringify(unfilteredChartData.value))
+      data.datasets?.forEach((dataset) => {
+        if (dataset.seriesType !== 'swot_reach_series') {
+          return
+        }
+        filterReachDatasetToTimeRange(dataset, start, end)
+        Object.assign(dataset, getNoQualityFlagDataSetStyle())
+      })
+      data.labels = data.datasets?.[0]?.data.map((dataPoint) => dataPoint.time_str)
+      return data
     }
 
     const filterDatasetsBySetOfDates = (datasets, tolerance) => {
@@ -509,6 +547,21 @@ export const useChartsStore = defineStore(
       return measurements
     }
 
+    // HydroCron can return the same observation more than once: for some passes the LakeSP_D
+    // collection holds two versions of a granule (product counters _01 and _02). Keep the first
+    // measurement for each time so that a chart doesn't draw two points at the same timestamp.
+    // TODO: remove this once https://github.com/podaac/hydrocron/issues/408 is resolved
+    const removeDuplicateMeasurements = (measurements) => {
+      const seenTimes = new Set()
+      return measurements.filter((m) => {
+        if (seenTimes.has(m.time_str)) {
+          return false
+        }
+        seenTimes.add(m.time_str)
+        return true
+      })
+    }
+
     const getChartDatasets = (selectedFeatures) => {
       // builds the datasets for the time series chart. These are labeled
       // using seriesType='swot_reach_series' to differentiate them from
@@ -548,7 +601,7 @@ export const useChartsStore = defineStore(
           })
         }
 
-        measurements = removeInvalidMeasurements(measurements)
+        measurements = removeDuplicateMeasurements(removeInvalidMeasurements(measurements))
         return {
           // TODO: nodes label assumes reach
           label: `${featureStore.getFeatureName(feature)} | ${feature?.feature_id}`,
@@ -679,108 +732,67 @@ export const useChartsStore = defineStore(
       return Array(dataSet.length).fill(firstColor)
     }
 
-    const getPointBorderColors = (dataSet) => {
-      if (!['swot_node_series', 'swot_reach_series'].includes(dataSet.seriesType)) {
-        return dataSet.pointBorderColor
-      }
-      const pointBorderColors = []
-      dataSet.data.forEach((dataPoint) => {
-        const pointBorderColor = getPointBorderColor(dataPoint)
-        pointBorderColors.push(pointBorderColor)
-      })
-      return pointBorderColors
-    }
-
-    const getPointStyles = (dataSet) => {
-      if (!['swot_node_series', 'swot_reach_series'].includes(dataSet.seriesType)) {
-        return dataSet.pointStyle
-      }
-      const pointStyles = []
-      dataSet.data.forEach((dataPoint) => {
-        const pointStyle = getPointStyle(dataPoint)
-        pointStyles.push(pointStyle)
-      })
-      return pointStyles
-    }
-
-    const getPointStyle = (dataPoint) => {
-      let qualityLabel = determineQualityLabel(dataPoint)
-      if (!qualityLabel) {
-        return true // If no quality label, keep the point
-      }
-      if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
+    // https://www.chartjs.org/docs/latest/general/options.html#scriptable-options
+    const isSelectedPoint = (context) => {
+      const index = context.dataIndex
+      if (index == null) {
         return false
       }
-
-      // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
-      const dataQuality = dataPoint[qualityLabel]
-      let pointStyle = 'circle'
-      // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
-      const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
-      if (dataQualityOption) {
-        pointStyle = dataQualityOption.pointStyle
-      }
-      return pointStyle
+      return context.dataset.data[index]?.selected === true
     }
 
-    const getPointBorderColor = (dataPoint) => {
-      let qualityLabel = determineQualityLabel(dataPoint)
-      if (!dataQualityFlags.value.includes(parseInt(dataPoint[qualityLabel]))) {
-        return false
-      }
-
-      // https://www.chartjs.org/docs/latest/configuration/elements.html#point-configuration
-      const dataQuality = dataPoint[qualityLabel]
-      let pointBorderColor = 'white'
+    // Returns the Quality Level option for a data point's Quality Flag (quality_f, reach_q or node_q).
+    const getQualityLevelOption = (dataPoint) => {
+      const qualityLabel = dataPoint ? determineQualityLabel(dataPoint) : null
       // Values of 0, 1, 2, and 3 indicate good, suspect, degraded, and bad measurements, respectively
-      const dataQualityOption = dataQualityOptions.find((option) => option.value == dataQuality)
-      if (dataQualityOption) {
-        pointBorderColor = dataQualityOption.pointBorderColor
-      }
-      return pointBorderColor
+      return qualityLabel
+        ? dataQualityOptions.find((option) => option.value == dataPoint[qualityLabel])
+        : undefined
     }
+
+    const getQualityLevelPointColor = (context) => {
+      return getQualityLevelOption(context.raw)?.color ?? NO_QUALITY_FLAG_POINT_COLOR
+    }
+
+    // a selected time-series point gets a thicker black ring in place of the outline
+    const getPointBorderColor = (context) =>
+      isSelectedPoint(context) ? 'black' : POINT_OUTLINE_COLOR
+    const getPointBorderWidth = (context) => (isSelectedPoint(context) ? 3 : 1)
+
+    // Solid circles filled with pointColor. These options are scriptable, so reassign them
+    // whenever the datasets are copied with JSON, which drops functions.
+    const getPointOptions = (pointColor) => {
+      return {
+        pointStyle: 'circle',
+        pointBackgroundColor: pointColor,
+        pointHoverBackgroundColor: pointColor,
+        pointBorderColor: getPointBorderColor,
+        pointHoverBorderColor: getPointBorderColor,
+        pointBorderWidth: getPointBorderWidth,
+        pointHoverBorderWidth: getPointBorderWidth
+      }
+    }
+
+    const getQualityLevelPointOptions = () => getPointOptions(getQualityLevelPointColor)
 
     const getDataSetStyle = () => {
       const style = {
         showLine: symbologyContains('Lines'),
         fill: true,
-        pointBorderColor: (ctx) => getPointBorderColors(ctx.dataset),
-        pointStyle: (ctx) => getPointStyles(ctx.dataset),
-        pointBorderWidth: 5,
-        borderColor: 'black', // The line fill color.
-        backgroundColor: 'black', // The line color
+        ...getQualityLevelPointOptions(),
+        borderColor: TIME_SERIES_LINE_COLOR, // The line color.
+        backgroundColor: TIME_SERIES_LINE_COLOR, // The line fill color.
         pointHoverRadius: 15,
-        pointHoverBorderWidth: 7,
-        pointRadius: getPointRadius,
-        borderWidth: getBorderWidth
+        pointRadius: getPointRadius
       }
       return style
     }
 
+    const getNoQualityFlagDataSetStyle = () => getPointOptions(NO_QUALITY_FLAG_POINT_COLOR)
+
     function getPointRadius(context) {
       // if the data point is selected, increase the radius
-      const index = context.dataIndex
-      if (index == null) {
-        return 7
-      }
-      const dataPoint = context.dataset.data[index]
-      if (dataPoint.selected) {
-        return 12
-      }
-      return 7
-    }
-
-    function getBorderWidth(context) {
-      // if the data point is selected, make the border width larger
-      const index = context.dataIndex
-      if (index == null) {
-        return 1
-      }
-      const dataPoint = context.dataset.data[index]
-      if (dataPoint.selected) {
-        return 5
-      }
-      return 1
+      return isSelectedPoint(context) ? 12 : 7
     }
 
     const getNodeDataSetStyle = (dataSet) => {
@@ -794,12 +806,10 @@ export const useChartsStore = defineStore(
         // color: styles.colors,
         // borderWidth: 1,
         backgroundColor: colors,
-        pointBorderColor: (ctx) => getPointBorderColors(ctx.dataset),
-        pointStyle: (ctx) => getPointStyles(ctx.dataset),
+        // points show the Quality Level; the lines keep the date gradient
+        ...getQualityLevelPointOptions(),
         // borderColor: styles.dynamicColors, // The line fill color.
-        borderColor: colors,
-        pointBorderWidth: 3,
-        pointHoverBorderWidth: 5
+        borderColor: colors
       }
     }
 
@@ -811,15 +821,7 @@ export const useChartsStore = defineStore(
       updateColorScale()
       nodeChartData.value.datasets.forEach((dataset) => {
         // replace the dataset properties with those from getNodeDataSetStyle
-        const updatedStyles = getNodeDataSetStyle(dataset.data)
-        for (const key in updatedStyles) {
-          // update all of the keys except for pointStyle and pointBorderColor
-          // otherwise slow zoom will ensue
-          // https://cuahsi.atlassian.net/browse/CAM-499
-          if (key != 'pointStyle' && key != 'pointBorderColor') {
-            dataset[key] = updatedStyles[key]
-          }
-        }
+        Object.assign(dataset, getNodeDataSetStyle(dataset.data))
       })
       updateSymbology()
     }
@@ -859,25 +861,11 @@ export const useChartsStore = defineStore(
           if (storedChart.chart.data.datasets[0].seriesType == 'swot_node_series') {
             storedChart.chart.data.datasets = nodeChartData.value.datasets
           } else {
-            storedChart.chart.data.datasets = chartData.value.datasets
+            const plt = storedChartPlots.get(toRaw(storedChart))
+            storedChart.chart.data.datasets = getChartDataForPlot(plt).datasets
           }
           updateSymbology()
           storedChart.chart.update()
-
-          // if all datasets in the chart are hidden, alert the user!
-          const allHidden = storedChart.chart.data.datasets.every(
-            (ds) => ds.hidden || ds.data.length == 0
-          )
-          if (allHidden) {
-            const alertStore = useAlertStore()
-            alertStore.displayAlert({
-              title: 'No Data to Display',
-              text: 'No data available in the selected time range. Please select a broader time range.',
-              type: 'warning',
-              closable: true,
-              duration: 3
-            })
-          }
         } catch (error) {
           console.error('Error updating chart', error)
         }
@@ -896,8 +884,11 @@ export const useChartsStore = defineStore(
       return
     }
 
-    const storeMountedChart = (chart) => {
+    const storeMountedChart = (chart, plt = null) => {
       storedCharts.value.push(chart)
+      if (plt) {
+        storedChartPlots.set(toRaw(chart), plt)
+      }
 
       // clean stored charts that are undifined
       cleanStoredCharts()
@@ -1017,6 +1008,7 @@ export const useChartsStore = defineStore(
       filterDatasetsToTimeRange,
       filterDatasetsBySetOfDates,
       dataQualityOptions,
+      POINT_OUTLINE_COLOR,
       dataQualityFlags,
       setDatasetVisibility,
       getNodeTimeStamps,
@@ -1030,6 +1022,9 @@ export const useChartsStore = defineStore(
       storeMountedChart,
       activePlt,
       generateDataQualityLegend,
+      plotHasQualityFlags,
+      getQualityLevelOption,
+      getChartDataForPlot,
       activeNodeChart,
       activeReachChart,
       updateNodeDataSetStyles,

@@ -8,7 +8,7 @@ import {
   Legend,
   TimeScale
 } from 'chart.js'
-import { customCanvasBackgroundColor } from '@/_helpers/charts/plugins'
+import { customCanvasBackgroundColor, noDataMessage } from '@/_helpers/charts/plugins'
 import zoomPlugin from 'chartjs-plugin-zoom'
 
 ChartJS.register(
@@ -20,6 +20,7 @@ ChartJS.register(
   Tooltip,
   Legend,
   customCanvasBackgroundColor,
+  noDataMessage,
   zoomPlugin
 )
 

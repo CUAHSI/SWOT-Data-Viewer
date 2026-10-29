@@ -347,19 +347,57 @@ onMounted(async () => {
   // validate the map
   validate_bbox_size()
 
-  const swotRiverNameMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
-    label: 'River names',
-    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator_v17b/MapServer',
-    layers: [0],
-    searchFields: ['river_name']
-  })
+  const queryMergedMagicKeys = (provider) => {
+    const defaultResults = provider.results
+    provider.results = function (text, key, bounds, callback) {
+      if (!key || !key.includes(',')) {
+        return defaultResults.call(this, text, key, bounds, callback)
+      }
+      const ids = key.split(',').map((k) => k.split(':')[0])
+      const layer = key.split(',')[0].split(':')[1]
+      return this.query()
+        .layer(layer)
+        .featureIds(ids.join(','))
+        .run(function (error, featureCollection) {
+          const results = []
+          if (!error) {
+            for (const feature of featureCollection.features) {
+              const featureBounds = this._featureBounds(feature)
+              feature.layerId = layer
+              feature.layerName = this._layerNames[layer]
+              feature.displayFieldName = this._displayFields[layer]
+              results.push({
+                latlng: featureBounds.getCenter(),
+                bounds: featureBounds,
+                text: this.options.formatSuggestion.call(this, feature),
+                properties: feature.properties,
+                geojson: feature
+              })
+            }
+          }
+          callback(error, results)
+        }, this)
+    }
+    return provider
+  }
 
-  const swotReachServiceProvider = esriLeafletGeocoder.mapServiceProvider({
-    label: 'Reach ID',
-    url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator_v17b/MapServer',
-    layers: [0],
-    searchFields: ['reach_id', 'rch_id_up', 'rch_id_dn']
-  })
+  const swotRiverNameMapServiceProvider = queryMergedMagicKeys(
+    esriLeafletGeocoder.mapServiceProvider({
+      label: 'River names',
+      url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator_v17b/MapServer',
+      layers: [0],
+      searchFields: ['river_name']
+    })
+  )
+
+  const swotReachServiceProvider = queryMergedMagicKeys(
+    esriLeafletGeocoder.mapServiceProvider({
+      label: 'Reach ID',
+      url: 'https://arcgis.cuahsi.org/arcgis/rest/services/SWOT/world_SWORD_reaches_mercator_v17b/MapServer',
+      layers: [0],
+      searchFields: ['reach_id', 'rch_id_up', 'rch_id_dn']
+    })
+  )
 
   const hucMapServiceProvider = esriLeafletGeocoder.mapServiceProvider({
     label: 'HUC 8',

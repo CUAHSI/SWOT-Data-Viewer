@@ -21,9 +21,9 @@
         RESET ZOOM
       </v-tooltip>
       <!-- Chart -->
-      <Line ref="activeReachChart" :data="chartData" :options="options" />
+      <Line ref="activeReachChart" :data="plotChartData" :options="options" />
     </v-sheet>
-    <v-card v-if="hasSelectedTimeseriesPoints">
+    <v-card v-if="canSelectPoints && hasSelectedTimeseriesPoints">
       <v-card-title>Selected Timestamps</v-card-title>
       <v-card-text>
         <v-list>
@@ -66,7 +66,6 @@ import { Line } from 'vue-chartjs'
 import 'chartjs-adapter-date-fns'
 import { enUS } from 'date-fns/locale'
 import { useChartsStore } from '@/stores/charts'
-import { useAlertStore } from '@/stores/alerts'
 import { useFeaturesStore } from '@/stores/features'
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -83,11 +82,16 @@ const hasSelectedTimeseriesPoints = computed(() => selectedTimeseriesPoints.valu
 
 const chartStore = useChartsStore()
 const statsStore = useStatsStore()
-const alertStore = useAlertStore()
 const featuresStore = useFeaturesStore()
 const props = defineProps({ data: Object, chosenPlot: Object })
-const { chartData, activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
-const { timeRange } = storeToRefs(featuresStore)
+const { activeReachChart, selectedTimeseriesPoints } = storeToRefs(chartStore)
+const { timeRange, activeFeature } = storeToRefs(featuresStore)
+
+// Points are selected to filter the Long Profile, which lakes don't have.
+const canSelectPoints = computed(() => activeFeature.value?.feature_type !== 'PriorLake')
+
+const hasQualityFlags = chartStore.plotHasQualityFlags(props.chosenPlot)
+const plotChartData = computed(() => chartStore.getChartDataForPlot(props.chosenPlot))
 
 let xLabel = 'Date'
 let yLabel = `${props.chosenPlot?.name} (${props.chosenPlot?.unit})`
@@ -110,7 +114,7 @@ onMounted(async () => {
   await nextTick()
 
   // push the chart to the store
-  chartStore.storeMountedChart(activeReachChart.value)
+  chartStore.storeMountedChart(activeReachChart.value, props.chosenPlot)
   chartStore.updateSymbology()
 })
 
@@ -127,6 +131,8 @@ const options = {
   responsive: true,
   maintainAspectRatio: false,
   parsing: getParsing,
+  // discharge is not available for every observation, so connect the line across gaps
+  spanGaps: true,
   plugins: {
     legend: {
       display: true,
@@ -134,11 +140,16 @@ const options = {
       align: 'end',
       labels: {
         usePointStyle: true,
-        generateLabels: () => chartStore.generateDataQualityLegend('line'),
+        // charts without Quality Flags show a note in place of the markers
+        generateLabels: () =>
+          hasQualityFlags
+            ? chartStore.generateDataQualityLegend()
+            : [{ text: 'Quality Flags are not available for Discharge.' }],
         font: {
           size: 12
         },
-        boxWidth: 20,
+        // a zero box width skips drawing a marker beside the note
+        boxWidth: hasQualityFlags ? 20 : 0,
         padding: 10
       },
       title: {
@@ -183,6 +194,9 @@ const options = {
     },
     tooltip: {
       // https://www.chartjs.org/docs/latest/configuration/tooltip.html
+      // HydroCron can return overlapping observations for one pass; show only the first
+      // TODO: remove this filter once https://github.com/podaac/hydrocron/issues/408 is resolved
+      filter: (tooltipItem, index) => index === 0,
       callbacks: {
         label: function (context) {
           let plt = props.chosenPlot
@@ -197,11 +211,12 @@ const options = {
           return label
         },
         footer: function (context) {
-          const dataQualityOption = chartStore.dataQualityOptions.find(
-            (option) => option.value == context[0]?.raw?.reach_q
-          )
-          if (dataQualityOption) {
-            return `\n Data Quality: ${dataQualityOption.label}`
+          if (!hasQualityFlags) {
+            return ''
+          }
+          const qualityLevelOption = chartStore.getQualityLevelOption(context[0]?.raw)
+          if (qualityLevelOption) {
+            return `\n Data Quality: ${qualityLevelOption.label}`
           }
           return ''
         }
@@ -231,7 +246,7 @@ const options = {
       }
     }
   },
-  onClick: (e) => handleTimeseriesPointClick(e)
+  onClick: (e, elements, chart) => handleTimeseriesPointClick(e, chart)
 }
 
 const resetZoom = () => {
@@ -242,19 +257,18 @@ const resetZoom = () => {
   }
 }
 
-const handleTimeseriesPointClick = (e) => {
-  const elems = activeReachChart.value.chart.getElementsAtEventForMode(
-    e,
-    'nearest',
-    { intersect: true },
-    false
-  )
+const handleTimeseriesPointClick = (e, chart) => {
+  if (!canSelectPoints.value) {
+    return
+  }
+  // use the clicked chart: each chart may hold its own copy of the data (e.g. Discharge)
+  const elems = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
   if (elems.length <= 0) {
     return
   }
   const datasetIndex = elems[0].datasetIndex
   const index = elems[0].index
-  const dataset = activeReachChart.value.chart.data.datasets[datasetIndex]
+  const dataset = chart.data.datasets[datasetIndex]
   const timeSeriesPoint = dataset.data[index]
 
   addSelectedTimeseriesPoint(timeSeriesPoint)
@@ -280,13 +294,6 @@ const viewLongProfileByDates = () => {
 const addSelectedTimeseriesPoint = (timeSeriesPoint) => {
   // first make sure the node is not already selected
   if (selectedTimeseriesPoints.value.includes(timeSeriesPoint)) {
-    alertStore.displayAlert({
-      title: 'Timstamp deselected',
-      text: `The point at ${timeSeriesPoint.datetime} deselected.`,
-      type: 'success',
-      closable: true,
-      duration: 3
-    })
     removeSelectedTimeseriesPoint(timeSeriesPoint)
     return
   }

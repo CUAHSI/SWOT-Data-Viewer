@@ -17,9 +17,6 @@ RUN pip install -r requirements.txt
 COPY requirements-dev.txt requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
-RUN curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc \
- && chmod +x /usr/local/bin/mc
-
 COPY ./swotvis /swotvis
 
 ENV PYTHONPATH "/swotvis/:${PYTHONPATH}"
