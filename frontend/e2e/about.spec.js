@@ -1,0 +1,174 @@
+import { test, expect } from '@playwright/test'
+
+// Layout checks for the About page (CAM-1506 acceptance criteria). jsdom does no layout,
+// so these run in a real browser; behaviour that doesn't need layout is unit-tested in
+// src/views/__tests__/AboutView.test.js.
+
+const WIDTHS = [360, 768, 959, 960, 1440]
+// Vuetify's md breakpoint, where the TOC switches from a stacked panel to a sidebar
+const MD_BREAKPOINT = 960
+// Widths at which the variables table (min-width 760px) is wider than the content area
+const TABLE_SCROLL_WIDTHS = [360, 768]
+
+// Stands in for every external image (they are hotlinked from HydroShare and other hosts).
+// It is wider than any viewport, so an image the CSS doesn't constrain will overflow.
+const STUB_IMAGE =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1000">' +
+  '<rect width="2000" height="1000" fill="#ccc"/></svg>'
+
+async function openAboutPage(page, baseURL) {
+  const appOrigin = new URL(baseURL).origin
+  await page.route('**/*', (route) => {
+    const request = route.request()
+    if (new URL(request.url()).origin === appOrigin) return route.continue()
+    if (request.resourceType() === 'image') {
+      return route.fulfill({ contentType: 'image/svg+xml', body: STUB_IMAGE })
+    }
+    return route.abort()
+  })
+
+  await page.goto('#/about')
+  await expect(page.locator('.toc li a').first()).toBeAttached()
+  await page.waitForFunction(() =>
+    Array.from(document.querySelectorAll('.about-content img')).every((img) => img.complete)
+  )
+}
+
+// TOC links scroll smoothly; wait until the scroll position stops changing
+async function waitForScrollToSettle(page) {
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let lastY = window.scrollY
+        let stableFrames = 0
+        const tick = () => {
+          if (window.scrollY === lastY) stableFrames++
+          else stableFrames = 0
+          lastY = window.scrollY
+          if (stableFrames >= 10) resolve()
+          else requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+      })
+  )
+}
+
+for (const width of WIDTHS) {
+  test.describe(`About page at ${width}px`, () => {
+    test.use({ viewport: { width, height: 800 } })
+
+    test.beforeEach(async ({ page, baseURL }) => {
+      await openAboutPage(page, baseURL)
+    })
+
+    test('has no horizontal page scroll', async ({ page }) => {
+      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth
+      }))
+      expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
+    })
+
+    test('only the variables table scrolls sideways', async ({ page }) => {
+      const scrollers = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('.about-page, .about-page *'))
+          .filter((el) => {
+            const { overflowX } = getComputedStyle(el)
+            return ['auto', 'scroll'].includes(overflowX) && el.scrollWidth > el.clientWidth
+          })
+          .map((el) =>
+            el.matches('.table-scroll') && el.textContent.includes('Variable Code')
+              ? 'variables table'
+              : `${el.tagName.toLowerCase()}.${el.className}`
+          )
+      )
+      expect(scrollers.filter((scroller) => scroller !== 'variables table')).toEqual([])
+      if (TABLE_SCROLL_WIDTHS.includes(width)) expect(scrollers).toEqual(['variables table'])
+    })
+
+    test('images stay within the content width', async ({ page }) => {
+      const images = await page.evaluate(() => {
+        const content = document.querySelector('.about-content')
+        const style = getComputedStyle(content)
+        const box = content.getBoundingClientRect()
+        const left = box.left + parseFloat(style.paddingLeft)
+        const right = box.right - parseFloat(style.paddingRight)
+        return Array.from(content.querySelectorAll('img')).map((img) => {
+          const rect = img.getBoundingClientRect()
+          return {
+            alt: img.alt,
+            loaded: img.naturalWidth > 0,
+            fits: rect.left >= left - 0.5 && rect.right <= right + 0.5
+          }
+        })
+      })
+      expect(images.length).toBeGreaterThan(0)
+      expect(images.filter((img) => !img.loaded).map((img) => img.alt)).toEqual([])
+      expect(images.filter((img) => !img.fits).map((img) => img.alt)).toEqual([])
+    })
+
+    if (width >= MD_BREAKPOINT) {
+      test('shows the TOC as a sticky sidebar beside the content', async ({ page }) => {
+        await expect(page.locator('.toc-toggle')).toHaveCount(0)
+        await expect(page.locator('.toc ul')).toBeVisible()
+
+        const tocBox = await page.locator('.toc').boundingBox()
+        const contentBox = await page.locator('.about-content').boundingBox()
+        expect(tocBox.x + tocBox.width).toBeLessThanOrEqual(contentBox.x)
+
+        const appBarBottom = await page
+          .locator('#app-bar')
+          .evaluate((el) => el.getBoundingClientRect().bottom)
+        await page.evaluate(() => window.scrollTo(0, 2000))
+        const tocTop = await page.locator('.toc').evaluate((el) => el.getBoundingClientRect().top)
+        expect(tocTop).toBeGreaterThanOrEqual(appBarBottom)
+        expect(tocTop).toBeLessThan(appBarBottom + 40)
+      })
+    } else {
+      test('shows the TOC as a collapsed panel above the content', async ({ page }) => {
+        const toggle = page.locator('.toc-toggle')
+        await expect(toggle).toBeVisible()
+        await expect(toggle).toHaveText('Contents')
+        await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+        await expect(page.locator('.toc ul')).toBeHidden()
+
+        const tocBox = await page.locator('.toc').boundingBox()
+        const contentBox = await page.locator('.about-content').boundingBox()
+        expect(tocBox.y + tocBox.height).toBeLessThanOrEqual(contentBox.y)
+        expect(Math.abs(tocBox.x - contentBox.x)).toBeLessThan(1)
+        expect(Math.abs(tocBox.width - contentBox.width)).toBeLessThan(1)
+      })
+    }
+
+    test('every TOC link scrolls its heading into view below the app bar', async ({ page }) => {
+      const appBarBottom = await page
+        .locator('#app-bar')
+        .evaluate((el) => el.getBoundingClientRect().bottom)
+      const links = page.locator('.toc li a')
+      const linkCount = await links.count()
+      expect(linkCount).toBeGreaterThan(0)
+
+      const misplaced = []
+      for (let i = 0; i < linkCount; i++) {
+        await page.evaluate(() => window.scrollTo(0, 0))
+        if (width < MD_BREAKPOINT) await page.locator('.toc-toggle').click()
+
+        const text = (await links.nth(i).textContent()).trim()
+        await links.nth(i).click()
+        await waitForScrollToSettle(page)
+
+        const heading = page
+          .locator('.about-content')
+          .getByRole('heading', { level: 2, name: text, exact: true })
+        const { top, bottom, viewportHeight } = await heading.evaluate((el) => ({
+          ...el.getBoundingClientRect().toJSON(),
+          viewportHeight: window.innerHeight
+        }))
+        if (top < appBarBottom || bottom > viewportHeight) {
+          misplaced.push(`${text} (top ${Math.round(top)}px)`)
+        }
+      }
+      expect(misplaced).toEqual([])
+    })
+  })
+}

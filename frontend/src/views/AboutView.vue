@@ -58,11 +58,11 @@ onMounted(async () => {
 
   // extract headings and generate TOC items with IDs
   tocItems.value = Array.from(tempDiv.querySelectorAll('h2')).map((heading) => {
-    const id = heading.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const id = heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     heading.id = id // Set the ID on the heading itself
     return {
       id,
-      text: heading.innerText
+      text: heading.textContent
     }
   })
 
