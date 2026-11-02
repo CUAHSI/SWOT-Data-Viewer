@@ -15,7 +15,7 @@ One of the four ordered values of a Quality Flag: **good** (0), **suspect** (1),
 _Avoid_: nominal (SWOT's name for level 0)
 
 **Discharge**:
-The SWORD of Science (SoS) consensus estimate of river flow for a reach, matched to SWOT observation times. Discharge has no Quality Flag of its own.
+The SWORD of Science (SoS) consensus estimate of river flow for a reach, matched to SWOT observation times. Discharge has no Quality Flag of its own, and is distinct from the near-real-time discharge in the SWOT Level 2 river product.
 _Avoid_: Streamflow, Q, reanalysis discharge
 
 ### Charts
@@ -23,3 +23,7 @@ _Avoid_: Streamflow, Q, reanalysis discharge
 **Long Profile**:
 A chart of node observations plotted against distance along the river, with one series per observation date.
 _Avoid_: Distance chart, node chart
+
+**Time Range**:
+The window of observation dates a user selects; charts show only observations that fall inside it.
+_Avoid_: Date range, time window, time slider
