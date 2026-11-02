@@ -1,10 +1,21 @@
 <template>
   <v-container>
-    <div class="about-page">
+    <div class="about-page" :class="{ 'about-page--stacked': isStacked }">
       <!-- Table of Contents Section -->
-      <nav class="toc">
-        <h3>Table of Contents</h3>
-        <ul>
+      <nav class="toc" aria-label="Table of Contents">
+        <button
+          v-if="isStacked"
+          type="button"
+          class="toc-toggle"
+          :aria-expanded="tocOpen"
+          aria-controls="toc-list"
+          @click="tocOpen = !tocOpen"
+        >
+          <span>Contents</span>
+          <v-icon :icon="tocOpen ? mdiChevronUp : mdiChevronDown" size="small" />
+        </button>
+        <h3 v-else>Table of Contents</h3>
+        <ul v-show="!isStacked || tocOpen" id="toc-list">
           <li v-for="item in tocItems" :key="item.id">
             <a @click="scrollToSection(item.id)">{{ item.text }}</a>
           </li>
@@ -18,9 +29,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { useDisplay } from 'vuetify'
 import { marked } from 'marked'
+import { mdiChevronDown, mdiChevronUp } from '@mdi/js'
 import about_page_url from '@/assets/about_page.md'
+
+// below the md breakpoint (960px) the TOC becomes a collapsible panel above the content
+const { mdAndUp } = useDisplay()
+const isStacked = computed(() => !mdAndUp.value)
+const tocOpen = ref(false)
 
 // use the about_page_url to fetch the markdown content
 const aboutHtml = ref('')
@@ -48,12 +66,23 @@ onMounted(async () => {
     }
   })
 
+  // wrap tables so wide tables scroll sideways instead of widening the page
+  tempDiv.querySelectorAll('table').forEach((table) => {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'table-scroll'
+    table.replaceWith(wrapper)
+    wrapper.appendChild(table)
+  })
+
   // set the modified HTML back to the aboutHtml
   aboutHtml.value = tempDiv.innerHTML
 })
 
 // Scroll to the section smoothly
-function scrollToSection(id) {
+async function scrollToSection(id) {
+  // collapse the panel first so its height change doesn't shift the scroll target
+  tocOpen.value = false
+  await nextTick()
   const element = document.getElementById(id)
   if (element) {
     element.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -62,121 +91,313 @@ function scrollToSection(id) {
 </script>
 
 <style lang="scss">
+// Not scoped: the markdown is injected with v-html, so scoped styles would not reach it.
+// Everything is nested under .about-page to keep these class names local to this view.
+// Matches the height of the fixed v-app-bar in TheAppBar.vue.
+$app-bar-height: 70px;
+// Keeps the sticky TOC and scrolled-to headings clear of the app bar.
+$sticky-offset: $app-bar-height + 16px;
+
 .about-page {
-  display: flex;
-  gap: 20px; /* Space between TOC and content */
-}
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 
-.about-content {
-  font-family: 'Roboto', sans-serif;
-  line-height: 1.6;
-  color: #333;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-.about-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1em 0;
-  border: 1px solid #ddd;
-}
-
-.about-content th,
-.about-content td {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
-
-.about-content th {
-  background-color: #f2f2f2;
-  color: #333;
-  text-align: left;
-}
-
-.about-content h1,
-.about-content h2,
-.about-content h3,
-.about-content h4,
-.about-content h5,
-.about-content h6 {
-  color: #2c3e50;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-}
-
-.about-content p {
-  margin-bottom: 1em;
-}
-
-.about-content ul,
-.about-content ol {
-  margin: 1em 0;
-  padding-left: 1.5em;
-}
-
-.about-content blockquote {
-  margin: 1em 0;
-  padding: 0.5em 1em;
-  background-color: #f9f9f9;
-  border-left: 5px solid #ccc;
-  color: #666;
-}
-
-.about-content code {
-  background-color: #f3f3f3;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-family: 'Courier New', Courier, monospace;
-}
-
-.about-content pre {
-  background-color: #f3f3f3;
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-}
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
+  &.about-page--stacked {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
   }
-}
 
-/* Table of Contents (TOC) styles */
-.toc {
-  width: 1200px;
-  position: sticky;
-  top: 50px;
-  align-self: start;
-  background-color: #f9f9f9;
-  padding: 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px #ded9d9;
-}
+  /* Table of Contents (TOC) styles */
+  .toc {
+    position: sticky;
+    top: $sticky-offset;
+    max-height: calc(100vh - #{$sticky-offset + 16px});
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px #ded9d9;
+    font-size: 14px;
+    line-height: 1.4;
 
-.toc h3 {
-  font-size: 0.75em;
-  margin-bottom: 0.5em;
-}
+    h3 {
+      font-size: 13px;
+      margin-bottom: 0.75em;
+    }
 
-.toc ul {
-  list-style: none;
-  padding: 0;
-}
+    ul {
+      list-style: none;
+      padding: 0;
+    }
 
-.toc li {
-  margin-bottom: 0.8em;
-}
+    li {
+      margin-bottom: 0.6em;
+    }
 
-.toc a {
-  text-decoration: none;
-  color: #616365;
-  font-size: 0.75em;
-  cursor: pointer; /* link is clickable */
-}
+    a {
+      text-decoration: none;
+      color: #616365;
+      cursor: pointer; /* link is clickable */
+    }
 
-.toc a:hover {
-  text-decoration: underline;
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &.about-page--stacked .toc {
+    position: static;
+    max-height: none;
+
+    ul {
+      margin-top: 0.75em;
+    }
+  }
+
+  .toc-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .about-content {
+    min-width: 0;
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow-wrap: anywhere;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: #2c3e50;
+      line-height: 1.3;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+
+    h2 {
+      font-size: 1.6em;
+      margin-top: 2em;
+      padding-bottom: 0.3em;
+      border-bottom: 1px solid #e0e0e0;
+      scroll-margin-top: $sticky-offset;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+
+    h3 {
+      font-size: 1.25em;
+    }
+
+    h4 {
+      font-size: 1.15em;
+    }
+
+    p {
+      margin-bottom: 1em;
+    }
+
+    ul,
+    ol {
+      margin: 1em 0;
+      padding-left: 1.5em;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      border: 1px solid #ddd;
+      overflow-wrap: normal;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      color: #333;
+      text-align: left;
+    }
+
+    blockquote {
+      margin: 1em 0;
+      padding: 0.5em 1em;
+      background-color: #f9f9f9;
+      border-left: 5px solid #ccc;
+      color: #666;
+    }
+
+    code {
+      background-color: #f3f3f3;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    pre {
+      background-color: #f3f3f3;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    /* Info callout */
+    .callout {
+      margin: 1em 0 1.5em;
+      padding: 12px 16px;
+      border-left: 5px solid #4682b4;
+      border-radius: 8px;
+      background-color: #f5f5f5;
+
+      .callout-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+      }
+
+      .callout-icon {
+        font-size: 1.5em;
+        line-height: 1;
+        color: #4682b4;
+      }
+
+      ul {
+        margin: 0.5em 0 0;
+        padding-left: 1.25em;
+      }
+    }
+
+    /* Plot type cards: side by side when there is room, stacked otherwise */
+    .plot-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 1em 0 1.5em;
+    }
+
+    .plot-card {
+      display: flex;
+      flex: 1 1 260px;
+      flex-direction: column;
+      max-width: 400px;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #c4d8e2;
+
+      &:nth-child(even) {
+        background-color: #afeeee;
+      }
+
+      h3 {
+        margin-top: 0;
+      }
+
+      img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+
+      p {
+        flex-grow: 1;
+        margin: 15px 0 0;
+      }
+    }
+
+    /* Project team */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 1em 0;
+    }
+
+    .team-card {
+      padding: 12px;
+      border: 1px solid lightgray;
+      border-radius: 8px;
+
+      h4 {
+        margin-top: 0;
+      }
+
+      img {
+        width: 120px;
+      }
+
+      .team-title,
+      .team-org,
+      .team-email {
+        margin: 0.25em 0 0;
+        font-weight: 500;
+        line-height: 1.4;
+      }
+
+      .team-title {
+        font-size: 1.1em;
+        color: gray;
+      }
+
+      .team-org {
+        font-size: 0.95em;
+        color: gray;
+      }
+
+      .team-email {
+        font-size: 1em;
+        color: skyblue;
+      }
+    }
+
+    /* Partners: text beside the logo, logo wraps below on narrow screens */
+    .partners {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px 24px;
+
+      p {
+        flex: 1 1 260px;
+        margin: 0;
+      }
+
+      img {
+        flex: none;
+      }
+    }
+  }
 }
 </style>

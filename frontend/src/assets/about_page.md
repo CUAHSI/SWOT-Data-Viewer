@@ -1,7 +1,5 @@
 ## SWOT Background
 
----
-
 The [Surface Water and Ocean Topography](https://swot.jpl.nasa.gov/) (SWOT) was launched in December 2022 and completed its 1-day repeat orbit for the "fast-sampling" or "calibration" phase of the mission in early July 2023. Following this, SWOT transitioned into a 21-day repeat orbit in August 2023 to start its “science” phase, which is expected to continue through 2025 (https://swot.jpl.nasa.gov/mission/overview/).
 
 SWOT provides a suite of <strong>hydrology</strong> data products, distributed by NASA’s Physical Oceanography Distributed Active Archive Center, [PO.DAAC](https://podaac.jpl.nasa.gov/SWOT?tab=mission-objectives&sections=about%2Bdata). The basic river hydrological attributes of the SWOT measurement include WSE (wse), water
@@ -15,8 +13,6 @@ The figure below presents a schematic illustration of a river reach and its asso
 
 ## SWOT Data Viewer Application (SWOTViz)
 
----
-
 <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/swot-logo-v12-transparent-bkg.png" width=260 height=150 alt="SWOTVis-logo">
 
 ### Why SWOTViz was developed?
@@ -25,19 +21,17 @@ The task of discovering, collecting, and analyzing data from the existing servic
 
 SWOTViz is an interactive web user interface featuring mapping and plotting capabilities for **retrieving, visualizing, and manipulating** SWOT data. The application provides a solution for quickly discovering and previewing SWOT observations and, subsequently, performing advanced scientific analysis in the cloud using domain-specific code and algorithms.
 
-<div style="border-left: 5px solid #4682B4; padding: 15px; background-color: #F5F5F5; border-radius: 8px;">
-    <p style="display: flex; align-items: center; font-size: 16px; font-family: Arial, sans-serif; color: #333333; margin: 0;">
-        <span style="font-size: 24px; color: #4682B4; margin-right: 10px;">&#9432;</span> <!-- Info icon -->
-        <strong>These include:</strong> 
+<div class="callout">
+    <p class="callout-title">
+        <span class="callout-icon" aria-hidden="true">&#9432;</span>
+        <strong>These include:</strong>
     </p>
-    <ul style="font-size: 15px; font-family: Arial, sans-serif; color: #333333; margin-top: 10px; padding-left: 20px;">
+    <ul>
         <li>Exploration of hydrological parameters and their associated metadata.</li>
         <li>Analysis of temporal changes using common statistical methods.</li>
         <li>Advanced scientific analysis using cloud computing and data-sharing platforms.</li>
     </ul>
 </div>
-
-<br>
 
 SWOTViz allows users to select their reach of interest through an interactive map interface or by searching for the reach name or reach_id (as defined in SWORD). Once a reach is selected, users can view its metadata, including information on reach length, average water surface elevation, width, slope, upstream and downstream reach IDs, and more, all sourced from SWORD. Below is an example of metadata for a reach along the Maroni River in South America, highlighted with the dashed red circle.
 
@@ -45,25 +39,21 @@ SWOTViz allows users to select their reach of interest through an interactive ma
 
 ### What types of plots does SWOTViz provide?
 
-<div style="display: flex; gap: 20px; align-items: stretch;">
+<div class="plot-cards">
 
-  <!-- Left Column Box -->
-  <div style="flex: 1; background-color: #C4D8E2; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; max-width: 400px;">
+  <div class="plot-card">
     <h3>Timeseries Plots</h3>
-    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/timeseries.png" alt="Thumbnail" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover;">
-    <p style="flex-grow: 1; margin-top: 15px;">This type of plot can effectively show changes in a variable of interest (e.g., water surface elevation) across one or more reaches over a specified period, helping in the understanding of temporal changes in river dynamics, such as seasonal variations, impacts of climate events, or human activities. Typically, the values represent 1-D averages across the reach.</p>
+    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/timeseries.png" alt="Thumbnail">
+    <p>This type of plot can effectively show changes in a variable of interest (e.g., water surface elevation) across one or more reaches over a specified period, helping in the understanding of temporal changes in river dynamics, such as seasonal variations, impacts of climate events, or human activities. Typically, the values represent 1-D averages across the reach.</p>
   </div>
 
-  <!-- Right Column Box -->
-  <div style="flex: 1; background-color: #AFEEEE; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; max-width: 400px;">
+  <div class="plot-card">
     <h3>Longitudinal Profile Plots</h3>
-    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/distance.png" alt="Thumbnail" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover;">
-    <p style="flex-grow: 1; margin-top: 15px;">The longitudinal profile helps in understanding variations in a variable of interest (e.g., water surface elevation) along the river reach, which is essential for studying river hydraulics, sediment transport, flood levels, and more.</p>
+    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/distance.png" alt="Thumbnail">
+    <p>The longitudinal profile helps in understanding variations in a variable of interest (e.g., water surface elevation) along the river reach, which is essential for studying river hydraulics, sediment transport, flood levels, and more.</p>
   </div>
 
 </div>
- 
- <br>
 
 - Reach-averaged water surface elevation vs. time: This plot can help in understanding temporal changes in river dynamics.
 - Reach-averaged width vs. time: This plot helps tracking temporal changes in a river's width, which reflects natural and anthropogenic impacts on local and upstream/downstream hydraulic and hydrologic processes. Moreover, these plots may offer an opportunity to study biogeochemical exchange and geomorphologic evolution (Feng et al., 2022).
@@ -102,77 +92,63 @@ Discharge has no quality flag. The SoS discharge estimates are matched to SWOT r
 
 ## Scientific Use-Case Examples
 
----
-
 Jupyter Notebook examples will be added soon!
 
 ## SWOTViz Project Team
 
----
+<div class="team-grid">
 
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
+<div class="team-card">
   <h4>Anthony Castronova</h4>
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg" alt="Anthony Castronova" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Senior Research Hydrologist</h3>
-  <h3 style="color: gray; font-size: 14px;">CUAHSI</h3>
-  <h3 style="color: skyblue; font-size: 15px;">acastronova@cuahsi.org</h3> 
+  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg" alt="Anthony Castronova">
+  <h3 class="team-title">Senior Research Hydrologist</h3>
+  <h3 class="team-org">CUAHSI</h3>
+  <h3 class="team-email">acastronova@cuahsi.org</h3>
 </div>
 
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Devin Cowan</h4>   
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Devin-Cowan.jpg" alt="Devin Cowan" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Research Programmer</h3>
-  <h3 style="color: gray; font-size: 14px;">CUAHSI</h3>
-  <h34 style="color: skyblue; font-size: 15px;">dcowan@cuahsi.org</h3>
+<div class="team-card">
+  <h4>Devin Cowan</h4>
+  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Devin-Cowan.jpg" alt="Devin Cowan">
+  <h3 class="team-title">Research Programmer</h3>
+  <h3 class="team-org">CUAHSI</h3>
+  <h34 class="team-email">dcowan@cuahsi.org</h3>
 </div>
 
+<div class="team-card">
+  <h4>Irene Garousi-Nejad</h4>
+  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Irene_headshot03.jpg" alt="Irene Garousi-Nejad">
+  <h3 class="team-title">Research Scientist</h3>
+  <h3 class="team-org">CUAHSI</h3>
+  <h3 class="team-email">igarousi@cuahsi.org</h3>
 </div>
 
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Irene Garousi-Nejad</h4> 
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Irene_headshot03.jpg" alt="Irene Garousi-Nejad" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Research Scientist</h3>
-  <h3 style="color: gray; font-size: 14px;">CUAHSI</h3>
-  <h3 style="color: skyblue; font-size: 15px;">igarousi@cuahsi.org</h3>
-</div>
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
+<div class="team-card">
   <h4>Martin Seul</h4>
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Martin.jpg" alt="Martin Seul" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Technical Director</h3>
-  <h3 style="color: gray; font-size: 14px;">CUAHSI</h3>
-  <h3 style="color: skyblue; font-size: 15px;">mseul@cuahsi.org</h3>
+  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Martin.jpg" alt="Martin Seul">
+  <h3 class="team-title">Technical Director</h3>
+  <h3 class="team-org">CUAHSI</h3>
+  <h3 class="team-email">mseul@cuahsi.org</h3>
 </div>
 
+<div class="team-card">
+  <h4>Michael Durand</h4>
+  <img src="https://earthsciences.osu.edu/sites/default/files/styles/people_profile_image/public/pictures/2024-01/durand_photo_2.jpg?h=29a016df&itok=vzT0pXTJ" alt="Michael Durand">
+  <h3 class="team-title">Professor</h3>
+  <h3 class="team-org">Ohio State University</h3>
+  <h3 class="team-email">durand.8@osu.edu</h3>
 </div>
 
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Michael Durand</h4> 
-  <img src="https://earthsciences.osu.edu/sites/default/files/styles/people_profile_image/public/pictures/2024-01/durand_photo_2.jpg?h=29a016df&itok=vzT0pXTJ" alt="Michael Durand" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Professor</h3>
-  <h3 style="color: gray; font-size: 14px;">Ohio State University</h3>
-  <h3 style="color: skyblue; font-size: 15px;">durand.8@osu.edu</h3>
-</div>
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
+<div class="team-card">
   <h4>Bidhyananda Yadav</h4>
-  <img src="https://byrd.osu.edu/sites/default/files/styles/people_profile_image/public/pictures/2021-05/bidhya-yadav.jpg?h=c78a7939&itok=FBsU4kiQ" alt="Bidhyananda Yadav" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Research Associate</h3>
-  <h3 style="color: gray; font-size: 14px;">Ohio State University</h3>
-  <h3 style="color: skyblue; font-size: 15px;">yadav.111@osu.edu</h3>
+  <img src="https://byrd.osu.edu/sites/default/files/styles/people_profile_image/public/pictures/2021-05/bidhya-yadav.jpg?h=c78a7939&itok=FBsU4kiQ" alt="Bidhyananda Yadav">
+  <h3 class="team-title">Research Associate</h3>
+  <h3 class="team-org">Ohio State University</h3>
+  <h3 class="team-email">yadav.111@osu.edu</h3>
 </div>
 
 </div>
 
 ## Other Useful Resources
-
----
 
 ### Tutorials
 
@@ -195,37 +171,22 @@ Jupyter Notebook examples will be added soon!
 
 ## SWOT Partners
 
----
-
-<div style="display: flex; align-items: center;">
-
-<div style="flex: 1;">
+<div class="partners">
 <p>SWOT is being jointly developed by NASA and <a href="https://cnes.fr/projets/swot">Centre National D'Etudes Spatiales</a> (CNES) with contributions from the <a href="https://www.asc-csa.gc.ca/eng/">Canadian Space Agency</a> (CSA) and <a href="https://www.gov.uk/government/organisations/uk-space-agency">United Kingdom Space Agency</a>.</p>
-</div>
-
-<div style="flex: 1; text-align: right;">
 <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/swot_partners_logo.jpg" width="150" height="140" alt="SWOT-Partners">
-</div>
-
 </div>
 
 ## Acknowledgements
 
----
-
 The research was carried out in part at the Jet Propulsion Laboratory, California Institute of Technology, under a contract with the National Aeronautics and Space Administration (80NM0018D0004).
 
 ## SWOT Data and SWOTViz Tool Citation Policy
-
----
 
 SWOT Data hosted by the PO.DAAC is openly shared, without restriction, in accordance with NASA's Earth Science program Data and Information Policy. Please refer to the PO.DAAC [Data Use and Citation Policy](https://podaac.jpl.nasa.gov/CitingPODAAC).
 
 SWOTViz is licensed under the GNU General Public License v3.0. This license allows users to freely use, modify, and distribute the software as long as they credit the original authors, share any modifications under the same license, and provide access to the source code. There are no warranties, and modifications must be clearly marked.
 
 ## References
-
----
 
 - Altenau, E. H., Pavelsky, T. M., Durand, M. T., Yang, X., Frasson, R. P. d. M., & Bendezu, L. (2021). The surface water and ocean topography (SWOT) mission river database (SWORD): A global river network for satellite data products. Water Resources Research, 57, e2021WR030054. https://doi.org/10.1029/2021WR030054
 - Altenau, E. H., Pavelsky, T. M., Durand, M., T., Yang, X., Frasson, R. P. d. M., & Bendezu, L. (2023). SWOT River Database (SWORD) (Version v16) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.10013982
