@@ -1,8 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 import { loadEnv } from 'vite'
 
-// Same env lookup as vite.config.mjs, so the tests follow a non-root VITE_APP_BASE
-const base = loadEnv('development', '../').VITE_APP_BASE || '/'
+// Same lookup vite.config.mjs uses for `base`, so the tests follow a non-root VITE_APP_BASE.
+// Playwright loads this file as CommonJS, so __dirname is defined (import.meta is not).
+const base = loadEnv('development', __dirname).VITE_APP_BASE || '/'
 const port = 5174
 
 export default defineConfig({

@@ -7,8 +7,11 @@ import { test, expect } from '@playwright/test'
 const WIDTHS = [360, 768, 959, 960, 1440]
 // Vuetify's md breakpoint, where the TOC switches from a stacked panel to a sidebar
 const MD_BREAKPOINT = 960
-// Widths at which the variables table (min-width 760px) is wider than the content area
-const TABLE_SCROLL_WIDTHS = [360, 768]
+// Widths at which the variables table (min-width 760px) is wider than the content area. At 960px
+// the sidebar takes 264px of v-container's 900px max-width; at 959px and 1440px the table fits.
+const TABLE_SCROLL_WIDTHS = [360, 768, 960]
+// The sticky TOC sits 16px below the app bar (AboutView.vue's $sticky-offset)
+const STICKY_TOP_TOLERANCE_PX = 40
 
 // Stands in for every external image (they are hotlinked from HydroShare and other hosts).
 // It is wider than any viewport, so an image the CSS doesn't constrain will overflow.
@@ -32,6 +35,10 @@ async function openAboutPage(page, baseURL) {
   await page.waitForFunction(() =>
     Array.from(document.querySelectorAll('.about-content img')).every((img) => img.complete)
   )
+}
+
+async function getAppBarBottom(page) {
+  return page.locator('#app-bar').evaluate((el) => el.getBoundingClientRect().bottom)
 }
 
 // TOC links scroll smoothly; wait until the scroll position stops changing
@@ -116,13 +123,15 @@ for (const width of WIDTHS) {
         const contentBox = await page.locator('.about-content').boundingBox()
         expect(tocBox.x + tocBox.width).toBeLessThanOrEqual(contentBox.x)
 
-        const appBarBottom = await page
-          .locator('#app-bar')
-          .evaluate((el) => el.getBoundingClientRect().bottom)
-        await page.evaluate(() => window.scrollTo(0, 2000))
+        const appBarBottom = await getAppBarBottom(page)
+        const scrollY = await page.evaluate(() => {
+          window.scrollTo(0, 2000)
+          return window.scrollY
+        })
+        expect(scrollY).toBeGreaterThan(0)
         const tocTop = await page.locator('.toc').evaluate((el) => el.getBoundingClientRect().top)
         expect(tocTop).toBeGreaterThanOrEqual(appBarBottom)
-        expect(tocTop).toBeLessThan(appBarBottom + 40)
+        expect(tocTop).toBeLessThan(appBarBottom + STICKY_TOP_TOLERANCE_PX)
       })
     } else {
       test('shows the TOC as a collapsed panel above the content', async ({ page }) => {
@@ -141,9 +150,7 @@ for (const width of WIDTHS) {
     }
 
     test('every TOC link scrolls its heading into view below the app bar', async ({ page }) => {
-      const appBarBottom = await page
-        .locator('#app-bar')
-        .evaluate((el) => el.getBoundingClientRect().bottom)
+      const appBarBottom = await getAppBarBottom(page)
       const links = page.locator('.toc li a')
       const linkCount = await links.count()
       expect(linkCount).toBeGreaterThan(0)
