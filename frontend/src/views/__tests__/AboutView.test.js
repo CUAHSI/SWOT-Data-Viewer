@@ -3,6 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createVuetify } from 'vuetify'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import aboutPageUrl from '@/assets/about_page.md'
+import castronovaUrl from '@/assets/team/castronova.jpg'
 import AboutView from '../AboutView.vue'
 
 const markdown = `## First Section
@@ -22,14 +23,14 @@ Intro text.
 | 1 | 2 |
 `
 
-async function mountAboutView({ width = 1440 } = {}) {
+async function mountAboutView({ width = 1440, content = markdown } = {}) {
   // Vuetify's useDisplay reads window.innerWidth when the instance is created
   window.innerWidth = width
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url) => {
       if (url !== aboutPageUrl) throw new Error(`Unexpected fetch: ${url}`)
-      return new Response(markdown)
+      return new Response(content)
     })
   )
   const vuetify = createVuetify({ icons: { defaultSet: 'mdi', aliases, sets: { mdi } } })
@@ -66,6 +67,14 @@ describe('AboutView', () => {
 
     expect(wrapper.findAll('.about-content table')).toHaveLength(2)
     expect(wrapper.findAll('.about-content .table-scroll > table')).toHaveLength(2)
+  })
+
+  it('serves team headshots referenced as team/<file> from the bundled assets', async () => {
+    const wrapper = await mountAboutView({
+      content: `## Team\n\n<img src="team/castronova.jpg" alt="Anthony Castronova">\n`
+    })
+
+    expect(wrapper.find('.about-content img').attributes('src')).toBe(castronovaUrl)
   })
 
   describe('at or above the md breakpoint (960px)', () => {

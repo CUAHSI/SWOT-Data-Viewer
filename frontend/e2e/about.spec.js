@@ -179,3 +179,39 @@ for (const width of WIDTHS) {
     })
   })
 }
+
+// Project team (CAM-1507): one column on a phone, at most three on desktop, and every
+// headshot served by the app itself rather than hotlinked.
+const TEAM_GRID_COLUMNS = { 360: 1, 960: 2, 1440: 3, 2560: 3 }
+
+for (const [width, columns] of Object.entries(TEAM_GRID_COLUMNS)) {
+  test.describe(`About page team at ${width}px`, () => {
+    test.use({ viewport: { width: Number(width), height: 800 } })
+
+    test.beforeEach(async ({ page, baseURL }) => {
+      await openAboutPage(page, baseURL)
+    })
+
+    test(`shows the team cards in ${columns} column(s)`, async ({ page }) => {
+      const cardLefts = await page
+        .locator('.team-grid > .team-card')
+        .evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().left)))
+      expect(cardLefts).toHaveLength(6)
+      expect(new Set(cardLefts).size).toBe(columns)
+    })
+
+    test('loads every headshot from the app origin', async ({ page, baseURL }) => {
+      const images = await page
+        .locator('.team-card img')
+        .evaluateAll((imgs) =>
+          imgs.map((img) => ({ src: img.currentSrc, loaded: img.naturalWidth > 0 }))
+        )
+      expect(images).toHaveLength(6)
+      const appOrigin = new URL(baseURL).origin
+      for (const { src, loaded } of images) {
+        expect(new URL(src).origin, src).toBe(appOrigin)
+        expect(loaded, src).toBe(true)
+      }
+    })
+  })
+}
