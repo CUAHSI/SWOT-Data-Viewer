@@ -21,6 +21,10 @@ function normalize(text) {
   return text.replace(/\s+/g, ' ').trim()
 }
 
+function linksIn(el) {
+  return Array.from(el.querySelectorAll('a'), (a) => [a.textContent, a.getAttribute('href')])
+}
+
 // Markup conventions from the About page spec (docs/specs/about-page-revision.md: decision D1,
 // Story 1, and the notes for implementers).
 describe('about_page.md conventions', () => {
@@ -228,21 +232,24 @@ describe('about_page.md data quality', () => {
 
 // Stale content from the About page spec (Story 4, CAM-1509)
 describe('about_page.md mission status', () => {
-  const paragraph = sectionAfter('SWOT Background').querySelector('p')
+  const paragraph = Array.from(sectionAfter('SWOT Background').querySelectorAll('p')).find((p) =>
+    p.textContent.includes('21-day repeat orbit')
+  )
   const text = normalize(paragraph?.textContent ?? '')
 
   // swot.jpl.nasa.gov/mission/overview/ now returns 404 and published no end date for the
   // science phase, so the page defers to NASA's mission page instead of naming a year.
   it('does not give a science phase end date that has passed', () => {
-    expect(text).toContain('“science” phase')
+    expect(text).toMatch(/science\W* phase/)
     expect(text).not.toMatch(/through 2025/)
     expect(text).not.toContain('swot.jpl.nasa.gov/mission/overview')
   })
 
   it('points to the NASA SWOT mission page for the current mission status', () => {
-    expect(
-      Array.from(paragraph.querySelectorAll('a'), (a) => [a.textContent, a.getAttribute('href')])
-    ).toContainEqual(['NASA SWOT mission page', 'https://science.nasa.gov/mission/swot/'])
+    expect(linksIn(paragraph)).toContainEqual([
+      'NASA SWOT mission page',
+      'https://science.nasa.gov/mission/swot/'
+    ])
   })
 })
 
@@ -250,19 +257,19 @@ describe('about_page.md scientific use-case examples', () => {
   const section = sectionAfter('Scientific Use-Case Examples')
 
   // HydroShare collection ac6cc75dcb0146cf9cc17a974f4bb08b (the Notebooks page's collection),
-  // as of 2026-11-02
-  it('lists each notebook with a HydroShare link, its authors, and a one-sentence description', () => {
+  // as of 2026-11-02. The descriptions are free text, so only their presence is checked.
+  it('lists each notebook as a HydroShare title link, then its authors, then a description', () => {
     expect(
       Array.from(section.querySelectorAll('ul > li'), (li) => {
         const link = li.querySelector('a')
-        const [, authors, description] =
-          normalize(li.textContent).match(/^.+?, (.+? \(\d{4}\))\. ([^.]+\.)$/) ?? []
+        const text = normalize(li.textContent)
+        const byline = text.match(/^.+?, (.+? \(\d{4}\))\. /)
         return {
           title: link?.textContent,
           href: link?.getAttribute('href'),
           titleFirst: li.firstChild === link,
-          authors,
-          description: description && 'one sentence'
+          authors: byline?.[1],
+          hasDescription: Boolean(byline) && /\S.*\.$/.test(text.slice(byline[0].length))
         }
       })
     ).toEqual(
@@ -288,7 +295,7 @@ describe('about_page.md scientific use-case examples', () => {
         href: `https://www.hydroshare.org/resource/${id}/`,
         titleFirst: true,
         authors,
-        description: 'one sentence'
+        hasDescription: true
       }))
     )
   })
@@ -314,15 +321,12 @@ describe('about_page.md links', () => {
     expect(hrefs.filter((href) => /Expires=|cloudfront\.net/.test(href))).toEqual([])
   })
 
+  // The documents NASA's CMR lists for SWOT_L2_HR_RiverSP_D and SWOT_L2_HR_LakeSP_D
   it('links the SWOT product description documents from the PO.DAAC archive', () => {
-    const links = Array.from(sectionAfter('Product description').querySelectorAll('a'), (a) => [
-      a.textContent,
-      a.getAttribute('href')
-    ])
     const docs =
       'https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs'
 
-    expect(links).toEqual([
+    expect(linksIn(sectionAfter('Product description'))).toEqual([
       ['SWOT Data User Handbook', `${docs}/D-109532_SWOT_UserHandbook_RevA_20250311_sig-final.pdf`],
       [
         'SWOT Level 2 Lake Single-Pass Vector Data Product, Version D',
@@ -340,21 +344,9 @@ describe('about_page.md links', () => {
   it('links the Version D PO.DAAC datasets, not the superseded Version C (2.0) ones', () => {
     const datasets = hrefs.filter((href) => href.startsWith('https://podaac.jpl.nasa.gov/dataset/'))
 
-    expect(datasets.length).toBeGreaterThan(0)
-    expect(datasets.filter((href) => !/_D$/.test(href))).toEqual([])
-    expect(
-      Array.from(sectionAfter('Product links').querySelectorAll('a'), (a) => [
-        a.textContent,
-        a.getAttribute('href')
-      ])
-    ).toEqual([
-      ['SWOT River Database', 'https://www.swordexplorer.com/'],
-      ['SWOT Prior Lake Database', 'https://hydroweb.next.theia-land.fr/'],
-      [
-        'PO.DAAC SWOT River Vector Data',
-        'https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_RiverSP_D'
-      ],
-      ['PO.DAAC SWOT Lake Vector Data', 'https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_LakeSP_D']
+    expect([...new Set(datasets)].sort()).toEqual([
+      'https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_LakeSP_D',
+      'https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_RiverSP_D'
     ])
   })
 

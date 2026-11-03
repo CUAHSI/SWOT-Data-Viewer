@@ -95,8 +95,8 @@ By default, the plots show good, suspect, and degraded measurements and hide bad
 These Jupyter notebooks, published on HydroShare, show how to work with SWOT data beyond the plots in SWOTViz:
 
 - [Visualizing SWOT Discharge Data from the SWORD of Science (SoS) Dataset](https://www.hydroshare.org/resource/cdae2ab2435c4baa999c1dca091073ab/), Castronova and Garousi-Nejad (2026). Search for and load SWOT SoS discharge from the cloud with earthaccess and xarray, map the reaches along a river of interest, and extract reach discharge time series.
-- [Visualizing SWOT River Longitudinal Profiles for Water Resources](https://www.hydroshare.org/resource/1e5dff3ab72440d2a4e3942326ada5a4/), Durand and Yadav (2026). Pull SWOT river data, convert its vertical datum and units, and plot the longitudinal profile.
-- [Validating SWORD of Science (SoS) Discharge Estimates with Hydrology Community Discharge Streamflow Observations (SWOT SHCQ)](https://www.hydroshare.org/resource/1cc0fdda275340ff9d6682627d09a3b9/), Castronova and Garousi-Nejad (2026). Compare unconstrained SoS discharge estimates with in-situ streamflow observations from the SWOT Hydrology Community Discharge (SHCQ) repository.
+- [Visualizing SWOT River Longitudinal Profiles for Water Resources](https://www.hydroshare.org/resource/1e5dff3ab72440d2a4e3942326ada5a4/), Durand and Yadav (2026). Pull SWOT river data, convert its vertical datum and units, and plot the long profile.
+- [Validating SWORD of Science (SoS) Discharge Estimates with Hydrology Community Discharge Streamflow Observations (SWOT SHCQ)](https://www.hydroshare.org/resource/1cc0fdda275340ff9d6682627d09a3b9/), Castronova and Garousi-Nejad (2026). Compare unconstrained SoS discharge estimates with in-situ river gauge observations from the SWOT Hydrology Community Discharge (SHCQ) repository.
 
 See the [Notebooks](#/notebooks) page for the full, current list, with previews and downloads.
 
