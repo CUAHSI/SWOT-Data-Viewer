@@ -21,6 +21,10 @@ function normalize(text) {
   return text.replace(/\s+/g, ' ').trim()
 }
 
+function linksIn(el) {
+  return Array.from(el.querySelectorAll('a'), (a) => [a.textContent, a.getAttribute('href')])
+}
+
 // Markup conventions from the About page spec (docs/specs/about-page-revision.md: decision D1,
 // Story 1, and the notes for implementers).
 describe('about_page.md conventions', () => {
@@ -223,5 +227,136 @@ describe('about_page.md data quality', () => {
     const text = normalize(sectionAfter('What does data quality mean?').textContent)
 
     expect(text).toContain('Discharge has no quality flag.')
+  })
+})
+
+// Stale content from the About page spec (Story 4, CAM-1509)
+describe('about_page.md mission status', () => {
+  const paragraph = Array.from(sectionAfter('SWOT Background').querySelectorAll('p')).find((p) =>
+    p.textContent.includes('21-day repeat orbit')
+  )
+  const text = normalize(paragraph?.textContent ?? '')
+
+  // swot.jpl.nasa.gov/mission/overview/ now returns 404 and published no end date for the
+  // science phase, so the page defers to NASA's mission page instead of naming a year.
+  it('does not give a science phase end date that has passed', () => {
+    expect(text).toMatch(/science\W* phase/)
+    expect(text).not.toMatch(/through 2025/)
+    expect(text).not.toContain('swot.jpl.nasa.gov/mission/overview')
+  })
+
+  it('points to the NASA SWOT mission page for the current mission status', () => {
+    expect(linksIn(paragraph)).toContainEqual([
+      'NASA SWOT mission page',
+      'https://science.nasa.gov/mission/swot/'
+    ])
+  })
+})
+
+describe('about_page.md scientific use-case examples', () => {
+  const section = sectionAfter('Scientific Use-Case Examples')
+
+  // HydroShare collection ac6cc75dcb0146cf9cc17a974f4bb08b (the Notebooks page's collection),
+  // as of 2026-11-02. The descriptions are free text, so only their presence is checked.
+  it('lists each notebook as a HydroShare title link, then its authors, then a description', () => {
+    expect(
+      Array.from(section.querySelectorAll('ul > li'), (li) => {
+        const link = li.querySelector('a')
+        const text = normalize(li.textContent)
+        const byline = text.match(/^.+?, (.+? \(\d{4}\))\. /)
+        return {
+          title: link?.textContent,
+          href: link?.getAttribute('href'),
+          titleFirst: li.firstChild === link,
+          authors: byline?.[1],
+          hasDescription: Boolean(byline) && /\S.*\.$/.test(text.slice(byline[0].length))
+        }
+      })
+    ).toEqual(
+      [
+        [
+          'Visualizing SWOT Discharge Data from the SWORD of Science (SoS) Dataset',
+          'cdae2ab2435c4baa999c1dca091073ab',
+          'Castronova and Garousi-Nejad (2026)'
+        ],
+        [
+          'Visualizing SWOT River Longitudinal Profiles for Water Resources',
+          '1e5dff3ab72440d2a4e3942326ada5a4',
+          'Durand and Yadav (2026)'
+        ],
+        [
+          'Validating SWORD of Science (SoS) Discharge Estimates with Hydrology Community ' +
+            'Discharge Streamflow Observations (SWOT SHCQ)',
+          '1cc0fdda275340ff9d6682627d09a3b9',
+          'Castronova and Garousi-Nejad (2026)'
+        ]
+      ].map(([title, id, authors]) => ({
+        title,
+        href: `https://www.hydroshare.org/resource/${id}/`,
+        titleFirst: true,
+        authors,
+        hasDescription: true
+      }))
+    )
+  })
+
+  it('no longer promises notebooks "soon"', () => {
+    expect(normalize(section.textContent)).not.toMatch(/added soon/i)
+  })
+
+  it('ends by linking to the Notebooks page for the full list', () => {
+    const last = section.lastElementChild
+
+    expect(last?.tagName).toBe('P')
+    expect(last.querySelector('a')?.getAttribute('href')).toBe('#/notebooks')
+  })
+})
+
+describe('about_page.md links', () => {
+  const hrefs = Array.from(aboutDoc.querySelectorAll('a[href]'), (a) => a.getAttribute('href'))
+
+  // Pre-signed CloudFront URLs expire (the originals returned 403 from Oct 2024). PO.DAAC's
+  // archive.podaac.earthdata.nasa.gov URLs are stable and redirect to a freshly signed copy.
+  it('has no expiring pre-signed links', () => {
+    expect(hrefs.filter((href) => /Expires=|cloudfront\.net/.test(href))).toEqual([])
+  })
+
+  // The documents NASA's CMR lists for SWOT_L2_HR_RiverSP_D and SWOT_L2_HR_LakeSP_D
+  it('links the SWOT product description documents from the PO.DAAC archive', () => {
+    const docs =
+      'https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs'
+
+    expect(linksIn(sectionAfter('Product description'))).toEqual([
+      ['SWOT Data User Handbook', `${docs}/D-109532_SWOT_UserHandbook_RevA_20250311_sig-final.pdf`],
+      [
+        'SWOT Level 2 Lake Single-Pass Vector Data Product, Version D',
+        `${docs}/pdd/SWOT-TN-CDM-0673-CNES_Product_Description_L2_HR_LakeSP_20250307_RevC_signed.pdf`
+      ],
+      [
+        'SWOT Level 2 River Single-Pass Vector Data Product, Version D',
+        `${docs}/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20250224a_RevC_clean_sig_final.pdf`
+      ]
+    ])
+  })
+
+  // SWOTViz reads the Version D collections from Hydrocron (_helpers/hydroCron.js); "_2.0" is
+  // Version C. Discharge is the exception (still 2.0), but the page links no discharge dataset.
+  it('links the Version D PO.DAAC datasets, not the superseded Version C (2.0) ones', () => {
+    const datasets = hrefs.filter((href) => href.startsWith('https://podaac.jpl.nasa.gov/dataset/'))
+
+    expect([...new Set(datasets)].sort()).toEqual([
+      'https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_LakeSP_D',
+      'https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_RiverSP_D'
+    ])
+  })
+
+  // The Hydrocron docs moved; the old hydrocron_tutorial.html returns 404
+  it('links the current Hydrocron tutorial', () => {
+    const tutorials = hrefs.filter((href) => href.includes('podaac.github.io/hydrocron/'))
+
+    expect(tutorials.length).toBeGreaterThan(0)
+    expect(
+      tutorials.filter((href) => href !== 'https://podaac.github.io/hydrocron/hydrocron-tutorial')
+    ).toEqual([])
   })
 })
