@@ -23,7 +23,7 @@
       </nav>
 
       <!-- About Content Section -->
-      <div class="about-content" v-html="aboutHtml" />
+      <div class="about-content" @click="onContentClick" v-html="aboutHtml" />
     </div>
   </v-container>
 </template>
@@ -65,15 +65,14 @@ onMounted(async () => {
   const tempDiv = document.createElement('div')
   tempDiv.innerHTML = aboutHtml.value
 
-  // extract headings and generate TOC items with IDs
-  tocItems.value = Array.from(tempDiv.querySelectorAll('h2')).map((heading) => {
-    const id = heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-    heading.id = id // Set the ID on the heading itself
-    return {
-      id,
-      text: heading.textContent
-    }
+  // give headings IDs so the TOC (<h2> only) and in-page links (#heading-id) can point at them
+  const headings = Array.from(tempDiv.querySelectorAll('h2, h3'))
+  headings.forEach((heading) => {
+    heading.id = headingId(heading)
   })
+  tocItems.value = headings
+    .filter((heading) => heading.tagName === 'H2')
+    .map((heading) => ({ id: heading.id, text: heading.textContent }))
 
   // wrap tables so wide tables scroll sideways instead of widening the page
   tempDiv.querySelectorAll('table').forEach((table) => {
@@ -92,6 +91,26 @@ onMounted(async () => {
   // set the modified HTML back to the aboutHtml
   aboutHtml.value = tempDiv.innerHTML
 })
+
+// e.g. "Which variables are used for plots in SWOTViz?" -> "which-variables-are-used-for-plots-in-swotviz"
+function headingId(heading) {
+  return heading.textContent
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+// The router uses hash history, so an in-page link (href="#heading-id") would be read as a
+// route. Scroll to the heading instead; links to routes (href="#/...") are left to the router.
+// Stop propagation too: swagger-ui-dist (ApiView) bundles zenscroll, whose window click
+// listener scrolls to any "#" link and then pushes its href.
+function onContentClick(event) {
+  const link = event.target.closest('a[href^="#"]:not([href^="#/"])')
+  if (!link) return
+  event.preventDefault()
+  event.stopPropagation()
+  scrollToSection(link.getAttribute('href').slice(1))
+}
 
 // Scroll to the section smoothly
 async function scrollToSection(id) {
@@ -219,6 +238,7 @@ $sticky-offset: $app-bar-height + 16px;
 
     h3 {
       font-size: 1.25em;
+      scroll-margin-top: $sticky-offset;
     }
 
     h4 {

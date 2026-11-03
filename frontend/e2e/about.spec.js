@@ -215,3 +215,53 @@ for (const [width, columns] of Object.entries(TEAM_GRID_COLUMNS)) {
     })
   })
 }
+
+// Discharge (CAM-1508)
+const VARIABLES_HEADING = 'Which variables are used for plots in SWOTViz?'
+// About 40 characters of body text, the narrowest the Description column should get
+const MIN_DESCRIPTION_WIDTH_PX = 300
+// A phone, and both ends of 960-1100px, where the sidebar TOC leaves the content area narrower
+// than the table's min-width
+const DISCHARGE_WIDTHS = [360, 960, 1100]
+
+for (const width of DISCHARGE_WIDTHS) {
+  test.describe(`About page discharge at ${width}px`, () => {
+    test.use({ viewport: { width, height: 800 } })
+
+    test.beforeEach(async ({ page, baseURL }) => {
+      await openAboutPage(page, baseURL)
+    })
+
+    test('the variables table stays readable with the discharge row', async ({ page }) => {
+      const table = page.locator('.table-scroll table')
+      const descriptionWidth = await table
+        .locator('th', { hasText: 'Description' })
+        .evaluate((th) => th.getBoundingClientRect().width)
+      expect(descriptionWidth).toBeGreaterThanOrEqual(MIN_DESCRIPTION_WIDTH_PX)
+
+      // each line box of an inline element is one client rect
+      const codeLines = await table
+        .locator('td em', { hasText: 'sos_consensus_q' })
+        .evaluate((em) => em.getClientRects().length)
+      expect(codeLines).toBe(1)
+    })
+
+    test('the SWOT Background link scrolls to the variables section', async ({ page }) => {
+      await page.getByRole('link', { name: VARIABLES_HEADING }).click()
+      await waitForScrollToSettle(page)
+
+      // still on the About route (the hash router keeps map state in the query)
+      expect(new URL(page.url()).hash).toMatch(/^#\/about(\?|$)/)
+      const appBarBottom = await getAppBarBottom(page)
+      const { top, bottom, viewportHeight } = await page
+        .getByRole('heading', { level: 3, name: VARIABLES_HEADING })
+        .evaluate((el) => ({
+          ...el.getBoundingClientRect().toJSON(),
+          viewportHeight: window.innerHeight
+        }))
+      expect(top).toBeGreaterThanOrEqual(appBarBottom)
+      expect(bottom).toBeLessThanOrEqual(viewportHeight)
+      expect(top).toBeLessThan(appBarBottom + STICKY_TOP_TOLERANCE_PX)
+    })
+  })
+}
