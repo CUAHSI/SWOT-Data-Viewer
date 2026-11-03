@@ -99,51 +99,58 @@ Jupyter Notebook examples will be added soon!
 <div class="team-grid">
 
 <div class="team-card">
-  <h4>Anthony Castronova</h4>
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg" alt="Anthony Castronova">
-  <h3 class="team-title">Senior Research Hydrologist</h3>
-  <h3 class="team-org">CUAHSI</h3>
-  <h3 class="team-email">acastronova@cuahsi.org</h3>
+  <img src="team/castronova.jpg" alt="Anthony Castronova" width="120" height="120">
+  <h3>Anthony Castronova</h3>
+  <p class="team-title">Lead of Research</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:acastronova@cuahsi.org">acastronova@cuahsi.org</a></p>
 </div>
 
 <div class="team-card">
-  <h4>Devin Cowan</h4>
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Devin-Cowan.jpg" alt="Devin Cowan">
-  <h3 class="team-title">Research Programmer</h3>
-  <h3 class="team-org">CUAHSI</h3>
-  <h34 class="team-email">dcowan@cuahsi.org</h3>
+  <img src="team/durand.jpg" alt="Michael Durand" width="120" height="120">
+  <h3>Michael Durand</h3>
+  <p class="team-title">Professor</p>
+  <p class="team-org">Ohio State University</p>
+  <p class="team-email"><a href="mailto:durand.8@osu.edu">durand.8@osu.edu</a></p>
 </div>
 
 <div class="team-card">
-  <h4>Irene Garousi-Nejad</h4>
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Irene_headshot03.jpg" alt="Irene Garousi-Nejad">
-  <h3 class="team-title">Research Scientist</h3>
-  <h3 class="team-org">CUAHSI</h3>
-  <h3 class="team-email">igarousi@cuahsi.org</h3>
+  <img src="team/yadav.jpg" alt="Bidhyananda Yadav" width="120" height="120">
+  <h3>Bidhyananda Yadav</h3>
+  <p class="team-title">Research Associate</p>
+  <p class="team-org">Ohio State University</p>
+  <p class="team-email"><a href="mailto:yadav.111@osu.edu">yadav.111@osu.edu</a></p>
 </div>
 
 <div class="team-card">
-  <h4>Martin Seul</h4>
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Martin.jpg" alt="Martin Seul">
-  <h3 class="team-title">Technical Director</h3>
-  <h3 class="team-org">CUAHSI</h3>
-  <h3 class="team-email">mseul@cuahsi.org</h3>
+  <img src="team/garousi-nejad.jpg" alt="Irene Garousi-Nejad" width="120" height="120">
+  <h3>Irene Garousi-Nejad</h3>
+  <p class="team-title">Research Scientist</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:igarousi@cuahsi.org">igarousi@cuahsi.org</a></p>
 </div>
 
 <div class="team-card">
-  <h4>Michael Durand</h4>
-  <img src="https://earthsciences.osu.edu/sites/default/files/styles/people_profile_image/public/pictures/2024-01/durand_photo_2.jpg?h=29a016df&itok=vzT0pXTJ" alt="Michael Durand">
-  <h3 class="team-title">Professor</h3>
-  <h3 class="team-org">Ohio State University</h3>
-  <h3 class="team-email">durand.8@osu.edu</h3>
+  <img src="team/alhmood.jpg" alt="Zahraa Alhmood" width="120" height="120">
+  <h3>Zahraa Alhmood</h3>
+  <p class="team-title">Research Software Developer</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:zalhmood@cuahsi.org">zalhmood@cuahsi.org</a></p>
 </div>
 
 <div class="team-card">
-  <h4>Bidhyananda Yadav</h4>
-  <img src="https://byrd.osu.edu/sites/default/files/styles/people_profile_image/public/pictures/2021-05/bidhya-yadav.jpg?h=c78a7939&itok=FBsU4kiQ" alt="Bidhyananda Yadav">
-  <h3 class="team-title">Research Associate</h3>
-  <h3 class="team-org">Ohio State University</h3>
-  <h3 class="team-email">yadav.111@osu.edu</h3>
+  <img src="team/seul.jpg" alt="Martin Seul" width="120" height="120">
+  <h3>Martin Seul</h3>
+  <p class="team-title">Lead of Software Engineering (acting)</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:mseul@cuahsi.org">mseul@cuahsi.org</a></p>
+</div>
+
+<div class="team-card">
+  <img src="team/cowan.jpg" alt="Devin Cowan" width="120" height="120">
+  <h3>Devin Cowan</h3>
+  <p class="team-title">Research Software Developer</p>
+  <p class="team-org">Former Contributor</p>
 </div>
 
 </div>

@@ -35,6 +35,15 @@ import { marked } from 'marked'
 import { mdiChevronDown, mdiChevronUp } from '@mdi/js'
 import about_page_url from '@/assets/about_page.md'
 
+// about_page.md is fetched at runtime, so Vite never sees the image paths inside it.
+// Glob the team headshots so Vite bundles them, keyed by the path the markdown uses
+// (team/<file>, relative to src/assets, which also renders when previewing the markdown).
+const teamImageUrls = Object.fromEntries(
+  Object.entries(
+    import.meta.glob('../assets/team/*', { eager: true, query: '?url', import: 'default' })
+  ).map(([path, url]) => [path.replace('../assets/', ''), url])
+)
+
 // below the md breakpoint (960px) the TOC becomes a collapsible panel above the content
 const { mdAndUp } = useDisplay()
 const isStacked = computed(() => !mdAndUp.value)
@@ -72,6 +81,12 @@ onMounted(async () => {
     wrapper.className = 'table-scroll'
     table.replaceWith(wrapper)
     wrapper.appendChild(table)
+  })
+
+  // point team headshots at their bundled URLs
+  tempDiv.querySelectorAll('img[src^="team/"]').forEach((img) => {
+    const url = teamImageUrls[img.getAttribute('src')]
+    if (url) img.src = url
   })
 
   // set the modified HTML back to the aboutHtml
@@ -337,11 +352,16 @@ $sticky-offset: $app-bar-height + 16px;
       }
     }
 
-    /* Project team */
+    /* Project team: one column on a phone, up to three on desktop */
     .team-grid {
+      $gap: 12px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
+      // columns are at least 220px and at least a third of the row, so never more than three
+      grid-template-columns: repeat(
+        auto-fill,
+        minmax(min(100%, max(220px, (100% - 2 * #{$gap}) / 3)), 1fr)
+      );
+      gap: $gap;
       margin: 1em 0;
     }
 
@@ -350,25 +370,26 @@ $sticky-offset: $app-bar-height + 16px;
       border: 1px solid lightgray;
       border-radius: 8px;
 
-      h4 {
-        margin-top: 0;
+      img {
+        display: block;
+        width: 120px;
+        border-radius: 8px;
       }
 
-      img {
-        width: 120px;
+      h3 {
+        margin: 0.75em 0 0;
+        font-size: 1.15em;
       }
 
       .team-title,
       .team-org,
       .team-email {
         margin: 0.25em 0 0;
-        font-weight: 500;
         line-height: 1.4;
       }
 
       .team-title {
-        font-size: 1.1em;
-        color: gray;
+        color: #555;
       }
 
       .team-org {
@@ -377,8 +398,7 @@ $sticky-offset: $app-bar-height + 16px;
       }
 
       .team-email {
-        font-size: 1em;
-        color: skyblue;
+        font-size: 0.95em;
       }
     }
 
