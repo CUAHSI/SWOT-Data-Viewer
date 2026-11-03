@@ -90,7 +90,7 @@ Every SWOT reach, node, and lake observation carries a quality flag with one of 
 
 By default, the plots show good, suspect, and degraded measurements and hide bad ones. Use the Data Quality checkboxes to choose which quality levels are shown. Quality levels are shown only when markers are on; with lines only, the plots do not show quality information. On the long profile, the point colour shows the quality level and the line colour shows the observation date.
 
-Discharge has no quality flag. The SoS discharge estimates are matched to SWOT reach observations by time, but the reach quality flag describes the water surface elevation, width, and slope measurements, not the discharge. The Discharge vs Time chart is therefore not filtered by data quality and does not show quality levels.
+Discharge has no quality flag, so the Discharge vs Time chart does not show quality levels: every point is drawn in the same colour, the Data Quality checkboxes are hidden, and the chart shows all discharge values in the Time Range.
 
 ## Scientific Use-Case Examples
 

@@ -218,4 +218,17 @@ describe('about_page.md data quality', () => {
       }))
     )
   })
+
+  it('says Discharge has no quality flag and how its chart differs', () => {
+    const paragraphs = Array.from(
+      sectionAfter('What does data quality mean?').querySelectorAll('p'),
+      (p) => normalize(p.textContent)
+    )
+
+    expect(paragraphs.filter((text) => text.startsWith('Discharge'))).toEqual([
+      'Discharge has no quality flag, so the Discharge vs Time chart does not show quality ' +
+        'levels: every point is drawn in the same colour, the Data Quality checkboxes are ' +
+        'hidden, and the chart shows all discharge values in the Time Range.'
+    ])
+  })
 })
