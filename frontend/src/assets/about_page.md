@@ -107,30 +107,6 @@ Jupyter Notebook examples will be added soon!
 </div>
 
 <div class="team-card">
-  <img src="team/garousi-nejad.jpg" alt="Irene Garousi-Nejad" width="120" height="120">
-  <h3>Irene Garousi-Nejad</h3>
-  <p class="team-title">Research Scientist</p>
-  <p class="team-org">CUAHSI</p>
-  <p class="team-email"><a href="mailto:igarousi@cuahsi.org">igarousi@cuahsi.org</a></p>
-</div>
-
-<div class="team-card">
-  <img src="team/seul.jpg" alt="Martin Seul" width="120" height="120">
-  <h3>Martin Seul</h3>
-  <p class="team-title">Lead of Software Engineering (acting)</p>
-  <p class="team-org">CUAHSI</p>
-  <p class="team-email"><a href="mailto:mseul@cuahsi.org">mseul@cuahsi.org</a></p>
-</div>
-
-<div class="team-card">
-  <img src="team/alhmood.jpg" alt="Zahraa Alhmood" width="120" height="120">
-  <h3>Zahraa Alhmood</h3>
-  <p class="team-title">Research Software Developer</p>
-  <p class="team-org">CUAHSI</p>
-  <p class="team-email"><a href="mailto:zalhmood@cuahsi.org">zalhmood@cuahsi.org</a></p>
-</div>
-
-<div class="team-card">
   <img src="team/durand.jpg" alt="Michael Durand" width="120" height="120">
   <h3>Michael Durand</h3>
   <p class="team-title">Professor</p>
@@ -144,6 +120,30 @@ Jupyter Notebook examples will be added soon!
   <p class="team-title">Research Associate</p>
   <p class="team-org">Ohio State University</p>
   <p class="team-email"><a href="mailto:yadav.111@osu.edu">yadav.111@osu.edu</a></p>
+</div>
+
+<div class="team-card">
+  <img src="team/garousi-nejad.jpg" alt="Irene Garousi-Nejad" width="120" height="120">
+  <h3>Irene Garousi-Nejad</h3>
+  <p class="team-title">Research Scientist</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:igarousi@cuahsi.org">igarousi@cuahsi.org</a></p>
+</div>
+
+<div class="team-card">
+  <img src="team/alhmood.jpg" alt="Zahraa Alhmood" width="120" height="120">
+  <h3>Zahraa Alhmood</h3>
+  <p class="team-title">Research Software Developer</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:zalhmood@cuahsi.org">zalhmood@cuahsi.org</a></p>
+</div>
+
+<div class="team-card">
+  <img src="team/seul.jpg" alt="Martin Seul" width="120" height="120">
+  <h3>Martin Seul</h3>
+  <p class="team-title">Lead of Software Engineering (acting)</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:mseul@cuahsi.org">mseul@cuahsi.org</a></p>
 </div>
 
 <div class="team-card">

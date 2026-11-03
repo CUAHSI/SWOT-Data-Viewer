@@ -34,24 +34,6 @@ const TEAM = [
     email: 'acastronova@cuahsi.org'
   },
   {
-    name: 'Irene Garousi-Nejad',
-    title: 'Research Scientist',
-    org: 'CUAHSI',
-    email: 'igarousi@cuahsi.org'
-  },
-  {
-    name: 'Martin Seul',
-    title: 'Lead of Software Engineering (acting)',
-    org: 'CUAHSI',
-    email: 'mseul@cuahsi.org'
-  },
-  {
-    name: 'Zahraa Alhmood',
-    title: 'Research Software Developer',
-    org: 'CUAHSI',
-    email: 'zalhmood@cuahsi.org'
-  },
-  {
     name: 'Michael Durand',
     title: 'Professor',
     org: 'Ohio State University',
@@ -62,6 +44,24 @@ const TEAM = [
     title: 'Research Associate',
     org: 'Ohio State University',
     email: 'yadav.111@osu.edu'
+  },
+  {
+    name: 'Irene Garousi-Nejad',
+    title: 'Research Scientist',
+    org: 'CUAHSI',
+    email: 'igarousi@cuahsi.org'
+  },
+  {
+    name: 'Zahraa Alhmood',
+    title: 'Research Software Developer',
+    org: 'CUAHSI',
+    email: 'zalhmood@cuahsi.org'
+  },
+  {
+    name: 'Martin Seul',
+    title: 'Lead of Software Engineering (acting)',
+    org: 'CUAHSI',
+    email: 'mseul@cuahsi.org'
   },
   {
     name: 'Devin Cowan',
