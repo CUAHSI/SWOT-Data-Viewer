@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
+import { createPinia } from 'pinia'
+import { createRouter, createMemoryHistory } from 'vue-router'
 import { createVuetify } from 'vuetify'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import aboutPageUrl from '@/assets/about_page.md'
+import aboutMarkdown from '@/assets/about_page.md?raw'
 import castronovaUrl from '@/assets/team/castronova.jpg'
+import { useChartsStore } from '@/stores/charts'
 import AboutView from '../AboutView.vue'
 
 const markdown = `## First Section
@@ -23,7 +27,7 @@ Intro text.
 | 1 | 2 |
 `
 
-async function mountAboutView({ width = 1440, content = markdown } = {}) {
+async function mountAboutView({ width = 1440, content = markdown, pinia = createPinia() } = {}) {
   // Vuetify's useDisplay reads window.innerWidth when the instance is created
   window.innerWidth = width
   vi.stubGlobal(
@@ -34,7 +38,15 @@ async function mountAboutView({ width = 1440, content = markdown } = {}) {
     })
   )
   const vuetify = createVuetify({ icons: { defaultSet: 'mdi', aliases, sets: { mdi } } })
-  const wrapper = mount(AboutView, { global: { plugins: [vuetify] }, attachTo: document.body })
+  // the charts store (Quality Level colours) uses the router, which the app always provides
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: '/', component: { render: () => null } }]
+  })
+  const wrapper = mount(AboutView, {
+    global: { plugins: [vuetify, pinia, router] },
+    attachTo: document.body
+  })
   await flushPromises()
   return wrapper
 }
@@ -75,6 +87,36 @@ describe('AboutView', () => {
     })
 
     expect(wrapper.find('.about-content img').attributes('src')).toBe(castronovaUrl)
+  })
+
+  it('takes the Quality Level swatch colours from the charts store', async () => {
+    const pinia = createPinia()
+    const wrapper = await mountAboutView({ pinia })
+    const { style } = wrapper.find('.about-page').element
+    const qualityColorVars = () =>
+      ['good', 'suspect', 'degraded', 'bad', 'outline'].map((name) =>
+        style.getPropertyValue(`--quality-${name}`)
+      )
+    expect(qualityColorVars()).toEqual(['#009E73', '#F0E442', '#E69F00', '#CC3311', '#424242'])
+
+    const chartStore = useChartsStore(pinia)
+    chartStore.dataQualityOptions.find(({ label }) => label === 'suspect').color = '#123456'
+    chartStore.POINT_OUTLINE_COLOR = '#abcdef'
+    await flushPromises()
+
+    expect(qualityColorVars()).toEqual(['#009E73', '#123456', '#E69F00', '#CC3311', '#abcdef'])
+  })
+
+  // the swatch classes in about_page.md and the SCSS that maps them to colours name each level
+  it('has a Quality Level swatch in about_page.md for every level in the charts store', async () => {
+    const pinia = createPinia()
+    await mountAboutView({ pinia })
+
+    const swatchLevels = Array.from(
+      aboutMarkdown.matchAll(/class="quality-swatch quality-swatch--(\w+)"/g),
+      ([, level]) => level
+    )
+    expect(swatchLevels).toEqual(useChartsStore(pinia).dataQualityOptions.map(({ label }) => label))
   })
 
   describe('at or above the md breakpoint (960px)', () => {

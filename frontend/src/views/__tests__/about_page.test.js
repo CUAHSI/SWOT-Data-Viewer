@@ -187,3 +187,35 @@ describe('about_page.md discharge', () => {
     expect(link?.getAttribute('href')).toBe('#which-variables-are-used-for-plots-in-swotviz')
   })
 })
+
+// Quality Level colours from the About page spec (CAM-1510). The swatch colours themselves come
+// from the charts store (see AboutView.test.js); the markdown only names the level.
+describe('about_page.md data quality', () => {
+  const items = Array.from(sectionAfter('What does data quality mean?').querySelectorAll('ul > li'))
+
+  it('lists each Quality Level with its colour word and a decorative swatch', () => {
+    expect(
+      items.map((li) => {
+        const swatch = li.querySelector('.quality-swatch')
+        return {
+          text: normalize(li.textContent),
+          swatch: swatch?.className,
+          ariaHidden: swatch?.getAttribute('aria-hidden'),
+          swatchFirst: li.firstElementChild === swatch
+        }
+      })
+    ).toEqual(
+      [
+        ['good', 'Good (0, nominal): green'],
+        ['suspect', 'Suspect (1): yellow'],
+        ['degraded', 'Degraded (2): orange'],
+        ['bad', 'Bad (3): red']
+      ].map(([level, text]) => ({
+        text,
+        swatch: `quality-swatch quality-swatch--${level}`,
+        ariaHidden: 'true',
+        swatchFirst: true
+      }))
+    )
+  })
+})

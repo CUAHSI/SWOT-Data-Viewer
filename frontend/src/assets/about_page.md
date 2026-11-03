@@ -83,10 +83,10 @@ The table below summarizes the variables and attributes currently available for 
 
 Every SWOT reach, node, and lake observation carries a quality flag with one of four quality levels. SWOTViz shows the quality level of each point by its colour:
 
-- **Good** (0, nominal): green
-- **Suspect** (1): yellow
-- **Degraded** (2): orange
-- **Bad** (3): red
+- <span class="quality-swatch quality-swatch--good" aria-hidden="true"></span> **Good** (0, nominal): green
+- <span class="quality-swatch quality-swatch--suspect" aria-hidden="true"></span> **Suspect** (1): yellow
+- <span class="quality-swatch quality-swatch--degraded" aria-hidden="true"></span> **Degraded** (2): orange
+- <span class="quality-swatch quality-swatch--bad" aria-hidden="true"></span> **Bad** (3): red
 
 By default, the plots show good, suspect, and degraded measurements and hide bad ones. Use the Data Quality checkboxes to choose which quality levels are shown. Quality levels are shown only when markers are on; with lines only, the plots do not show quality information. On the long profile, the point colour shows the quality level and the line colour shows the observation date.
 

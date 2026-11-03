@@ -265,3 +265,50 @@ for (const width of DISCHARGE_WIDTHS) {
     })
   })
 }
+
+// Quality Level swatches (CAM-1510) look like the plot points and the Data Quality legend in
+// DataQuality.vue: a 12px circle filled with the level's colour, with a 1px dark outline.
+const QUALITY_SWATCHES = {
+  good: 'rgb(0, 158, 115)', // #009E73
+  suspect: 'rgb(240, 228, 66)', // #F0E442
+  degraded: 'rgb(230, 159, 0)', // #E69F00
+  bad: 'rgb(204, 51, 17)' // #CC3311
+}
+const QUALITY_OUTLINE = 'rgb(66, 66, 66)' // #424242
+
+test.describe('About page data quality at 360px', () => {
+  test.use({ viewport: { width: 360, height: 800 } })
+
+  test('shows a plot-coloured swatch beside each Quality Level', async ({ page, baseURL }) => {
+    await openAboutPage(page, baseURL)
+
+    const swatches = await page.locator('.about-content .quality-swatch').evaluateAll((spans) =>
+      spans.map((span) => {
+        const style = getComputedStyle(span)
+        const box = span.getBoundingClientRect()
+        const label = span.parentElement.querySelector('strong').getBoundingClientRect()
+        return {
+          level: span.className.match(/quality-swatch--(\w+)/)[1],
+          fill: style.backgroundColor,
+          outline: `${style.borderTopWidth} ${style.borderTopStyle} ${style.borderTopColor}`,
+          round: style.borderRadius === '50%',
+          size: `${Math.round(box.width)}x${Math.round(box.height)}`,
+          besideLabel:
+            box.right <= label.left &&
+            Math.abs(box.top + box.height / 2 - (label.top + label.height / 2)) <= 3
+        }
+      })
+    )
+
+    expect(swatches).toEqual(
+      Object.entries(QUALITY_SWATCHES).map(([level, fill]) => ({
+        level,
+        fill,
+        outline: `1px solid ${QUALITY_OUTLINE}`,
+        round: true,
+        size: '12x12',
+        besideLabel: true
+      }))
+    )
+  })
+})
