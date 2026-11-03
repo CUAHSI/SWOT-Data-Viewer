@@ -24,7 +24,8 @@ describe('about_page.md conventions', () => {
   })
 })
 
-// Team roster from the About page spec (Story 2, CAM-1507), in display order.
+// Team roster from the About page spec (Story 2, CAM-1507), in display order. Former
+// contributors come last, with "Former Contributor" in place of an organization and no email.
 const TEAM = [
   {
     name: 'Anthony Castronova',
@@ -61,6 +62,11 @@ const TEAM = [
     title: 'Research Associate',
     org: 'Ohio State University',
     email: 'yadav.111@osu.edu'
+  },
+  {
+    name: 'Devin Cowan',
+    title: 'Research Software Developer',
+    org: 'Former Contributor'
   }
 ]
 
@@ -78,7 +84,7 @@ describe('about_page.md project team', () => {
   }
   const cards = Array.from(section.querySelectorAll('.team-grid > .team-card'))
 
-  it('shows one card per current team member, in order', () => {
+  it('shows one card per team member, in order', () => {
     expect(
       cards.map((card) => ({
         name: card.querySelector('h3')?.textContent.trim(),
@@ -91,7 +97,7 @@ describe('about_page.md project team', () => {
 
   it('links each email with mailto:', () => {
     expect(cards.map((card) => card.querySelector('.team-email a')?.getAttribute('href'))).toEqual(
-      TEAM.map(({ email }) => `mailto:${email}`)
+      TEAM.map(({ email }) => email && `mailto:${email}`)
     )
   })
 
@@ -110,11 +116,5 @@ describe('about_page.md project team', () => {
     )
     expect(headings.map((el) => el.textContent.trim())).toEqual(TEAM.map(({ name }) => name))
     expect(headings.every((el) => el.tagName === 'H3')).toBe(true)
-  })
-
-  it('lists Devin Cowan only as a former contributor', () => {
-    expect(section.textContent).toContain('Former contributors: Devin Cowan')
-    expect(aboutMarkdown.match(/Devin Cowan/g)).toHaveLength(1)
-    expect(aboutMarkdown).not.toMatch(/dcowan|Devin-Cowan/i)
   })
 })

@@ -146,9 +146,14 @@ Jupyter Notebook examples will be added soon!
   <p class="team-email"><a href="mailto:yadav.111@osu.edu">yadav.111@osu.edu</a></p>
 </div>
 
+<div class="team-card">
+  <img src="team/cowan.jpg" alt="Devin Cowan" width="120" height="120">
+  <h3>Devin Cowan</h3>
+  <p class="team-title">Research Software Developer</p>
+  <p class="team-org">Former Contributor</p>
 </div>
 
-Former contributors: Devin Cowan
+</div>
 
 ## Other Useful Resources
 

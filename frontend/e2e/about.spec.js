@@ -196,7 +196,7 @@ for (const [width, columns] of Object.entries(TEAM_GRID_COLUMNS)) {
       const cardLefts = await page
         .locator('.team-grid > .team-card')
         .evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().left)))
-      expect(cardLefts).toHaveLength(6)
+      expect(cardLefts).toHaveLength(7)
       expect(new Set(cardLefts).size).toBe(columns)
     })
 
@@ -206,7 +206,7 @@ for (const [width, columns] of Object.entries(TEAM_GRID_COLUMNS)) {
         .evaluateAll((imgs) =>
           imgs.map((img) => ({ src: img.currentSrc, loaded: img.naturalWidth > 0 }))
         )
-      expect(images).toHaveLength(6)
+      expect(images).toHaveLength(7)
       const appOrigin = new URL(baseURL).origin
       for (const { src, loaded } of images) {
         expect(new URL(src).origin, src).toBe(appOrigin)

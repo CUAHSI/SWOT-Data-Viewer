@@ -33,7 +33,7 @@ The About page (`/about`) is hard to read and partly out of date:
 | D1  | Keep `about_page.md` as the only content source and keep the auto-generated TOC. Replace inline `style="..."` attributes with a small set of classes styled in `AboutView.vue`.                          |
 | D2  | Below ~960px, the TOC moves above the content as a collapsible "Contents" panel. Minimum supported width: 360px.                                                                                          |
 | D3  | Team headshots are stored in the repo (`frontend/src/assets/team/`), not hotlinked.                                                                                                                      |
-| D4  | Team = six current members as cards, plus a one-line "Former contributors: Devin Cowan". Emails are `mailto:` links.                                                                                     |
+| D4  | Team = six current members as cards, plus a card for former contributor Devin Cowan (organization shown as "Former Contributor", no email). Emails are `mailto:` links.                                 |
 | D5  | The discharge text goes in the plot list (full text) and the variables table (one-sentence description), not in a separate section.                                                                      |
 | D6  | The SWOT Background sentence about `dschg_c`/`dschg_g` stays, because it describes the official SWOT L2 product. A new sentence explains that SWOTViz provides `sos_consensus_q` instead.                |
 | D7  | "Scientific Use-Case Examples" stays. It lists the notebooks in the Notebooks page's HydroShare collection, then links to the in-app Notebooks page for the current list.                                 |
@@ -82,11 +82,11 @@ Team cards, in this order:
 
 - Download each headshot into `frontend/src/assets/team/` with a consistent naming scheme (e.g. `castronova.jpg`), crop or resize to a consistent square-ish size (~240px), and reference them so Vite bundles them.
 - Render each person as a `team-card` (photo, name, title, organization, `mailto:` email) in a responsive `team-grid` (one column at 360px, 2-3 at desktop). Use semantic markup, not `<h3>` for titles and emails (also fixes the malformed `<h34>` tag).
-- After the grid, add: "Former contributors: Devin Cowan".
+- After the six current members, add a card for Devin Cowan: his headshot (https://www.cuahsi.org/uploads/team/img/_headshot/Devin-Cowan.jpg), title "Research Software Developer", "Former Contributor" in place of the organization, and no email. (Changed 2026-11-03 from a one-line "Former contributors: Devin Cowan".)
 
 **Acceptance criteria**
 
-- Six cards with the data above; Devin Cowan appears only in the former-contributors line.
+- Six current-member cards with the data above, followed by Devin Cowan's former-contributor card.
 - No team image is loaded from a third-party host.
 - Emails open the mail client.
 
