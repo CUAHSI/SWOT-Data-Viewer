@@ -26,12 +26,42 @@ describe('about_page.md conventions', () => {
 
 // Team roster from the About page spec (Story 2, CAM-1507), in display order.
 const TEAM = [
-  ['Anthony Castronova', 'Lead of Research', 'CUAHSI', 'acastronova@cuahsi.org'],
-  ['Irene Garousi-Nejad', 'Research Scientist', 'CUAHSI', 'igarousi@cuahsi.org'],
-  ['Martin Seul', 'Lead of Software Engineering (acting)', 'CUAHSI', 'mseul@cuahsi.org'],
-  ['Zahraa Alhmood', 'Research Software Developer', 'CUAHSI', 'zalhmood@cuahsi.org'],
-  ['Michael Durand', 'Professor', 'Ohio State University', 'durand.8@osu.edu'],
-  ['Bidhyananda Yadav', 'Research Associate', 'Ohio State University', 'yadav.111@osu.edu']
+  {
+    name: 'Anthony Castronova',
+    title: 'Lead of Research',
+    org: 'CUAHSI',
+    email: 'acastronova@cuahsi.org'
+  },
+  {
+    name: 'Irene Garousi-Nejad',
+    title: 'Research Scientist',
+    org: 'CUAHSI',
+    email: 'igarousi@cuahsi.org'
+  },
+  {
+    name: 'Martin Seul',
+    title: 'Lead of Software Engineering (acting)',
+    org: 'CUAHSI',
+    email: 'mseul@cuahsi.org'
+  },
+  {
+    name: 'Zahraa Alhmood',
+    title: 'Research Software Developer',
+    org: 'CUAHSI',
+    email: 'zalhmood@cuahsi.org'
+  },
+  {
+    name: 'Michael Durand',
+    title: 'Professor',
+    org: 'Ohio State University',
+    email: 'durand.8@osu.edu'
+  },
+  {
+    name: 'Bidhyananda Yadav',
+    title: 'Research Associate',
+    org: 'Ohio State University',
+    email: 'yadav.111@osu.edu'
+  }
 ]
 
 describe('about_page.md project team', () => {
@@ -50,18 +80,18 @@ describe('about_page.md project team', () => {
 
   it('shows one card per current team member, in order', () => {
     expect(
-      cards.map((card) => [
-        card.querySelector('h3')?.textContent.trim(),
-        card.querySelector('.team-title')?.textContent.trim(),
-        card.querySelector('.team-org')?.textContent.trim(),
-        card.querySelector('.team-email')?.textContent.trim()
-      ])
+      cards.map((card) => ({
+        name: card.querySelector('h3')?.textContent.trim(),
+        title: card.querySelector('.team-title')?.textContent.trim(),
+        org: card.querySelector('.team-org')?.textContent.trim(),
+        email: card.querySelector('.team-email')?.textContent.trim()
+      }))
     ).toEqual(TEAM)
   })
 
   it('links each email with mailto:', () => {
     expect(cards.map((card) => card.querySelector('.team-email a')?.getAttribute('href'))).toEqual(
-      TEAM.map(([, , , email]) => `mailto:${email}`)
+      TEAM.map(({ email }) => `mailto:${email}`)
     )
   })
 
@@ -71,14 +101,14 @@ describe('about_page.md project team', () => {
         const img = card.querySelector('img')
         return [img?.getAttribute('alt'), img?.getAttribute('src')]
       })
-    ).toEqual(TEAM.map(([name]) => [name, expect.stringMatching(/^team\/[a-z-]+\.jpg$/)]))
+    ).toEqual(TEAM.map(({ name }) => [name, expect.stringMatching(/^team\/[a-z-]+\.jpg$/)]))
   })
 
   it('only uses headings for names', () => {
     const headings = Array.from(section.querySelectorAll('*')).filter((el) =>
       /^H\d+$/.test(el.tagName)
     )
-    expect(headings.map((el) => el.textContent.trim())).toEqual(TEAM.map(([name]) => name))
+    expect(headings.map((el) => el.textContent.trim())).toEqual(TEAM.map(({ name }) => name))
     expect(headings.every((el) => el.tagName === 'H3')).toBe(true)
   })
 
