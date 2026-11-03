@@ -134,4 +134,36 @@ describe('AboutView', () => {
       )
     }
   )
+
+  it('scrolls to the heading an in-page link points at, without changing the route', async () => {
+    const scrollIntoView = stubScrollIntoView()
+    const wrapper = await mountAboutView({
+      content: `## Intro\n\nSee [the details](#which-details).\n\n## Other\n\n### Which details?\n`
+    })
+    window.history.replaceState(null, '', '#/about')
+
+    // a native click, so jsdom follows the link unless the view prevents it; jsdom navigates on
+    // a later task, so wait for one before checking the URL
+    wrapper.find('.about-content a').element.click()
+    await new Promise((resolve) => setTimeout(resolve))
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+    expect(scrollIntoView.mock.contexts[0].textContent).toBe('Which details?')
+    expect(scrollIntoView.mock.contexts[0].id).toBe('which-details')
+    expect(window.location.hash).toBe('#/about')
+  })
+
+  it('leaves links to other routes to the router', async () => {
+    const scrollIntoView = stubScrollIntoView()
+    const wrapper = await mountAboutView({
+      content: `## Intro\n\nSee the [notebooks](#/notebooks).\n`
+    })
+    window.history.replaceState(null, '', '#/about')
+
+    wrapper.find('.about-content a').element.click()
+    await new Promise((resolve) => setTimeout(resolve))
+
+    expect(scrollIntoView).not.toHaveBeenCalled()
+    expect(window.location.hash).toBe('#/notebooks')
+  })
 })
