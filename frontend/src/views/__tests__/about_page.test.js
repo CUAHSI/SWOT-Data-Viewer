@@ -225,3 +225,146 @@ describe('about_page.md data quality', () => {
     expect(text).toContain('Discharge has no quality flag.')
   })
 })
+
+// Stale content from the About page spec (Story 4, CAM-1509)
+describe('about_page.md mission status', () => {
+  const paragraph = sectionAfter('SWOT Background').querySelector('p')
+  const text = normalize(paragraph?.textContent ?? '')
+
+  // swot.jpl.nasa.gov/mission/overview/ now returns 404 and published no end date for the
+  // science phase, so the page defers to NASA's mission page instead of naming a year.
+  it('does not give a science phase end date that has passed', () => {
+    expect(text).toContain('“science” phase')
+    expect(text).not.toMatch(/through 2025/)
+    expect(text).not.toContain('swot.jpl.nasa.gov/mission/overview')
+  })
+
+  it('points to the NASA SWOT mission page for the current mission status', () => {
+    expect(
+      Array.from(paragraph.querySelectorAll('a'), (a) => [a.textContent, a.getAttribute('href')])
+    ).toContainEqual(['NASA SWOT mission page', 'https://science.nasa.gov/mission/swot/'])
+  })
+})
+
+describe('about_page.md scientific use-case examples', () => {
+  const section = sectionAfter('Scientific Use-Case Examples')
+
+  // HydroShare collection ac6cc75dcb0146cf9cc17a974f4bb08b (the Notebooks page's collection),
+  // as of 2026-11-02
+  it('lists each notebook with a HydroShare link, its authors, and a one-sentence description', () => {
+    expect(
+      Array.from(section.querySelectorAll('ul > li'), (li) => {
+        const link = li.querySelector('a')
+        const [, authors, description] =
+          normalize(li.textContent).match(/^.+?, (.+? \(\d{4}\))\. ([^.]+\.)$/) ?? []
+        return {
+          title: link?.textContent,
+          href: link?.getAttribute('href'),
+          titleFirst: li.firstChild === link,
+          authors,
+          description: description && 'one sentence'
+        }
+      })
+    ).toEqual(
+      [
+        [
+          'Visualizing SWOT Discharge Data from the SWORD of Science (SoS) Dataset',
+          'cdae2ab2435c4baa999c1dca091073ab',
+          'Castronova and Garousi-Nejad (2026)'
+        ],
+        [
+          'Visualizing SWOT River Longitudinal Profiles for Water Resources',
+          '1e5dff3ab72440d2a4e3942326ada5a4',
+          'Durand and Yadav (2026)'
+        ],
+        [
+          'Validating SWORD of Science (SoS) Discharge Estimates with Hydrology Community ' +
+            'Discharge Streamflow Observations (SWOT SHCQ)',
+          '1cc0fdda275340ff9d6682627d09a3b9',
+          'Castronova and Garousi-Nejad (2026)'
+        ]
+      ].map(([title, id, authors]) => ({
+        title,
+        href: `https://www.hydroshare.org/resource/${id}/`,
+        titleFirst: true,
+        authors,
+        description: 'one sentence'
+      }))
+    )
+  })
+
+  it('no longer promises notebooks "soon"', () => {
+    expect(normalize(section.textContent)).not.toMatch(/added soon/i)
+  })
+
+  it('ends by linking to the Notebooks page for the full list', () => {
+    const last = section.lastElementChild
+
+    expect(last?.tagName).toBe('P')
+    expect(last.querySelector('a')?.getAttribute('href')).toBe('#/notebooks')
+  })
+})
+
+describe('about_page.md links', () => {
+  const hrefs = Array.from(aboutDoc.querySelectorAll('a[href]'), (a) => a.getAttribute('href'))
+
+  // Pre-signed CloudFront URLs expire (the originals returned 403 from Oct 2024). PO.DAAC's
+  // archive.podaac.earthdata.nasa.gov URLs are stable and redirect to a freshly signed copy.
+  it('has no expiring pre-signed links', () => {
+    expect(hrefs.filter((href) => /Expires=|cloudfront\.net/.test(href))).toEqual([])
+  })
+
+  it('links the SWOT product description documents from the PO.DAAC archive', () => {
+    const links = Array.from(sectionAfter('Product description').querySelectorAll('a'), (a) => [
+      a.textContent,
+      a.getAttribute('href')
+    ])
+    const docs =
+      'https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs'
+
+    expect(links).toEqual([
+      ['SWOT Data User Handbook', `${docs}/D-109532_SWOT_UserHandbook_RevA_20250311_sig-final.pdf`],
+      [
+        'SWOT Level 2 Lake Single-Pass Vector Data Product, Version D',
+        `${docs}/pdd/SWOT-TN-CDM-0673-CNES_Product_Description_L2_HR_LakeSP_20250307_RevC_signed.pdf`
+      ],
+      [
+        'SWOT Level 2 River Single-Pass Vector Data Product, Version D',
+        `${docs}/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20250224a_RevC_clean_sig_final.pdf`
+      ]
+    ])
+  })
+
+  // SWOTViz reads the Version D collections from Hydrocron (_helpers/hydroCron.js); "_2.0" is
+  // Version C. Discharge is the exception (still 2.0), but the page links no discharge dataset.
+  it('links the Version D PO.DAAC datasets, not the superseded Version C (2.0) ones', () => {
+    const datasets = hrefs.filter((href) => href.startsWith('https://podaac.jpl.nasa.gov/dataset/'))
+
+    expect(datasets.length).toBeGreaterThan(0)
+    expect(datasets.filter((href) => !/_D$/.test(href))).toEqual([])
+    expect(
+      Array.from(sectionAfter('Product links').querySelectorAll('a'), (a) => [
+        a.textContent,
+        a.getAttribute('href')
+      ])
+    ).toEqual([
+      ['SWOT River Database', 'https://www.swordexplorer.com/'],
+      ['SWOT Prior Lake Database', 'https://hydroweb.next.theia-land.fr/'],
+      [
+        'PO.DAAC SWOT River Vector Data',
+        'https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_RiverSP_D'
+      ],
+      ['PO.DAAC SWOT Lake Vector Data', 'https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_LakeSP_D']
+    ])
+  })
+
+  // The Hydrocron docs moved; the old hydrocron_tutorial.html returns 404
+  it('links the current Hydrocron tutorial', () => {
+    const tutorials = hrefs.filter((href) => href.includes('podaac.github.io/hydrocron/'))
+
+    expect(tutorials.length).toBeGreaterThan(0)
+    expect(
+      tutorials.filter((href) => href !== 'https://podaac.github.io/hydrocron/hydrocron-tutorial')
+    ).toEqual([])
+  })
+})
