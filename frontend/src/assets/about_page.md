@@ -1,21 +1,17 @@
 ## SWOT Background
 
----
-
-The [Surface Water and Ocean Topography](https://swot.jpl.nasa.gov/) (SWOT) was launched in December 2022 and completed its 1-day repeat orbit for the "fast-sampling" or "calibration" phase of the mission in early July 2023. Following this, SWOT transitioned into a 21-day repeat orbit in August 2023 to start its “science” phase, which is expected to continue through 2025 (https://swot.jpl.nasa.gov/mission/overview/).
+The [Surface Water and Ocean Topography](https://swot.jpl.nasa.gov/) (SWOT) was launched in December 2022 and completed its 1-day repeat orbit for the "fast-sampling" or "calibration" phase of the mission in early July 2023. Following this, SWOT transitioned into a 21-day repeat orbit in August 2023 to start its “science” phase. SWOT remains in operation; see the [NASA SWOT mission page](https://science.nasa.gov/mission/swot/) for current mission status.
 
 SWOT provides a suite of <strong>hydrology</strong> data products, distributed by NASA’s Physical Oceanography Distributed Active Archive Center, [PO.DAAC](https://podaac.jpl.nasa.gov/SWOT?tab=mission-objectives&sections=about%2Bdata). The basic river hydrological attributes of the SWOT measurement include WSE (wse), water
-surface slope (slope), river width (width), water surface area (area_total), change in cross-sectional area from a reference value (d_x_area), and discharge (dschg_c and dschg_g; see [SWOT River Vector Product Description](https://deotb6e7tfubr.cloudfront.net/s3-edaf5da92e0ce48fb61175c28b67e95d/podaac-ops-cumulus-docs.s3.us-west-2.amazonaws.com/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20240913.pdf?A-userid=None&Expires=1730321287&Signature=rg4D-~S-ER9REWunw3nQQAHRSJOJq-868z3hyNRMHRFkicw0IoogsvDL72W4N1o7o7jT6svuvSlCk4jBkGX7qpStZv1FCzzckWArKsF35FTHANhstF~8pVLZpyDUkZqbZ7Msytd91M55YLZ8o4YBHzIhzy7tEzbHF3anF5p2ztelEywKV6qj9u8ChlOieEc6OrrdEywUkZ6TY02tR~-t5P9n2teBLsDUWJTI-NTPmHMM4ZpTsVaISlS36lfo82Yy36NcTwWDMhP6NwujmQuVdb0JMx5-sIhy3ZKyMzj3RFBjJFHcCFrJhXI4QCj8bexnseLIHi9wY25fREnuLhwXSg__&Key-Pair-Id=K2ECMKQ3SIJ8HS)). These variables are critical for a range of applications, including: monitoring water levels during flooding or drought events, tracking changes in reservoir storage, assessing water surface evelation across transboundary rivers, supporting river commerce with water level data along any stretch of river, and providing critical information for businesses to assess flood risk and better protect their assets.
+surface slope (slope), river width (width), water surface area (area_total), change in cross-sectional area from a reference value (d_x_area), and discharge (dschg_c and dschg_g; see [SWOT River Vector Product Description](https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20250224a_RevC_clean_sig_final.pdf)). SWOTViz does not plot these Level 2 discharge fields; instead it provides the SWOT Level 4 SoS Consensus discharge (sos_consensus_q), described in [Which variables are used for plots in SWOTViz?](#which-variables-are-used-for-plots-in-swotviz). These variables are critical for a range of applications, including: monitoring water levels during flooding or drought events, tracking changes in reservoir storage, assessing water surface elevation across transboundary rivers, supporting river commerce with water level data along any stretch of river, and providing critical information for businesses to assess flood risk and better protect their assets.
 
-To meet the hydrology community’s preference for time series data visualizations, the NASA PO.DAAC team released a public web service called [Hydrocron](https://podaac.github.io/hydrocron). This service repackages hydrology datasets from the SWOT shapefile format into more CSV and GeoJSON formats. Users can query the Hydrocron API by specifying a water feature ID, a time range, and their preferred data format, enabling streamlined access to SWOT data. Examples are available in the Hydrocron [tutorials](https://podaac.github.io/hydrocron/hydrocron_tutorial.html). The <strong>reach and node</strong> feature IDs in Hydrocron is based on the [SWOT River Database](https://zenodo.org/records/10013982) (SWORD), which contains 213,485 river reaches and 10.7 million nodes globally. Serving as the geofabric for hydrology products, SWORD offers extensive hydrologic and morphological attributes, making it a valuable resource for users interested in river and water feature analyses (Altenau et al., 2021, Altenau et al., 2023). The <strong>lake</strong> feature IDs in Hydrocron is based on the [Prior Lake Database](https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_LakeSP_2.0).
+To meet the hydrology community’s preference for time series data visualizations, the NASA PO.DAAC team released a public web service called [Hydrocron](https://podaac.github.io/hydrocron). This service repackages hydrology datasets from the SWOT shapefile format into more CSV and GeoJSON formats. Users can query the Hydrocron API by specifying a water feature ID, a time range, and their preferred data format, enabling streamlined access to SWOT data. Examples are available in the Hydrocron [tutorials](https://podaac.github.io/hydrocron/hydrocron-tutorial). The <strong>reach and node</strong> feature IDs in Hydrocron is based on the [SWOT River Database](https://zenodo.org/records/10013982) (SWORD), which contains 213,485 river reaches and 10.7 million nodes globally. Serving as the geofabric for hydrology products, SWORD offers extensive hydrologic and morphological attributes, making it a valuable resource for users interested in river and water feature analyses (Altenau et al., 2021, Altenau et al., 2023). The <strong>lake</strong> feature IDs in Hydrocron is based on the [Prior Lake Database](https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_LakeSP_D).
 
 The figure below presents a schematic illustration of a river reach and its associated nodes as defined by the SWOT team. The purpose of this image is to visually distinguish between different types of SWOT measurement aggregation within a river reach. Panel a and b show a **plan view**, showing how variables such as node locations, node width, and reach-averaged width are offered by SWOT measurements. Panel C, in contrast, provides a **profile view**, showing how water surface elevation varies when measured at individual node locations compared to an average value calculated for the entire reach with respect to the geoid.
 
 <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/node-vs-reach.png" width=330 height=470 alt="Nodes-vs-Reach">
 
 ## SWOT Data Viewer Application (SWOTViz)
-
----
 
 <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/swot-logo-v12-transparent-bkg.png" width=260 height=150 alt="SWOTVis-logo">
 
@@ -25,19 +21,17 @@ The task of discovering, collecting, and analyzing data from the existing servic
 
 SWOTViz is an interactive web user interface featuring mapping and plotting capabilities for **retrieving, visualizing, and manipulating** SWOT data. The application provides a solution for quickly discovering and previewing SWOT observations and, subsequently, performing advanced scientific analysis in the cloud using domain-specific code and algorithms.
 
-<div style="border-left: 5px solid #4682B4; padding: 15px; background-color: #F5F5F5; border-radius: 8px;">
-    <p style="display: flex; align-items: center; font-size: 16px; font-family: Arial, sans-serif; color: #333333; margin: 0;">
-        <span style="font-size: 24px; color: #4682B4; margin-right: 10px;">&#9432;</span> <!-- Info icon -->
-        <strong>These include:</strong> 
+<div class="callout">
+    <p class="callout-title">
+        <span class="callout-icon" aria-hidden="true">&#9432;</span>
+        <strong>These include:</strong>
     </p>
-    <ul style="font-size: 15px; font-family: Arial, sans-serif; color: #333333; margin-top: 10px; padding-left: 20px;">
+    <ul>
         <li>Exploration of hydrological parameters and their associated metadata.</li>
         <li>Analysis of temporal changes using common statistical methods.</li>
         <li>Advanced scientific analysis using cloud computing and data-sharing platforms.</li>
     </ul>
 </div>
-
-<br>
 
 SWOTViz allows users to select their reach of interest through an interactive map interface or by searching for the reach name or reach_id (as defined in SWORD). Once a reach is selected, users can view its metadata, including information on reach length, average water surface elevation, width, slope, upstream and downstream reach IDs, and more, all sourced from SWORD. Below is an example of metadata for a reach along the Maroni River in South America, highlighted with the dashed red circle.
 
@@ -45,41 +39,39 @@ SWOTViz allows users to select their reach of interest through an interactive ma
 
 ### What types of plots does SWOTViz provide?
 
-<div style="display: flex; gap: 20px; align-items: stretch;">
+<div class="plot-cards">
 
-  <!-- Left Column Box -->
-  <div style="flex: 1; background-color: #C4D8E2; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; max-width: 400px;">
+  <div class="plot-card">
     <h3>Timeseries Plots</h3>
-    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/timeseries.png" alt="Thumbnail" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover;">
-    <p style="flex-grow: 1; margin-top: 15px;">This type of plot can effectively show changes in a variable of interest (e.g., water surface elevation) across one or more reaches over a specified period, helping in the understanding of temporal changes in river dynamics, such as seasonal variations, impacts of climate events, or human activities. Typically, the values represent 1-D averages across the reach.</p>
+    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/timeseries.png" alt="Thumbnail">
+    <p>This type of plot can effectively show changes in a variable of interest (e.g., water surface elevation) across one or more reaches over a specified period, helping in the understanding of temporal changes in river dynamics, such as seasonal variations, impacts of climate events, or human activities. Typically, the values represent 1-D averages across the reach.</p>
   </div>
 
-  <!-- Right Column Box -->
-  <div style="flex: 1; background-color: #AFEEEE; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; max-width: 400px;">
+  <div class="plot-card">
     <h3>Longitudinal Profile Plots</h3>
-    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/distance.png" alt="Thumbnail" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover;">
-    <p style="flex-grow: 1; margin-top: 15px;">The longitudinal profile helps in understanding variations in a variable of interest (e.g., water surface elevation) along the river reach, which is essential for studying river hydraulics, sediment transport, flood levels, and more.</p>
+    <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/distance.png" alt="Thumbnail">
+    <p>The longitudinal profile helps in understanding variations in a variable of interest (e.g., water surface elevation) along the river reach, which is essential for studying river hydraulics, sediment transport, flood levels, and more.</p>
   </div>
 
 </div>
- 
- <br>
 
 - Reach-averaged water surface elevation vs. time: This plot can help in understanding temporal changes in river dynamics.
 - Reach-averaged width vs. time: This plot helps tracking temporal changes in a river's width, which reflects natural and anthropogenic impacts on local and upstream/downstream hydraulic and hydrologic processes. Moreover, these plots may offer an opportunity to study biogeochemical exchange and geomorphologic evolution (Feng et al., 2022).
 - Reach-averaged slope vs. time: This plot helps in identifying steep and flat sections of the river, which is important for understanding flow velocity and sediment transport.
+- Consensus discharge vs. time: The SWOTViz app displays SWOT Level 4 River Discharge, created by the Science Team Discharge Algorithm Working Group, version 3, as described [here](https://www.earthdata.nasa.gov/data/alerts-outages/swot-level-4-sword-science-river-discharge-products-version-3-released). Version 3 discharge was released in January 2026, and spans the period from launch to May 2, 2025. SWOTViz displays the Consensus discharge product. Note that SWOTViz will not display discharge unless the "Time Range" is set appropriately. Please see the link above for additional details about the discharge product.
 - Water surface elevation vs. distance: This plot shows the water surface elevation along the length of the river. This helps in understanding the gradient and potential energy changes along the river, which is important for stydying river hydraulics and sediment transport.
 - Width vs. distance: This plot shows the width of the river at each node along the length of the river. This is ideal for studying river morphology or identifying areas prone to changes in width.
 - Width-Elevation relationship plot: This is usually a scatter plot of river width against water surface elevation at different nodes along the river. This plot can help in identifying relationships between these two attributes, which is important for floodplain management and habitat analysis.
 
 ### Which variables are used for plots in SWOTViz?
 
-The table below summarizes the variables and attributes currently available for visualization in the SWOTViz. These were sourced from the SWOT [Level 2 river single-pass vector data product description document](https://deotb6e7tfubr.cloudfront.net/s3-edaf5da92e0ce48fb61175c28b67e95d/podaac-ops-cumulus-docs.s3.us-west-2.amazonaws.com/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20240913.pdf?A-userid=None&Expires=1730321287&Signature=rg4D-~S-ER9REWunw3nQQAHRSJOJq-868z3hyNRMHRFkicw0IoogsvDL72W4N1o7o7jT6svuvSlCk4jBkGX7qpStZv1FCzzckWArKsF35FTHANhstF~8pVLZpyDUkZqbZ7Msytd91M55YLZ8o4YBHzIhzy7tEzbHF3anF5p2ztelEywKV6qj9u8ChlOieEc6OrrdEywUkZ6TY02tR~-t5P9n2teBLsDUWJTI-NTPmHMM4ZpTsVaISlS36lfo82Yy36NcTwWDMhP6NwujmQuVdb0JMx5-sIhy3ZKyMzj3RFBjJFHcCFrJhXI4QCj8bexnseLIHi9wY25fREnuLhwXSg__&Key-Pair-Id=K2ECMKQ3SIJ8HS). Future updates of this table will include the lake products sourced from the SWOT [Level 2 lake single-pass vector data product description document](https://deotb6e7tfubr.cloudfront.net/s3-edaf5da92e0ce48fb61175c28b67e95d/podaac-ops-cumulus-docs.s3.us-west-2.amazonaws.com/web-misc/swot_mission_docs/pdd/SWOT-TN-CDM-0673-CNES_Product_Description_L2_HR_LakeSP_20240906_DraftRevC_clean.pdf?A-userid=None&Expires=1730325573&Signature=B9EUUEPcVRE0lRLHErbXWDZBYbJG3lQOO2glhd3kaqsjdyUfAeMbZNFWSmDnndfUmhUGDDtxcFa3L2SjENSw3peAV8V6iLfVWfnuvG4ADszCzPKLo-FMviL8HSc2vwdCrDaXyVe-ddm0T3NW6O8D2UoBNgQm6j5kkGu5wngsBFn9S9kCmpy6tEidkLVXGnf7NRztzE~tlkqQM65dIb8QQ1nKrD~dreBT4PBzME4zBNTmUNmJEgCLYIiZ~KH5nJ-X-gPZUtgaO6QhqIMWWi-CES9buYbPPJGzKAWVvta9YP5C5Eu9b8UnxUVvobVXQyzclXp3w~5EQzZBCQE7xS0xjA__&Key-Pair-Id=K2ECMKQ3SIJ8HS). Note that some variables have the same code for both reach and node levels. For these variables, we combined both in a single row to avoid repetition and explained the differences in the description column.
+The table below summarizes the variables and attributes currently available for visualization in the SWOTViz. These were sourced from the SWOT [Level 2 river single-pass vector data product description document](https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20250224a_RevC_clean_sig_final.pdf). Future updates of this table will include the lake products sourced from the SWOT [Level 2 lake single-pass vector data product description document](https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/SWOT-TN-CDM-0673-CNES_Product_Description_L2_HR_LakeSP_20250307_RevC_signed.pdf). Note that some variables have the same code for both reach and node levels. For these variables, we combined both in a single row to avoid repetition and explained the differences in the description column.
 
 | Aggregation Level | Variable Code      | Variable Long Name                                 | Description                                                                                                                                                                                                                                                                                                                                                                                   | Unit |
 | ----------------- | ------------------ | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
 | Reach             | _reach_id_         | Reach ID with which node is associated             | Unique reach identifier from the SWORD (prior river database). The format of the identifier is CBBBBBRRRRT, where C=continent, B=basin, R=reach, T=type.                                                                                                                                                                                                                                      |
 | Reach             | _slope_            | Water Surface slope with respect to the geoid      | Fitted water surface slope relative to the geoid, and with the same corrections and geophysical fields applied as wse. The units are m/m. The upstream or downstream direction is defined by the prior river database. A positive slope means that the downstream WSE is lower                                                                                                                | m/m  |
+| Reach             | _sos_consensus_q_  | Consensus discharge                                | SWOT Level 4 SWORD of Science (SoS) Consensus discharge, version 3, matched to SWOT reach observation times. Available for reaches only, not nodes or lakes.                                                                                                                                                                                                                                  | m³/s |
 | Reach/Node        | _width_            | Reach/Node width                                   | At the reach level, it is given as an average width across the entire reach. At the node level, it provides the width measured specifically at each individual node location.                                                                                                                                                                                                                 | m    |
 | Reach/Node        | _wse_              | Water surface elevation, with respect to geoid     | Fitted reach/node water surface elevation, relative to the provided model of the geoid (geoid_hght), with all corrections for media delays (wet and dry troposphere, and ionosphere), crossover correction, and tidal effects (solid_tide, load_tidef, and pole_tide) applied.                                                                                                                | m    |
 | Reach/Node        | _area_total_       | Total water surface area including dark water      | At the reach level, it provides the overall surface area for the entire reach, including dark water that may not have been directly detected as water in the SWOT observation but was identified using a prior water likelihood map. At the node level, it provides the estimated surface area around each individual node, with similar inclusion of dark water based on the likelihood map. | m    |
@@ -91,92 +83,89 @@ The table below summarizes the variables and attributes currently available for 
 
 Every SWOT reach, node, and lake observation carries a quality flag with one of four quality levels. SWOTViz shows the quality level of each point by its colour:
 
-- **Good** (0, nominal): green
-- **Suspect** (1): yellow
-- **Degraded** (2): orange
-- **Bad** (3): red
+- <span class="quality-swatch quality-swatch--good" aria-hidden="true"></span> **Good** (0, nominal): green
+- <span class="quality-swatch quality-swatch--suspect" aria-hidden="true"></span> **Suspect** (1): yellow
+- <span class="quality-swatch quality-swatch--degraded" aria-hidden="true"></span> **Degraded** (2): orange
+- <span class="quality-swatch quality-swatch--bad" aria-hidden="true"></span> **Bad** (3): red
 
-By default, the plots show good, suspect, and degraded measurements and hide bad ones. Use the Data Quality checkboxes to choose which quality levels are shown. Quality levels are shown only when markers are on; with lines only, the plots do not show quality information. On the long profile, the point colour shows the quality level and the line colour shows the observation date.
-
-Discharge has no quality flag. The SoS discharge estimates are matched to SWOT reach observations by time, but the reach quality flag describes the water surface elevation, width, and slope measurements, not the discharge. The Discharge vs Time chart is therefore not filtered by data quality and does not show quality levels.
+By default, the plots show good, suspect, and degraded measurements and hide bad ones. Use the Data Quality checkboxes to choose which quality levels are shown. Quality levels are shown only when markers are on; with lines only, the plots do not show quality information. On the long profile, the point colour shows the quality level and the line colour shows the observation date. Discharge has no quality flag.
 
 ## Scientific Use-Case Examples
 
----
+These Jupyter notebooks, published on HydroShare, show how to work with SWOT data beyond the plots in SWOTViz:
 
-Jupyter Notebook examples will be added soon!
+- [Visualizing SWOT Discharge Data from the SWORD of Science (SoS) Dataset](https://www.hydroshare.org/resource/cdae2ab2435c4baa999c1dca091073ab/), Castronova and Garousi-Nejad (2026). Search for and load SWOT SoS discharge from the cloud with earthaccess and xarray, map the reaches along a river of interest, and extract reach discharge time series.
+- [Visualizing SWOT River Longitudinal Profiles for Water Resources](https://www.hydroshare.org/resource/1e5dff3ab72440d2a4e3942326ada5a4/), Durand and Yadav (2026). Pull SWOT river data, convert its vertical datum and units, and plot the long profile.
+- [Validating SWORD of Science (SoS) Discharge Estimates with Hydrology Community Discharge Streamflow Observations (SWOT SHCQ)](https://www.hydroshare.org/resource/1cc0fdda275340ff9d6682627d09a3b9/), Castronova and Garousi-Nejad (2026). Compare unconstrained SoS discharge estimates with in-situ river gauge observations from the SWOT Hydrology Community Discharge (SHCQ) repository.
+
+See the [Notebooks](#/notebooks) page for the full, current list, with previews and downloads.
 
 ## SWOTViz Project Team
 
----
+<div class="team-grid">
 
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Anthony Castronova</h4>
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/TCastronova.jpg" alt="Anthony Castronova" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Senior Research Hydrologist</h3>
-  <h3 style="color: gray; font-size: 14px;">CUAHSI</h3>
-  <h3 style="color: skyblue; font-size: 15px;">acastronova@cuahsi.org</h3> 
+<div class="team-card">
+  <img src="team/castronova.jpg" alt="Anthony Castronova" width="120" height="120">
+  <h3>Anthony Castronova</h3>
+  <p class="team-title">Lead of Research</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:acastronova@cuahsi.org">acastronova@cuahsi.org</a></p>
 </div>
 
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Devin Cowan</h4>   
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Devin-Cowan.jpg" alt="Devin Cowan" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Research Programmer</h3>
-  <h3 style="color: gray; font-size: 14px;">CUAHSI</h3>
-  <h34 style="color: skyblue; font-size: 15px;">dcowan@cuahsi.org</h3>
+<div class="team-card">
+  <img src="team/durand.jpg" alt="Michael Durand" width="120" height="120">
+  <h3>Michael Durand</h3>
+  <p class="team-title">Professor</p>
+  <p class="team-org">Ohio State University</p>
+  <p class="team-email"><a href="mailto:durand.8@osu.edu">durand.8@osu.edu</a></p>
 </div>
 
+<div class="team-card">
+  <img src="team/yadav.jpg" alt="Bidhyananda Yadav" width="120" height="120">
+  <h3>Bidhyananda Yadav</h3>
+  <p class="team-title">Research Associate</p>
+  <p class="team-org">Ohio State University</p>
+  <p class="team-email"><a href="mailto:yadav.111@osu.edu">yadav.111@osu.edu</a></p>
 </div>
 
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Irene Garousi-Nejad</h4> 
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Irene_headshot03.jpg" alt="Irene Garousi-Nejad" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Research Scientist</h3>
-  <h3 style="color: gray; font-size: 14px;">CUAHSI</h3>
-  <h3 style="color: skyblue; font-size: 15px;">igarousi@cuahsi.org</h3>
+<div class="team-card">
+  <img src="team/garousi-nejad.jpg" alt="Irene Garousi-Nejad" width="120" height="120">
+  <h3>Irene Garousi-Nejad</h3>
+  <p class="team-title">Research Scientist</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:igarousi@cuahsi.org">igarousi@cuahsi.org</a></p>
 </div>
 
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Martin Seul</h4>
-  <img src="https://www.cuahsi.org/uploads/team/img/_headshot/Martin.jpg" alt="Martin Seul" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Technical Director</h3>
-  <h3 style="color: gray; font-size: 14px;">CUAHSI</h3>
-  <h3 style="color: skyblue; font-size: 15px;">mseul@cuahsi.org</h3>
+<div class="team-card">
+  <img src="team/alhmood.jpg" alt="Zahraa Alhmood" width="120" height="120">
+  <h3>Zahraa Alhmood</h3>
+  <p class="team-title">Research Software Developer</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:zalhmood@cuahsi.org">zalhmood@cuahsi.org</a></p>
 </div>
 
+<div class="team-card">
+  <img src="team/seul.jpg" alt="Martin Seul" width="120" height="120">
+  <h3>Martin Seul</h3>
+  <p class="team-title">Lead of Software Engineering (acting)</p>
+  <p class="team-org">CUAHSI</p>
+  <p class="team-email"><a href="mailto:mseul@cuahsi.org">mseul@cuahsi.org</a></p>
 </div>
 
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Michael Durand</h4> 
-  <img src="https://earthsciences.osu.edu/sites/default/files/styles/people_profile_image/public/pictures/2024-01/durand_photo_2.jpg?h=29a016df&itok=vzT0pXTJ" alt="Michael Durand" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Professor</h3>
-  <h3 style="color: gray; font-size: 14px;">Ohio State University</h3>
-  <h3 style="color: skyblue; font-size: 15px;">durand.8@osu.edu</h3>
-</div>
-
-<div style="flex: 1 10%; padding: 5px; margin: 5px; border: solid 1px lightgray;">
-  <h4>Bidhyananda Yadav</h4>
-  <img src="https://byrd.osu.edu/sites/default/files/styles/people_profile_image/public/pictures/2021-05/bidhya-yadav.jpg?h=c78a7939&itok=FBsU4kiQ" alt="Bidhyananda Yadav" style="width: 120px; height: auto;">
-  <h3 style="color: gray; font-size: 18px;">Research Associate</h3>
-  <h3 style="color: gray; font-size: 14px;">Ohio State University</h3>
-  <h3 style="color: skyblue; font-size: 15px;">yadav.111@osu.edu</h3>
+<div class="team-card">
+  <img src="team/cowan.jpg" alt="Devin Cowan" width="120" height="120">
+  <h3>Devin Cowan</h3>
+  <p class="team-title">Research Software Developer</p>
+  <p class="team-org">Former Contributor</p>
 </div>
 
 </div>
 
 ## Other Useful Resources
 
----
-
 ### Tutorials
 
-- [Hydrocron Tutorial](https://podaac.github.io/hydrocron/hydrocron_tutorial.html)
+- [Hydrocron Tutorial](https://podaac.github.io/hydrocron/hydrocron-tutorial)
 - [PO.DAAC Cookbook](https://podaac.github.io/tutorials/)
 - [SWOT Hydrology Data Tutorials](https://swot-community.github.io/SWOT-galleries/hydrology/hydrology.html)
 
@@ -184,48 +173,33 @@ Jupyter Notebook examples will be added soon!
 
 - [SWOT River Database](https://www.swordexplorer.com/)
 - [SWOT Prior Lake Database](https://hydroweb.next.theia-land.fr/)
-- [PO.DAAC SWOT River Vector Data](https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_RiverSP_2.0)
-- [PO.DAAC SWOT Lake Vector Data](https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_LakeSP_2.0)
+- [PO.DAAC SWOT River Vector Data](https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_RiverSP_D)
+- [PO.DAAC SWOT Lake Vector Data](https://podaac.jpl.nasa.gov/dataset/SWOT_L2_HR_LakeSP_D)
 
 ### Product description
 
-- [SWOT Data User Handbook](https://deotb6e7tfubr.cloudfront.net/s3-edaf5da92e0ce48fb61175c28b67e95d/podaac-ops-cumulus-docs.s3.us-west-2.amazonaws.com/web-misc/swot_mission_docs/D-109532_SWOT_UserHandbook_20240502.pdf?A-userid=None&Expires=1730307449&Signature=SMCPbqRjyqAMoNbzj-jjErP3ZXJ24v~-aGibyR2RGG~MfTtpRJ6pXWN8SXMOIPNwg-9It1l5cYDIqAFX6bJVahuBx3gSH4pBY7IU1Zbt5Rd4krHhli9WY0uoY5XNvwVAHSkoWcs1KaFjd6Gz8J6d-UvCTXE~erzOAe~57PqNO6RAb2E2BTN1DqObRyBPr1QQs9-Pqhg5FnEPdFvEWvuof52mal4JiVkJgJBhwcJx27oVUeSQ46Pz~ApTcPNKM6TDukkS7BPMv2s1wninqqhBvSvmn1Ja5TT-Y07n5YFFnDnk60OEiB9Qmf39iUXcaTG~bKxJ2MwLPWcAxt076VOsbQ__&Key-Pair-Id=K2ECMKQ3SIJ8HS)
-- [SWOT Level 2 **Lake** Single-Pass Vector Data Product, Version C](https://deotb6e7tfubr.cloudfront.net/s3-edaf5da92e0ce48fb61175c28b67e95d/podaac-ops-cumulus-docs.s3.us-west-2.amazonaws.com/web-misc/swot_mission_docs/pdd/SWOT-TN-CDM-0673-CNES_Product_Description_L2_HR_LakeSP_20240906_DraftRevC_clean.pdf?A-userid=None&Expires=1730325573&Signature=B9EUUEPcVRE0lRLHErbXWDZBYbJG3lQOO2glhd3kaqsjdyUfAeMbZNFWSmDnndfUmhUGDDtxcFa3L2SjENSw3peAV8V6iLfVWfnuvG4ADszCzPKLo-FMviL8HSc2vwdCrDaXyVe-ddm0T3NW6O8D2UoBNgQm6j5kkGu5wngsBFn9S9kCmpy6tEidkLVXGnf7NRztzE~tlkqQM65dIb8QQ1nKrD~dreBT4PBzME4zBNTmUNmJEgCLYIiZ~KH5nJ-X-gPZUtgaO6QhqIMWWi-CES9buYbPPJGzKAWVvta9YP5C5Eu9b8UnxUVvobVXQyzclXp3w~5EQzZBCQE7xS0xjA__&Key-Pair-Id=K2ECMKQ3SIJ8HS)
-- [SWOT Level 2 **River** Single-Pass Vector Data Product, Version C](https://deotb6e7tfubr.cloudfront.net/s3-edaf5da92e0ce48fb61175c28b67e95d/podaac-ops-cumulus-docs.s3.us-west-2.amazonaws.com/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20240913.pdf?A-userid=None&Expires=1730321287&Signature=rg4D-~S-ER9REWunw3nQQAHRSJOJq-868z3hyNRMHRFkicw0IoogsvDL72W4N1o7o7jT6svuvSlCk4jBkGX7qpStZv1FCzzckWArKsF35FTHANhstF~8pVLZpyDUkZqbZ7Msytd91M55YLZ8o4YBHzIhzy7tEzbHF3anF5p2ztelEywKV6qj9u8ChlOieEc6OrrdEywUkZ6TY02tR~-t5P9n2teBLsDUWJTI-NTPmHMM4ZpTsVaISlS36lfo82Yy36NcTwWDMhP6NwujmQuVdb0JMx5-sIhy3ZKyMzj3RFBjJFHcCFrJhXI4QCj8bexnseLIHi9wY25fREnuLhwXSg__&Key-Pair-Id=K2ECMKQ3SIJ8HS)
+- [SWOT Data User Handbook](https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/D-109532_SWOT_UserHandbook_RevA_20250311_sig-final.pdf)
+- [SWOT Level 2 Lake Single-Pass Vector Data Product, Version D](https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/SWOT-TN-CDM-0673-CNES_Product_Description_L2_HR_LakeSP_20250307_RevC_signed.pdf)
+- [SWOT Level 2 River Single-Pass Vector Data Product, Version D](https://archive.podaac.earthdata.nasa.gov/podaac-ops-cumulus-docs/web-misc/swot_mission_docs/pdd/D-56413_SWOT_Product_Description_L2_HR_RiverSP_20250224a_RevC_clean_sig_final.pdf)
 
 ## SWOT Partners
 
----
-
-<div style="display: flex; align-items: center;">
-
-<div style="flex: 1;">
+<div class="partners">
 <p>SWOT is being jointly developed by NASA and <a href="https://cnes.fr/projets/swot">Centre National D'Etudes Spatiales</a> (CNES) with contributions from the <a href="https://www.asc-csa.gc.ca/eng/">Canadian Space Agency</a> (CSA) and <a href="https://www.gov.uk/government/organisations/uk-space-agency">United Kingdom Space Agency</a>.</p>
-</div>
-
-<div style="flex: 1; text-align: right;">
 <img src="https://www.hydroshare.org/resource/fd04a07eddaf44ea86730dcc271223fa/data/contents/swot_partners_logo.jpg" width="150" height="140" alt="SWOT-Partners">
-</div>
-
 </div>
 
 ## Acknowledgements
 
----
-
 The research was carried out in part at the Jet Propulsion Laboratory, California Institute of Technology, under a contract with the National Aeronautics and Space Administration (80NM0018D0004).
 
 ## SWOT Data and SWOTViz Tool Citation Policy
-
----
 
 SWOT Data hosted by the PO.DAAC is openly shared, without restriction, in accordance with NASA's Earth Science program Data and Information Policy. Please refer to the PO.DAAC [Data Use and Citation Policy](https://podaac.jpl.nasa.gov/CitingPODAAC).
 
 SWOTViz is licensed under the GNU General Public License v3.0. This license allows users to freely use, modify, and distribute the software as long as they credit the original authors, share any modifications under the same license, and provide access to the source code. There are no warranties, and modifications must be clearly marked.
 
 ## References
-
----
 
 - Altenau, E. H., Pavelsky, T. M., Durand, M. T., Yang, X., Frasson, R. P. d. M., & Bendezu, L. (2021). The surface water and ocean topography (SWOT) mission river database (SWORD): A global river network for satellite data products. Water Resources Research, 57, e2021WR030054. https://doi.org/10.1029/2021WR030054
 - Altenau, E. H., Pavelsky, T. M., Durand, M., T., Yang, X., Frasson, R. P. d. M., & Bendezu, L. (2023). SWOT River Database (SWORD) (Version v16) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.10013982

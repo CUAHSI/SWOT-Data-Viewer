@@ -28,27 +28,37 @@ npm run dev
 npm run build
 ```
 
-### Run Headed Component Tests with [Cypress Component Testing](https://on.cypress.io/component)
+### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
-npm run test:unit:dev # or `npm run test:unit` for headless testing
+npm test
 ```
 
-### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
+Runs once, headless, in jsdom. Unit tests live next to the code they test, in `src/**/__tests__/*.test.js`, and use the Vite config in `vite.config.mjs` (see its `test` block). jsdom does no layout, so test layout in the browser tests below.
+
+### Run Browser Tests with [Playwright](https://playwright.dev/)
+
+Install the Chromium build Playwright uses (once, and after upgrading `@playwright/test`):
 
 ```sh
-npm run test:e2e:dev
+npx playwright install chromium
 ```
 
-This runs the end-to-end tests against the Vite development server.
-It is much faster than the production build.
-
-But it's still recommended to test the production build with `test:e2e` before deploying (e.g. in CI environments):
+Then:
 
 ```sh
-npm run build
 npm run test:e2e
 ```
+
+Browser tests live in `e2e/` and run headless in Chromium against the Vite dev server, which Playwright starts on port 5174 (see `playwright.config.js`). They intercept every request to another host, replacing images with a placeholder and blocking the rest, so they don't depend on external sites. Useful options:
+
+```sh
+npm run test:e2e -- --headed              # watch the browser
+npm run test:e2e -- -g "360px"             # run tests whose title matches
+npx playwright show-trace test-results/<test>/trace.zip   # inspect a failure
+```
+
+Both commands exit non-zero when a test fails.
 
 ### Lint with [ESLint](https://eslint.org/)
 

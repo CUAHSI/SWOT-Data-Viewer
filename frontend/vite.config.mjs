@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
   // Get the current directory using import.meta.url instead of process.cwd()
   const currentDir = path.dirname(fileURLToPath(import.meta.url))
   const env = loadEnv(mode, currentDir)
-  
+
   return {
     plugins: [vue(), vuetify(), vueDevTools()],
     root: './',
@@ -31,6 +31,17 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173
+    },
+    // Unit tests (npm test). Browser tests live in e2e/ and run with Playwright.
+    test: {
+      environment: 'jsdom',
+      include: ['src/**/*.test.js'],
+      server: {
+        deps: {
+          // Vuetify components import CSS, which Node cannot load unless Vite transforms it
+          inline: ['vuetify']
+        }
+      }
     }
   }
 })
