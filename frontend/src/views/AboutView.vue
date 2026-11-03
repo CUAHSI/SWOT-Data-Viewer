@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <div class="about-page" :class="{ 'about-page--stacked': isStacked }">
+    <div class="about-page" :class="{ 'about-page--stacked': isStacked }" :style="qualityColorVars">
       <!-- Table of Contents Section -->
       <nav class="toc" aria-label="Table of Contents">
         <button
@@ -34,6 +34,7 @@ import { useDisplay } from 'vuetify'
 import { marked } from 'marked'
 import { mdiChevronDown, mdiChevronUp } from '@mdi/js'
 import about_page_url from '@/assets/about_page.md'
+import { useChartsStore } from '@/stores/charts'
 
 // about_page.md is fetched at runtime, so Vite never sees the image paths inside it.
 // Glob the team headshots so Vite bundles them, keyed by the path the markdown uses
@@ -48,6 +49,15 @@ const teamImageUrls = Object.fromEntries(
 const { mdAndUp } = useDisplay()
 const isStacked = computed(() => !mdAndUp.value)
 const tocOpen = ref(false)
+
+// Quality Level swatches in about_page.md use the plot colours, so the page can't drift from them
+const chartStore = useChartsStore()
+const qualityColorVars = computed(() => ({
+  '--quality-outline': chartStore.POINT_OUTLINE_COLOR,
+  ...Object.fromEntries(
+    chartStore.dataQualityOptions.map(({ label, color }) => [`--quality-${label}`, color])
+  )
+}))
 
 // use the about_page_url to fetch the markdown content
 const aboutHtml = ref('')
@@ -436,6 +446,25 @@ $sticky-offset: $app-bar-height + 16px;
 
       img {
         flex: none;
+      }
+    }
+
+    /* Quality Level swatches, drawn like the plot points */
+    // The colours are custom properties set on .about-page from the charts store. The level
+    // names must match the store's dataQualityOptions labels (checked in AboutView.test.js).
+    .quality-swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 0.4em;
+      border: 1px solid var(--quality-outline);
+      border-radius: 50%;
+      vertical-align: middle;
+    }
+
+    @each $level in good, suspect, degraded, bad {
+      .quality-swatch--#{$level} {
+        background-color: var(--quality-#{$level});
       }
     }
   }
