@@ -2,3 +2,4 @@ isort==5.13.2
 black==24.4.2
 debugpy==1.8.2
 epdb
+pytest==8.2.2
