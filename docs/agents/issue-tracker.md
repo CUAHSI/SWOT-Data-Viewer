@@ -4,7 +4,7 @@ Tickets and specs for this repo live in Jira, project `CAM`, on `cuahsi.atlassia
 
 `CAM` is shared by every Compute and Modeling team project. Only touch work items under the SWOT tree below.
 
-Prefix every `acli` command with `PAGER=cat` (or `export PAGER=cat`), otherwise output opens in an interactive pager and hangs.
+Prefix every `acli` command with `PAGER=cat` (or `export PAGER=cat`), otherwise output opens in an interactive pager and hangs. Some commands (e.g. `acli jira workitem view ... --json`) still open a pager regardless, so also pipe their output through `| cat`.
 
 ## Hierarchy
 
@@ -29,7 +29,7 @@ CAM-1027  Research Project   SWOT Viz Research Project
 
 - **Create a Story**: `acli jira workitem create --project CAM --type Story --parent <EPIC-KEY> --label SWOTViz --summary "..." --description-file <file>`. Write the body to a temp file for multi-line descriptions. Plain text only: Jira does not render Markdown (use ADF JSON if rich formatting matters).
 - **Create an Epic**: same as above with `--type Epic --parent CAM-91|CAM-92|CAM-93`.
-- **Read a work item**: `acli jira workitem view <KEY> --fields "summary,issuetype,status,parent,labels,description,comment" --json`.
+- **Read a work item**: `acli jira workitem view <KEY> --fields "summary,issuetype,status,parent,labels,description,comment" --json | cat`.
 - **Read comments**: `acli jira workitem comment list --key <KEY>`.
 - **List SWOT work**: `acli jira workitem search --jql "project = CAM AND labels = SWOTViz AND statusCategory != Done ORDER BY cf[10116] ASC" --fields "key,issuetype,summary,status,labels" --csv`. Narrow with `AND parent = <EPIC-KEY>`, `AND labels = ready-for-agent`, `AND issuetype = Story`, etc.
 - **Comment**: `acli jira workitem comment create --key <KEY> --body "..."` (or `--body-file <file>`).

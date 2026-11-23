@@ -1,10 +1,21 @@
 <template>
   <v-container>
-    <div class="about-page">
+    <div class="about-page" :class="{ 'about-page--stacked': isStacked }" :style="qualityColorVars">
       <!-- Table of Contents Section -->
-      <nav class="toc">
-        <h3>Table of Contents</h3>
-        <ul>
+      <nav class="toc" aria-label="Table of Contents">
+        <button
+          v-if="isStacked"
+          type="button"
+          class="toc-toggle"
+          :aria-expanded="tocOpen"
+          aria-controls="toc-list"
+          @click="tocOpen = !tocOpen"
+        >
+          <span>Contents</span>
+          <v-icon :icon="tocOpen ? mdiChevronUp : mdiChevronDown" size="small" />
+        </button>
+        <h3 v-else>Table of Contents</h3>
+        <ul v-show="!isStacked || tocOpen" id="toc-list">
           <li v-for="item in tocItems" :key="item.id">
             <a @click="scrollToSection(item.id)">{{ item.text }}</a>
           </li>
@@ -12,15 +23,41 @@
       </nav>
 
       <!-- About Content Section -->
-      <div class="about-content" v-html="aboutHtml" />
+      <div class="about-content" @click="onContentClick" v-html="aboutHtml" />
     </div>
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { useDisplay } from 'vuetify'
 import { marked } from 'marked'
+import { mdiChevronDown, mdiChevronUp } from '@mdi/js'
 import about_page_url from '@/assets/about_page.md'
+import { useChartsStore } from '@/stores/charts'
+
+// about_page.md is fetched at runtime, so Vite never sees the image paths inside it.
+// Glob the team headshots so Vite bundles them, keyed by the path the markdown uses
+// (team/<file>, relative to src/assets, which also renders when previewing the markdown).
+const teamImageUrls = Object.fromEntries(
+  Object.entries(
+    import.meta.glob('../assets/team/*', { eager: true, query: '?url', import: 'default' })
+  ).map(([path, url]) => [path.replace('../assets/', ''), url])
+)
+
+// below the md breakpoint (960px) the TOC becomes a collapsible panel above the content
+const { mdAndUp } = useDisplay()
+const isStacked = computed(() => !mdAndUp.value)
+const tocOpen = ref(false)
+
+// Quality Level swatches in about_page.md use the plot colours, so the page can't drift from them
+const chartStore = useChartsStore()
+const qualityColorVars = computed(() => ({
+  '--quality-outline': chartStore.POINT_OUTLINE_COLOR,
+  ...Object.fromEntries(
+    chartStore.dataQualityOptions.map(({ label, color }) => [`--quality-${label}`, color])
+  )
+}))
 
 // use the about_page_url to fetch the markdown content
 const aboutHtml = ref('')
@@ -38,22 +75,58 @@ onMounted(async () => {
   const tempDiv = document.createElement('div')
   tempDiv.innerHTML = aboutHtml.value
 
-  // extract headings and generate TOC items with IDs
-  tocItems.value = Array.from(tempDiv.querySelectorAll('h2')).map((heading) => {
-    const id = heading.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-    heading.id = id // Set the ID on the heading itself
-    return {
-      id,
-      text: heading.innerText
-    }
+  // give headings IDs so the TOC (<h2> only) and in-page links (#heading-id) can point at them
+  const headings = Array.from(tempDiv.querySelectorAll('h2, h3'))
+  headings.forEach((heading) => {
+    heading.id = headingId(heading)
+  })
+  tocItems.value = headings
+    .filter((heading) => heading.tagName === 'H2')
+    .map((heading) => ({ id: heading.id, text: heading.textContent }))
+
+  // wrap tables so wide tables scroll sideways instead of widening the page
+  tempDiv.querySelectorAll('table').forEach((table) => {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'table-scroll'
+    table.replaceWith(wrapper)
+    wrapper.appendChild(table)
+  })
+
+  // point team headshots at their bundled URLs
+  tempDiv.querySelectorAll('img[src^="team/"]').forEach((img) => {
+    const url = teamImageUrls[img.getAttribute('src')]
+    if (url) img.src = url
   })
 
   // set the modified HTML back to the aboutHtml
   aboutHtml.value = tempDiv.innerHTML
 })
 
+// e.g. "Which variables are used for plots in SWOTViz?" -> "which-variables-are-used-for-plots-in-swotviz"
+function headingId(heading) {
+  return heading.textContent
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+// The router uses hash history, so an in-page link (href="#heading-id") would be read as a
+// route. Scroll to the heading instead; links to routes (href="#/...") are left to the router.
+// Stop propagation too: swagger-ui-dist (ApiView) bundles zenscroll, whose window click
+// listener scrolls to any "#" link and then pushes its href.
+function onContentClick(event) {
+  const link = event.target.closest('a[href^="#"]:not([href^="#/"])')
+  if (!link) return
+  event.preventDefault()
+  event.stopPropagation()
+  scrollToSection(link.getAttribute('href').slice(1))
+}
+
 // Scroll to the section smoothly
-function scrollToSection(id) {
+async function scrollToSection(id) {
+  // collapse the panel first so its height change doesn't shift the scroll target
+  tocOpen.value = false
+  await nextTick()
   const element = document.getElementById(id)
   if (element) {
     element.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -62,121 +135,338 @@ function scrollToSection(id) {
 </script>
 
 <style lang="scss">
+// Not scoped: the markdown is injected with v-html, so scoped styles would not reach it.
+// Everything is nested under .about-page to keep these class names local to this view.
+// Matches the height of the fixed v-app-bar in TheAppBar.vue.
+$app-bar-height: 70px;
+// Keeps the sticky TOC and scrolled-to headings clear of the app bar.
+$sticky-offset: $app-bar-height + 16px;
+
 .about-page {
-  display: flex;
-  gap: 20px; /* Space between TOC and content */
-}
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 
-.about-content {
-  font-family: 'Roboto', sans-serif;
-  line-height: 1.6;
-  color: #333;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-.about-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1em 0;
-  border: 1px solid #ddd;
-}
-
-.about-content th,
-.about-content td {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
-
-.about-content th {
-  background-color: #f2f2f2;
-  color: #333;
-  text-align: left;
-}
-
-.about-content h1,
-.about-content h2,
-.about-content h3,
-.about-content h4,
-.about-content h5,
-.about-content h6 {
-  color: #2c3e50;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-}
-
-.about-content p {
-  margin-bottom: 1em;
-}
-
-.about-content ul,
-.about-content ol {
-  margin: 1em 0;
-  padding-left: 1.5em;
-}
-
-.about-content blockquote {
-  margin: 1em 0;
-  padding: 0.5em 1em;
-  background-color: #f9f9f9;
-  border-left: 5px solid #ccc;
-  color: #666;
-}
-
-.about-content code {
-  background-color: #f3f3f3;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-family: 'Courier New', Courier, monospace;
-}
-
-.about-content pre {
-  background-color: #f3f3f3;
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-}
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
+  &.about-page--stacked {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
   }
-}
 
-/* Table of Contents (TOC) styles */
-.toc {
-  width: 1200px;
-  position: sticky;
-  top: 50px;
-  align-self: start;
-  background-color: #f9f9f9;
-  padding: 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px #ded9d9;
-}
+  /* Table of Contents (TOC) styles */
+  .toc {
+    position: sticky;
+    top: $sticky-offset;
+    max-height: calc(100vh - #{$sticky-offset + 16px});
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px #ded9d9;
+    font-size: 14px;
+    line-height: 1.4;
 
-.toc h3 {
-  font-size: 0.75em;
-  margin-bottom: 0.5em;
-}
+    h3 {
+      font-size: 13px;
+      margin-bottom: 0.75em;
+    }
 
-.toc ul {
-  list-style: none;
-  padding: 0;
-}
+    ul {
+      list-style: none;
+      padding: 0;
+    }
 
-.toc li {
-  margin-bottom: 0.8em;
-}
+    li {
+      margin-bottom: 0.6em;
+    }
 
-.toc a {
-  text-decoration: none;
-  color: #616365;
-  font-size: 0.75em;
-  cursor: pointer; /* link is clickable */
-}
+    a {
+      text-decoration: none;
+      color: #616365;
+      cursor: pointer; /* link is clickable */
+    }
 
-.toc a:hover {
-  text-decoration: underline;
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &.about-page--stacked .toc {
+    position: static;
+    max-height: none;
+
+    ul {
+      margin-top: 0.75em;
+    }
+  }
+
+  .toc-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .about-content {
+    min-width: 0;
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow-wrap: anywhere;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: #2c3e50;
+      line-height: 1.3;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+
+    h2 {
+      font-size: 1.6em;
+      margin-top: 2em;
+      padding-bottom: 0.3em;
+      border-bottom: 1px solid #e0e0e0;
+      scroll-margin-top: $sticky-offset;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+
+    h3 {
+      font-size: 1.25em;
+      scroll-margin-top: $sticky-offset;
+    }
+
+    h4 {
+      font-size: 1.15em;
+    }
+
+    p {
+      margin-bottom: 1em;
+    }
+
+    ul,
+    ol {
+      margin: 1em 0;
+      padding-left: 1.5em;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      border: 1px solid #ddd;
+      overflow-wrap: normal;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      color: #333;
+      text-align: left;
+    }
+
+    blockquote {
+      margin: 1em 0;
+      padding: 0.5em 1em;
+      background-color: #f9f9f9;
+      border-left: 5px solid #ccc;
+      color: #666;
+    }
+
+    code {
+      background-color: #f3f3f3;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    pre {
+      background-color: #f3f3f3;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    /* Info callout */
+    .callout {
+      margin: 1em 0 1.5em;
+      padding: 12px 16px;
+      border-left: 5px solid #4682b4;
+      border-radius: 8px;
+      background-color: #f5f5f5;
+
+      .callout-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+      }
+
+      .callout-icon {
+        font-size: 1.5em;
+        line-height: 1;
+        color: #4682b4;
+      }
+
+      ul {
+        margin: 0.5em 0 0;
+        padding-left: 1.25em;
+      }
+    }
+
+    /* Plot type cards: side by side when there is room, stacked otherwise */
+    .plot-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 1em 0 1.5em;
+    }
+
+    .plot-card {
+      display: flex;
+      flex: 1 1 260px;
+      flex-direction: column;
+      max-width: 400px;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #c4d8e2;
+
+      &:nth-child(even) {
+        background-color: #afeeee;
+      }
+
+      h3 {
+        margin-top: 0;
+      }
+
+      img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+
+      p {
+        flex-grow: 1;
+        margin: 15px 0 0;
+      }
+    }
+
+    /* Project team: one column on a phone, up to three on desktop */
+    .team-grid {
+      $gap: 12px;
+      display: grid;
+      // columns are at least 220px and at least a third of the row, so never more than three
+      grid-template-columns: repeat(
+        auto-fill,
+        minmax(min(100%, max(220px, (100% - 2 * #{$gap}) / 3)), 1fr)
+      );
+      gap: $gap;
+      margin: 1em 0;
+    }
+
+    .team-card {
+      padding: 12px;
+      border: 1px solid lightgray;
+      border-radius: 8px;
+
+      img {
+        display: block;
+        width: 120px;
+        border-radius: 8px;
+      }
+
+      h3 {
+        margin: 0.75em 0 0;
+        font-size: 1.15em;
+      }
+
+      .team-title,
+      .team-org,
+      .team-email {
+        margin: 0.25em 0 0;
+        line-height: 1.4;
+      }
+
+      .team-title {
+        color: #555;
+      }
+
+      .team-org {
+        font-size: 0.95em;
+        color: gray;
+      }
+
+      .team-email {
+        font-size: 0.95em;
+      }
+    }
+
+    /* Partners: text beside the logo, logo wraps below on narrow screens */
+    .partners {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px 24px;
+
+      p {
+        flex: 1 1 260px;
+        margin: 0;
+      }
+
+      img {
+        flex: none;
+      }
+    }
+
+    /* Quality Level swatches, drawn like the plot points */
+    // The colours are custom properties set on .about-page from the charts store. The level
+    // names must match the store's dataQualityOptions labels (checked in AboutView.test.js).
+    .quality-swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 0.4em;
+      border: 1px solid var(--quality-outline);
+      border-radius: 50%;
+      vertical-align: middle;
+    }
+
+    @each $level in good, suspect, degraded, bad {
+      .quality-swatch--#{$level} {
+        background-color: var(--quality-#{$level});
+      }
+    }
+  }
 }
 </style>

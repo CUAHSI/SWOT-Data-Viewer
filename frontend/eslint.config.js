@@ -16,5 +16,13 @@ export default [
         ...globals.browser
       }
     }
+  },
+  {
+    files: ['*.config.{js,mjs}'],
+    languageOptions: {
+      globals: {
+        ...globals.node
+      }
+    }
   }
 ]
