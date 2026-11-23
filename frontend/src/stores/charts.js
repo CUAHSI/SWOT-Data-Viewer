@@ -146,6 +146,13 @@ export const useChartsStore = defineStore(
       }
     ])
 
+    // The SWOT lake product reports area_total in km^2, whereas the reach and node
+    // products report it in m^2, so lake charts need their own unit for this variable.
+    const lakeAreaVariable = {
+      ...swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+      unit: 'km^2'
+    }
+
     // a collection of charts that can be created in the lake view
     const lakeCharts = ref([
       {
@@ -159,9 +166,9 @@ export const useChartsStore = defineStore(
       {
         abbreviation: 'area/time',
         xvar: swotVariables.value.find((v) => v.abbreviation == 'time_str'),
-        yvar: swotVariables.value.find((v) => v.abbreviation == 'area_total'),
+        yvar: lakeAreaVariable,
         title: 'Water Surface Area',
-        help: swotVariables.value.find((v) => v.abbreviation == 'area_total').definition,
+        help: lakeAreaVariable.definition,
         name: 'WSA vs Time'
       }
     ])
